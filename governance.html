@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KHDA</title>
+  <meta name="application-name" content="KHDA">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260926z">
+  <meta name="theme-color" content="#A8305C">
+  <link rel="stylesheet" href="css/khda.css?v=20260926z">
+</head>
+<body class="on-canvas on-canvas--admin">
+
+  <!-- ===== Portal header ===== -->
+  <header class="portal-header">
+    <div class="portal-header__inner">
+      <div class="portal-header__top">
+        <a class="brand-gov" href="#" aria-label="Government of Dubai">
+          <img src="assets/gov-dubai.svg" width="129" height="51" alt="Government of Dubai">
+        </a>
+        <a class="brand-khda" href="#" aria-label="Dubai Knowledge">
+          <img src="assets/khda-logo.svg?v=20260926z" width="85" height="44" alt="Dubai Knowledge">
+        </a>
+      </div>
+      <div class="portal-header__sub">
+        <nav class="portal-nav" aria-label="Portal">
+          <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
+          <a href="submissions.html" data-i18n="nav.submissions">Submissions</a>
+          <a href="governance.html" aria-current="page" data-i18n="nav.governance">Data Governance Policies</a>
+          <a href="api.html" data-i18n="nav.api">API Integration</a>
+        </nav>
+        <div class="portal-tools">
+          <button class="tool-pill tool-pill--demo" type="button" id="demoToggle" aria-pressed="false" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+            <span id="demoToggleLabel">Demo data</span>
+          </button>
+          <button class="tool-pill tool-pill--icon" type="button" aria-label="Accessibility" data-i18n-aria="tool.accessibility">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M4 9h16M12 9v6m0 0-3 6m3-6 3 6"/></svg>
+          </button>
+          <button class="tool-pill tool-pill--lang" type="button" id="langToggle" data-i18n="tool.lang" data-i18n-aria="tool.langAria">العربية</button>
+          <div class="tool-account">
+            <button class="tool-pill tool-user" type="button" id="userPill" aria-haspopup="true" aria-expanded="false" aria-controls="userMenu">
+              <span class="tool-user__avatar" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              </span>
+              <span class="tool-user__text">
+                <span class="tool-user__role" data-i18n="user.role">Institution Admin</span>
+                <span class="tool-user__name" data-i18n="user.name">Noura Al Khatib</span>
+              </span>
+              <svg class="tool-user__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="user-menu" id="userMenu" role="menu" aria-label="Account menu" data-i18n-aria="user.menu" hidden>
+              <button class="user-menu__logout" type="button" id="btnLogout" role="menuitem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17l5-5-5-5"/><path d="M20 12H9"/><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"/></svg>
+                <span data-i18n="user.logout">Log out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page" id="main" tabindex="-1">
+    <div class="service-header">
+      <h1 data-i18n="gov.title">Data Governance Policies</h1>
+      <p class="service-header__lede" data-i18n="gov.lede">Policies that govern how submitted data is validated and controlled.</p>
+    </div>
+
+    <div class="gov-grid">
+      <article class="ds-card gov-card">
+        <div class="ds-card__head">
+          <span class="ds-card__icon" aria-hidden="true">⚖️</span>
+        </div>
+        <h2 class="ds-card__title" data-i18n="gov.ruleEngine">Data Governance Rule Engine</h2>
+        <p class="ds-card__desc" data-i18n="gov.ruleEngineDesc">Define the validation rules applied to each dataset before submission, and export them for the platform.</p>
+        <div class="ds-card__meta">
+          <span class="chip chip--neutral" id="govDatasets"></span>
+          <span class="chip chip--neutral" id="govFields"></span>
+        </div>
+        <div class="ds-card__foot">
+          <a class="btn btn--primary btn--sm" href="configuration.html" data-i18n="gov.configure">Config</a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <!-- Toasts -->
+  <div class="toast-host" id="toastHost" aria-live="polite"></div>
+
+  <script src="js/i18n.js?v=20260926z"></script>
+  <script src="js/a11y.js?v=20260926z"></script>
+  <script src="js/activity.js?v=20260926z"></script>
+  <script src="js/fit.js?v=20260926z"></script>
+  <script src="js/lists.js?v=20260926z"></script>
+  <script src="js/datasets.js?v=20260926z"></script>
+  <script src="js/schema.js?v=20260926z"></script>
+  <script src="js/rules.js?v=20260926z"></script>
+  <script src="js/demo.js?v=20260926z"></script>
+  <script src="js/governance.js?v=20260926z"></script>
+</body>
+</html>

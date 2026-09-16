@@ -1132,3 +1132,523 @@ body.is-choosing { overflow: hidden; }
 @media (max-width: 479px) {
   :root { --gutter: 24px; }   /* KHDA grid, xs */
 }
+
+
+/* ==========================================================================
+   Configuration — rule engine
+   Built from the dashboard card vocabulary: .dash-card surfaces, .dash-card__head
+   headers, .control fields, .search wrappers, .chip status and .btn-actions row menus.
+   ========================================================================== */
+
+/* ---------- header card: dataset, stats, export ---------- */
+
+/* ---------- dataset picker ---------- */
+.cfg-picker { position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 0 1 380px; }
+.cfg-picker__label { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-muted); }
+.cfg-picker__btn { display: flex; align-items: center; gap: 12px; width: 100%; height: 56px; padding: 0 16px; border: 1px solid var(--outline); border-radius: 8px; background: var(--surface); color: var(--on-surface); font: 400 16px/24px var(--font); cursor: pointer; text-align: start; }
+.cfg-picker__btn:hover { border-color: var(--outline-variant); }
+.cfg-picker__btn:focus-visible { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
+.cfg-picker__btn[aria-expanded="true"] { border-color: var(--primary); }
+.cfg-picker__value { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cfg-picker__chev { flex: 0 0 auto; color: var(--on-surface-variant); transition: transform .15s; }
+.cfg-picker__btn[aria-expanded="true"] .cfg-picker__chev { transform: rotate(180deg); }
+/* anchored to the trigger, so 46 options always open downward instead of off the top */
+.cfg-picker__panel { position: absolute; z-index: 60; inset-inline-start: 0; top: calc(100% + 4px); width: 100%; min-width: 320px; padding: 8px; background: var(--surface); border: 1px solid var(--outline); border-radius: 12px; box-shadow: var(--elevation-3); }
+.cfg-picker__search { width: 100%; margin-bottom: 8px; }
+.cfg-picker__list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.cfg-picker__opt { padding: 10px 12px; border-radius: 8px; font: 400 16px/24px var(--font); color: var(--on-surface); cursor: pointer; }
+.cfg-picker__opt:hover, .cfg-picker__opt:focus-visible { background: var(--primary-container); color: var(--primary); outline: none; }
+.cfg-picker__opt.is-selected { background: var(--surface-dim); }
+.cfg-picker__empty { padding: 12px; font: 400 14px/20px var(--font); color: var(--on-surface-muted); }
+
+/* ---------- two-pane body ---------- */
+.cfg-grid { display: grid; grid-template-columns: 366px minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.cfg-rail { gap: 12px; }
+.cfg-rail .search { width: 100%; min-width: 0; }
+.cfg-rail .segmented { width: 100%; }
+/* Sized to its content, capped so 102 fields scroll instead of stretching the page. It must
+   NOT be given a flex-basis: that forced the list past its content and left a 2px scrollbar
+   that swallowed the wheel whenever the pointer was over the rail. */
+.cfg-rail__list { list-style: none; margin: 0; padding: 4px 0 0; flex: 0 1 auto; min-height: 0; max-height: 620px; overflow-y: auto; }
+.cfg-rail__list:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 8px; }
+
+.cfg-field { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; cursor: pointer; }
+.cfg-field:hover { background: var(--surface-bright); }
+.cfg-field.is-selected { background: var(--primary-container); }
+.cfg-field.is-selected .cfg-field__name { color: var(--primary); }
+.cfg-field__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--outline-variant); flex: 0 0 auto; }
+.cfg-field__dot.is-custom { background: var(--primary); }
+.cfg-field__text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cfg-field__name { font: 400 16px/24px var(--font); color: var(--on-surface); overflow-wrap: anywhere; }
+.cfg-field__db { font: 400 12px/16px Consolas, "Courier New", monospace; color: var(--on-surface-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cfg-field__count { flex: 0 0 auto; }
+.cfg-field__go { flex: 0 0 auto; color: var(--on-surface-variant); }
+[dir="rtl"] .cfg-field__go { transform: scaleX(-1); }
+
+.cfg-pane { min-height: 400px; }
+.cfg-pane__head { align-items: flex-start; padding-bottom: 16px; border-bottom: 1px solid var(--outline-variant); }
+.cfg-pane__meta { margin: 4px 0 0; font: 400 12px/16px Consolas, "Courier New", monospace; color: var(--on-surface-muted); }
+.cfg-empty { color: var(--on-surface-muted); font: 400 16px/24px var(--font); margin: 0; }
+/* before a field is picked the pane holds nothing else, so centre the prompt */
+.cfg-pane > .cfg-empty:only-child { margin: auto; text-align: center; }
+
+/* ---------- validation pipeline ---------- */
+.cfg-flow { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; background: var(--surface-bright); }
+.cfg-flow__head { display: flex; flex-direction: column; gap: 2px; }
+.cfg-flow__title { margin: 0; font: 400 16px/24px var(--font); color: var(--on-surface); }
+.cfg-flow__hint { margin: 0; font: 400 12px/16px var(--font); color: var(--on-surface-muted); }
+.cfg-flow__track { list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; }
+.cfg-flow__step { position: relative; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--outline); border-radius: 999px; background: var(--surface); }
+/* the connector between stages: drawn in the gap, never before the first step */
+.cfg-flow__step + .cfg-flow__step::before { content: ""; position: absolute; inset-inline-start: -8px; top: 50%; width: 8px; height: 1px; background: var(--outline-variant); }
+.cfg-flow__step.is-custom { border-color: var(--primary); }
+.cfg-flow__order { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--surface-dim); color: var(--on-surface-secondary); font: 400 12px/16px var(--font); flex: 0 0 auto; }
+.cfg-flow__step.is-custom .cfg-flow__order { background: var(--primary-container); color: var(--primary); }
+.cfg-flow__type { font-family: Consolas, "Courier New", monospace; font-size: 12px; letter-spacing: .02em; color: var(--on-surface-strong); }
+
+/* ---------- rule cards ---------- */
+.cfg-rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.cfg-rule { border: 1px solid var(--outline); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.cfg-rule.is-off { background: var(--disabled-bg); color: var(--disabled-fg); }
+.cfg-rule__head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cfg-rule__type { font-family: Consolas, "Courier New", monospace; font-size: 14px; letter-spacing: .02em; color: var(--on-surface-strong); }
+.cfg-rule.is-off .cfg-rule__type { color: var(--disabled-fg); }
+.cfg-rule__menu { margin-inline-start: auto; }
+.cfg-rule__value { margin: 0; font: 400 16px/24px var(--font); color: var(--on-surface-secondary); overflow-wrap: anywhere; }
+.cfg-add { flex: 0 0 auto; }
+
+/* ---------- composer ---------- */
+.cfg-composer { border: 1px solid var(--primary); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 16px; background: var(--surface-bright); }
+.cfg-label { display: flex; flex-direction: column; gap: 8px; font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-muted); }
+.cfg-valuehost.is-invalid .control, .cfg-valuehost.is-invalid .cfg-chips { border-color: var(--error); }
+/* the composer refuses a too-long Rule_Value; say why rather than just reddening the border */
+.cfg-valuehost[data-error]::after { content: attr(data-error); display: block; margin-top: 8px; font: 400 14px/20px var(--font); color: var(--error); }
+.cfg-composer__actions { display: flex; gap: 8px; align-items: center; }
+.cfg-preview { margin: 8px 0 0; font: 400 14px/20px var(--font); }
+.cfg-preview.is-ok { color: var(--success); }
+.cfg-preview.is-bad { color: var(--error); }
+.cfg-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+/* Error_Code runs to ~60 characters, so it takes a row to itself rather than being clipped */
+.cfg-row--meta { grid-template-columns: 1fr 1fr; }
+.cfg-row--meta > label:first-child { grid-column: 1 / -1; }
+.cfg-row--3 { grid-template-columns: 1fr auto 1fr; align-items: start; }
+
+/* ---------- value editors ---------- */
+.cfg-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 56px; padding: 8px 12px; border: 1px solid var(--outline); border-radius: 8px; background: var(--surface); }
+.cfg-chips:focus-within { border-color: var(--primary); box-shadow: var(--focus-ring); }
+.cfg-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px 0 10px; border-radius: 999px; background: var(--primary-container); color: var(--on-primary-container); font: 400 14px/20px var(--font); }
+.cfg-chip__x { border: 0; background: none; cursor: pointer; color: inherit; font-size: 16px; line-height: 1; padding: 0 2px; }
+.cfg-chips__input { flex: 1 1 120px; min-width: 120px; border: 0; outline: none; height: 36px; font: 400 16px/24px var(--font); background: transparent; color: var(--on-surface); }
+.cfg-checks { max-height: 240px; overflow-y: auto; border: 1px solid var(--outline); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.cfg-check { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; font: 400 16px/24px var(--font); color: var(--on-surface); cursor: pointer; }
+.cfg-check:hover { background: var(--surface-bright); }
+.cfg-sql { display: grid; grid-template-columns: 44px minmax(0, 1fr); border: 1px solid var(--outline); border-radius: 8px; overflow: hidden; background: var(--surface); margin-top: 8px; }
+.cfg-sql:focus-within { border-color: var(--primary); box-shadow: var(--focus-ring); }
+.cfg-sql__gutter { padding: 12px 8px; text-align: right; background: var(--surface-dim); color: var(--on-surface-muted); font: 400 14px/20px Consolas, "Courier New", monospace; white-space: pre; overflow: hidden; user-select: none; }
+.cfg-sql__area { border: 0; outline: none; resize: vertical; padding: 12px; font: 400 14px/20px Consolas, "Courier New", monospace; color: var(--on-surface); background: transparent; }
+/* SQL stays left-to-right even in the Arabic layout */
+[dir="rtl"] .cfg-sql { direction: ltr; }
+
+@media (max-width: 1100px) {
+  .cfg-grid { grid-template-columns: 1fr; }
+  .cfg-row--meta, .cfg-row--3 { grid-template-columns: 1fr; }
+}
+.cfg-note { margin: 0; padding: 12px; border-radius: 8px; background: var(--surface-dim); color: var(--on-surface-secondary); font: 400 14px/20px var(--font); }
+
+/* ---------- read-only rule detail ---------- */
+.cfg-detail { display: flex; flex-direction: column; gap: 16px; padding: 16px; border: 1px solid var(--outline); border-radius: 12px; background: var(--surface-bright); }
+.cfg-detail:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.cfg-detail__head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cfg-detail__list { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 24px; margin: 0; }
+.cfg-detail__list dt { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-muted); }
+.cfg-detail__list dd { margin: 0; font: 400 14px/20px var(--font); color: var(--on-surface); overflow-wrap: anywhere; }
+.cfg-detail__list dd.is-mono { font-family: Consolas, "Courier New", monospace; }
+.cfg-detail__value { display: flex; flex-direction: column; gap: 8px; }
+.cfg-detail__subtitle { margin: 0; font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-muted); }
+.cfg-detail__plain { margin: 0; font: 400 16px/24px var(--font); color: var(--on-surface); overflow-wrap: anywhere; }
+.cfg-detail__count { margin: 0; font: 400 12px/16px var(--font); color: var(--on-surface-muted); }
+/* 136 allowed values must scroll inside the panel rather than stretch the page */
+.cfg-detail__chips { display: flex; flex-wrap: wrap; gap: 6px; max-height: 200px; overflow-y: auto; padding: 8px; border: 1px solid var(--outline); border-radius: 8px; background: var(--surface); }
+.cfg-detail__sql { margin: 0; padding: 12px; border: 1px solid var(--outline); border-radius: 8px; background: var(--surface); font: 400 13px/20px Consolas, "Courier New", monospace; color: var(--on-surface); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 220px; overflow-y: auto; }
+/* SQL and the exported value are code, so they stay left-to-right in the Arabic layout */
+[dir="rtl"] .cfg-detail__sql { direction: ltr; text-align: left; }
+
+/* ---------- data governance landing ---------- */
+.gov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 380px)); gap: 24px; }
+.gov-card .ds-card__title { font: 400 24px/32px var(--font); margin: 0; }
+.gov-card .ds-card__foot { margin-top: auto; }
+@media (max-width: 1100px) { .gov-grid { grid-template-columns: 1fr; } }
+.cfg-regex__test { margin-top: 12px; }
+
+/* ---------- dataset summary tiles and charts ---------- */
+.cfg-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-content: start; }
+.cfg-tile { display: flex; flex-direction: column; gap: 0; padding: 10px 14px; border-radius: 12px; background: var(--surface-bright); }
+.cfg-tile__value { font: 300 26px/32px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.cfg-tile__label { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-variant); }
+.cfg-tile__sub { font: 400 12px/16px var(--font); color: var(--on-surface-muted); }
+.cfg-head__charts { min-width: 0; }
+
+/* ---------- rule diagrams ---------- */
+.cfg-diag { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--outline); margin-top: 8px; }
+.cfg-diag__node { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--outline); background: var(--surface-bright); font: 400 14px/20px var(--font); color: var(--on-surface); }
+.cfg-diag__node.is-field { border-color: var(--primary); color: var(--primary); }
+.cfg-diag__node.is-op { font-family: Consolas, "Courier New", monospace; background: var(--surface-dim); }
+.cfg-diag__node.is-value { font-family: Consolas, "Courier New", monospace; }
+.cfg-diag__node.is-result { background: var(--primary-container); color: var(--on-primary-container); border-color: transparent; }
+.cfg-diag__node.is-expr { font-family: Consolas, "Courier New", monospace; font-size: 13px; overflow-wrap: anywhere; }
+.cfg-diag__node.is-pass { background: var(--chip-done); color: var(--on-chip-done); border-color: transparent; }
+.cfg-diag__node.is-fail { background: var(--chip-late); color: var(--on-chip-late); border-color: transparent; }
+.cfg-diag__label { font: 400 12px/16px var(--font); letter-spacing: 0.24px; color: var(--on-surface-muted); text-transform: uppercase; }
+.cfg-diag__arrow { display: inline-flex; color: var(--outline-variant); }
+[dir="rtl"] .cfg-diag__arrow svg { transform: scaleX(-1); }
+
+/* the SQL branch stacks: condition on top, the two outcomes below it */
+.cfg-diag--branch { flex-direction: column; align-items: stretch; gap: 12px; }
+.cfg-diag__row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cfg-diag__branches { display: flex; gap: 12px; flex-wrap: wrap; padding-inline-start: 16px; border-inline-start: 2px solid var(--outline-variant); }
+.cfg-diag__branch { display: flex; align-items: center; gap: 8px; }
+.cfg-diag__note { margin: 0; font: 400 12px/16px var(--font); color: var(--on-surface-muted); }
+.cfg-sqldiag { margin-top: 12px; }
+
+/* ---------- validation coverage radar ---------- */
+.cfg-radar { display: flex; flex-direction: column; gap: 12px; }
+.cfg-radar__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.cfg-radar__title { margin: 0; font: 400 16px/24px var(--font); color: var(--on-surface); }
+.cfg-radar__sub { margin: 0; font: 400 12px/16px var(--font); color: var(--on-surface-muted); }
+.cfg-radar__score { display: flex; flex-direction: column; align-items: flex-end; }
+.cfg-radar__number { font: 300 28px/36px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.cfg-radar__caption { font: 400 12px/16px var(--font); color: var(--on-surface-muted); }
+.cfg-radar__body { display: flex; align-items: center; gap: 40px; flex-wrap: wrap; }
+.cfg-radar__svg { flex: 0 0 auto; width: 260px; height: 260px; overflow: visible; }
+
+.cfg-radar__ring { fill: none; stroke: var(--outline-variant); stroke-width: 1; }
+.cfg-radar__spoke { stroke: var(--outline-variant); stroke-width: 1; }
+.cfg-radar__area { fill: var(--primary); fill-opacity: .16; stroke: var(--primary); stroke-width: 2; stroke-linejoin: round; }
+.cfg-radar__dot { fill: var(--primary); stroke: var(--surface); stroke-width: 2; }
+.cfg-radar__label { fill: var(--on-surface-variant); font: 400 12px/16px var(--font); }
+
+/* the plot carries the shape, the list carries the exact numbers */
+.cfg-radar__list { flex: 0 1 320px; max-width: 360px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 24px; margin: 0; align-content: center; }
+.cfg-radar__list dt { font: 400 15px/20px var(--font); color: var(--on-surface); }
+.cfg-radar__list dd { margin: 0; display: flex; align-items: center; justify-content: flex-end; gap: 10px; font: 400 15px/20px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.cfg-radar__key { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex: 0 0 auto; }
+/* the plot is a figure, not prose, so it keeps its geometry in the Arabic layout */
+[dir="rtl"] .cfg-radar__svg { direction: ltr; }
+
+/* ---------- toolbar: picker left, actions right ---------- */
+.cfg-bar { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-top: -24px; }
+/* the picker keeps its own width; the actions are pushed to the far end of the row */
+.cfg-bar .cfg-picker { flex: 0 0 380px; max-width: 100%; }
+.cfg-bar__actions { margin-inline-start: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+/* Preview closes the flow: a plain right-aligned action after the authoring panes, in the
+   page rather than pinned to the window. */
+.cfg-foot { display: flex; justify-content: flex-end; }
+
+/* ---------- dataset overview drawer ---------- */
+.cfg-drawer__scrim { position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, .32); }
+.cfg-drawer {
+  position: fixed; z-index: 90; top: 0; bottom: 0; inset-inline-end: 0; width: min(560px, 92vw);
+  display: flex; flex-direction: column; gap: 16px; padding: 24px;
+  background: var(--surface); box-shadow: var(--elevation-3); overflow-y: auto;
+}
+.cfg-drawer__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cfg-drawer__body { display: flex; flex-direction: column; gap: 20px; }
+/* inside the drawer the counters stack under the plot rather than beside it */
+.cfg-drawer .cfg-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cfg-drawer .cfg-radar__body { flex-direction: column; align-items: stretch; gap: 16px; }
+.cfg-drawer .cfg-radar__svg { align-self: center; }
+.cfg-drawer .cfg-radar__list { flex: 1 1 auto; max-width: none; }
+
+/* ---------- review before submitting ---------- */
+.cfg-review { display: flex; flex-direction: column; gap: 16px; }
+.cfg-review:focus-visible { outline: none; }
+.cfg-review__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.cfg-review__ds { margin: 0 0 4px; font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-muted); }
+.cfg-review__title { margin: 0; font: 300 32px/40px var(--font); color: var(--on-surface); }
+.cfg-review__lede { margin: 4px 0 0; font: 400 16px/24px var(--font); color: var(--on-surface-variant); }
+.cfg-review__actions, .cfg-review__foot { display: flex; align-items: center; gap: 12px; }
+.cfg-review__foot { justify-content: flex-end; padding-top: 8px; }
+.cfg-review__note { margin: 0; padding: 12px 16px; border-radius: 8px; font: 400 14px/20px var(--font); }
+.cfg-review__note.is-ok { background: var(--chip-done); color: var(--on-chip-done); }
+.cfg-review__note.is-warn { background: var(--chip-todo); color: var(--on-chip-todo); }
+
+/* fixed layout: a table cell ignores max-width in auto layout, so a long dictionary
+   description ran on one line and overlapped the rules column */
+.cfg-review__table { width: 100%; table-layout: fixed; }
+/* .data-table is built for short cells: nowrap plus a 1100px floor. The review carries
+   full dictionary sentences, so those two are lifted and the rows size to their content. */
+.cfg-review__table { min-width: 0; }
+.cfg-review__table td { height: auto; vertical-align: top; white-space: normal; overflow-wrap: anywhere; }
+.cfg-review__table th { height: 56px; white-space: normal; }
+.cfg-review__table th:nth-child(1), .cfg-review__table td:nth-child(1) { width: 30%; }
+.cfg-review__table th:nth-child(2), .cfg-review__table td:nth-child(2) { width: 70%; }
+.cfg-review__table tr.is-uncovered { background: var(--surface-bright); }
+.cfg-review__field { display: block; font: 400 16px/24px var(--font); color: var(--on-surface); }
+.cfg-review__db { display: block; font: 400 12px/16px Consolas, "Courier New", monospace; color: var(--on-surface-muted); }
+/* the dictionary wording, given room to read as a sentence */
+.cfg-review__desc { font: 400 14px/20px var(--font); color: var(--on-surface-variant); }
+
+@media (max-width: 1100px) {
+  .cfg-review__head { flex-direction: column; }
+}
+
+/* The governance screens are the KHDA admin surface rather than the public portal, so they
+   drop the green wash for the admin grey. The gradient is the value from the admin design;
+   with no background image behind it, it resolves to a flat #F5F5F5. */
+body.on-canvas--admin {
+  background-color: #F5F5F5;
+  background-image: linear-gradient(180deg, rgba(245, 245, 245, 0) 46.15%, #F5F5F5 74.52%);
+}
+/* the two toolbar actions use the icon-link treatment, so a <button> sheds its chrome */
+button.link-icon { border: 0; background: none; padding: 0; cursor: pointer; font: 400 16px/24px var(--font); }
+.link-icon:hover { text-decoration: underline; }
+.link-icon:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 4px; }
+.cfg-bar__actions { gap: 24px; }
+/* dictionary guidance that is not a rule: the placeholder to use when a value is unknown */
+.cfg-pane__hint { margin: 4px 0 0; font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+.cfg-review__hint { display: block; margin-top: 4px; font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+/* an "in" condition picks several codes at once, so its control is a list rather than a field */
+.cfg-cond__multi { width: 100%; min-height: 140px; padding: 8px; border: 1px solid var(--outline); border-radius: 8px; background: var(--surface); font: 400 14px/20px var(--font); color: var(--on-surface); }
+.cfg-cond__multi:focus-visible { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
+/* the placeholder branch is guidance, so it reads quieter than the rule it sits beside */
+.cfg-diag__node.is-else { background: var(--surface-dim); color: var(--on-surface-secondary); border-style: dashed; }
+
+/* The "otherwise" branch — what the field holds when no condition demands a value.
+   Guidance rather than a rule, so it sits under the field title, not in the rule list. */
+.cfg-otherwise { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.cfg-otherwise .cfg-pane__hint { margin: 0; }
+.cfg-otherwise__edit { padding: 0 4px; height: auto; }
+.cfg-otherwise__form { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--outline); border-radius: 10px; background: var(--surface-bright); }
+.cfg-otherwise__form .cfg-check { padding: 0; cursor: pointer; }
+.cfg-otherwise__value { width: 160px; height: 40px; }
+.cfg-otherwise__value:disabled { background: var(--surface-container); color: var(--on-surface-variant); }
+.cfg-otherwise__actions { display: flex; align-items: center; gap: 8px; }
+
+/* ============================================================================
+   API Integration Overview  (api.html)
+   The KHDA-admin view of API consumption. Everything here is built from the
+   tokens already defined in :root — the status palette is the same chip colours
+   the catalogue and dashboard use, so an "accepted" square on this page is the
+   same green as an "accepted" chip everywhere else.
+   ============================================================================ */
+
+/* --- sector totals ---
+   Six figures, each carrying its own icon, the share of the whole it represents and a
+   meter for that share, so the row reads as six measurements rather than six numbers
+   that happen to sit next to each other. `--tone` and `--tone-soft` are set per card
+   from the existing palette; no colour is written here. */
+.api-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1400px) { .api-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .api-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.api-stat {
+  position: relative; display: flex; flex-direction: column; gap: 10px; overflow: hidden;
+  padding: 20px; background: var(--surface); border: 1px solid var(--outline); border-radius: 16px;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.api-stat:hover { border-color: var(--outline-variant); box-shadow: var(--elevation-2); transform: translateY(-2px); }
+/* the tone names the card's temperature down its leading edge, rather than washing the
+   whole surface in a colour the design system reserves for chips */
+.api-stat::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; width: 3px; background: var(--tone); }
+.api-stat__top { display: flex; align-items: center; gap: 8px; }
+.api-stat__icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--tone-soft); color: var(--tone); flex: 0 0 auto; }
+.api-stat__share { margin-inline-start: auto; padding: 2px 8px; border-radius: 999px; background: var(--tone-soft); color: var(--tone); font: 400 12px/18px var(--font); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.api-stat__value { font: 300 36px/44px var(--font); letter-spacing: -0.4px; color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.api-stat__label { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-variant); }
+.api-stat__meter { display: block; height: 6px; border-radius: 999px; background: var(--surface-dim); overflow: hidden; }
+.api-stat__fill { display: block; height: 100%; border-radius: 999px; background: var(--tone); }
+/* pinned to the bottom so the six cards end level even when one carries no meter */
+.api-stat__note { margin-top: auto; font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+
+/* --- charts --- */
+.api-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+@media (max-width: 1100px) { .api-charts { grid-template-columns: 1fr; } }
+.api-chart { display: flex; flex-direction: column; gap: 20px; padding: 24px; background: var(--surface); border: 1px solid var(--outline); border-radius: 16px; }
+.api-chart__head { display: flex; align-items: baseline; gap: 12px; }
+.api-chart__title { font: 400 20px/28px var(--font); color: var(--on-surface); margin-right: auto; }
+.api-chart__note { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-muted); white-space: nowrap; }
+/* the body takes the slack, so all four cards end level whatever they contain */
+.api-chart__body { flex: 1 1 auto; display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+
+/* status palette, named once so the ring, the stack and the ledger agree */
+.is-accepted { background: var(--chip-done); }
+.is-processing { background: var(--chip-progress); }
+.is-needs-correction { background: var(--chip-late); }
+.is-non-submitted { background: var(--surface-dim); }
+
+/* the ring: figure in the middle, tiers listed beside it */
+.api-donut { flex-direction: row; align-items: center; gap: 28px; flex-wrap: wrap; }
+.api-donut__plot { position: relative; flex: 0 0 180px; width: 180px; }
+.api-donut__plot svg { width: 100%; height: auto; display: block; }
+.api-donut__track { fill: none; stroke: var(--surface-dim); stroke-width: 20; }
+.api-donut__centre { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; }
+.api-donut__value { font: 300 40px/48px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.api-donut__caption { font: 400 12px/16px var(--font); letter-spacing: 0.24px; color: var(--on-surface-muted); }
+
+/* the shared breakdown list: a dot, a name, its count and its share */
+.api-breakdown { flex: 1 1 200px; display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.api-breakdown--split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; }
+/* the item is a grid inside a grid: without this its two rows stretch to fill the tallest
+   cell in the row and the meter drifts away from the figure it belongs to */
+.api-breakdown__item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; align-content: start; gap: 6px 10px; }
+.api-breakdown__dot { width: 10px; height: 10px; border-radius: 50%; }
+.api-breakdown__label { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-variant); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.api-breakdown__value { font: 400 16px/24px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.api-breakdown__meter { grid-column: 2 / -1; display: block; height: 6px; border-radius: 999px; background: var(--surface-dim); overflow: hidden; }
+.api-breakdown__fill { display: block; height: 100%; border-radius: 999px; }
+
+/* one stacked bar across all 1,702 institution x dataset rows */
+.api-stack { display: flex; height: 32px; border-radius: 10px; overflow: hidden; background: var(--surface-dim); }
+.api-stack__part { display: block; min-width: 2px; }
+
+/* the volume plot keeps real axes — a shape without a scale beside it is decoration */
+.api-figures { display: flex; gap: 32px; }
+.api-figure { display: flex; flex-direction: column; gap: 2px; }
+.api-figure__value { font: 300 28px/36px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.api-figure__label { font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+.api-plot { width: 100%; height: 220px; }
+.api-plot__axis { stroke: var(--outline); stroke-width: 1; }
+.api-plot__grid { stroke: var(--outline-variant); stroke-width: 1; stroke-dasharray: 3 3; }
+.api-plot__tick { font: 400 11px/14px var(--font); fill: var(--on-surface-muted); }
+.api-plot__area { fill: url(#apiVolFill); }
+.api-plot__line { fill: none; stroke: var(--primary); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.api-plot__dot { fill: var(--surface); stroke: var(--primary); stroke-width: 2.5; }
+.api-plot__hit { fill: transparent; }
+.api-plot__hit:hover + .api-plot__dot { fill: var(--primary); }
+
+/* adoption by onboarding wave */
+.api-waves { gap: 18px; margin: 0; padding: 0; list-style: none; }
+.api-wave { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 6px 12px; }
+.api-wave__label { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-variant); }
+.api-wave__value { font: 400 16px/24px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.api-wave__track { grid-column: 1 / -1; display: block; height: 12px; border-radius: 999px; background: var(--surface-dim); overflow: hidden; }
+.api-wave__fill { display: block; height: 100%; border-radius: 999px; background: var(--primary); }
+/* a wave nobody has joined still has to read as a row, not as an empty track */
+.api-wave.is-none .api-wave__value { color: var(--error); }
+
+/* the score is auditable: each component shows what it earned out of what it could */
+.score-break { display: flex; flex-direction: column; gap: 10px; }
+.score-break__row { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.score-break__label { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-variant); }
+.score-break__track { display: block; height: 10px; border-radius: 999px; background: var(--surface-dim); overflow: hidden; }
+.score-break__fill { display: block; height: 100%; border-radius: 999px; background: var(--primary); }
+.score-break__value { font: 400 14px/20px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.score-break__note { margin: 0; font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+
+/* --- institution table --- */
+.api-table { min-width: 1180px; }
+.api-table td { height: 76px; }
+.api-table .api-cell__name { display: block; font: 400 16px/24px var(--font); color: var(--on-surface); }
+.api-table .api-cell__sub { display: block; font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+.api-table tr.is-silent td:first-child { box-shadow: inset 3px 0 0 var(--error); }
+
+/* accepted-of-46 reads as a number over a bar, so a glance sorts the roster */
+.api-cover { display: flex; flex-direction: column; gap: 6px; min-width: 132px; }
+.api-cover__value { font: 400 14px/20px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.api-cover__track { display: block; height: 8px; border-radius: 999px; background: var(--surface-dim); overflow: hidden; }
+.api-cover__fill { display: block; height: 100%; border-radius: 999px; background: var(--chip-done); }
+
+.api-actions { display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; }
+/* .btn carries a 160px floor meant for page-level actions; a pair of them inside a row has
+   to stay narrow, or two buttons take a third of the table width */
+.api-actions .btn { min-width: 0; gap: 8px; padding: 0 14px; }
+.api-actions .btn svg { flex: 0 0 auto; }
+.api-empty { padding: 48px 16px; text-align: center; font: 400 16px/24px var(--font); color: var(--on-surface-muted); }
+
+/* --- drawers: the ledger --- */
+.api-drawer { width: min(680px, 96vw); }
+.api-drawer__lede { margin: 0; font: 400 14px/20px var(--font); color: var(--on-surface-muted); }
+.api-ledger { display: flex; flex-direction: column; gap: 20px; }
+.api-ledger__group { display: flex; flex-direction: column; gap: 8px; }
+.api-ledger__groupTitle { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-muted); text-transform: uppercase; }
+.api-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 14px; border: 1px solid var(--outline); border-radius: 10px; background: var(--surface); }
+.api-row.is-error { border-color: var(--error); background: var(--surface-bright); }
+.api-row__title { font: 400 16px/24px var(--font); color: var(--on-surface); overflow-wrap: anywhere; }
+.api-row__meta { grid-column: 1 / -1; font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+.api-row__err { grid-column: 1 / -1; font: 400 13px/18px var(--font); color: var(--error); overflow-wrap: anywhere; }
+.api-drawer__foot { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+
+/* The drawer is a column: the title and the footer stay put and only the middle scrolls.
+   Left as one scrolling box it produced two bars side by side — its own, and the page's
+   still running behind the scrim — so the panel locks the page while it is open. */
+.api-drawer { overflow: hidden; padding-bottom: 16px; }
+.api-drawer > .cfg-drawer__head,
+.api-drawer > .api-drawer__foot { flex: 0 0 auto; }
+.api-drawer > .cfg-drawer__body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding-inline-end: 6px;
+}
+.api-drawer > .api-drawer__foot { padding-top: 16px; border-top: 1px solid var(--outline); }
+/* the body is a flex column, so its children would otherwise shrink to fit the ledger
+   below them — the scope switch collapsed to nothing once the panel started scrolling */
+.api-drawer > .cfg-drawer__body > * { flex: 0 0 auto; }
+html.has-drawer, html.has-drawer body { overflow: hidden; }
+
+/* --- drawer: the email composer --- */
+.api-mail { display: flex; flex-direction: column; gap: 16px; }
+.api-mail__field { display: flex; flex-direction: column; gap: 6px; }
+.api-mail__field > span { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-variant); }
+.api-mail__field input, .api-mail__field textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--outline); border-radius: 8px; background: var(--surface); font: 400 14px/20px var(--font); color: var(--on-surface); }
+.api-mail__field textarea { min-height: 220px; resize: vertical; }
+.api-mail__field input:focus-visible, .api-mail__field textarea:focus-visible { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
+.api-mail__modes { display: flex; align-items: center; gap: 12px; }
+.api-mail__modes .segmented { margin-inline-start: auto; }
+
+/* the branded preview: what the institution actually receives */
+.mailprev { border: 1px solid var(--outline); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.mailprev__rule { height: 4px; background: var(--primary); }
+.mailprev__inner { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.mailprev__brand { display: flex; align-items: center; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--outline); }
+.mailprev__logo { font: 400 24px/32px var(--font); color: var(--primary); letter-spacing: 0.5px; }
+.mailprev__org { font: 400 13px/18px var(--font); color: var(--on-surface-variant); }
+.mailprev__period { font: 400 13px/18px var(--font); letter-spacing: 0.26px; color: var(--primary); }
+.mailprev__head { margin: 0; font: 300 28px/36px var(--font); color: var(--on-surface); }
+.mailprev__body { margin: 0; font: 400 14px/22px var(--font); color: var(--on-surface-variant); white-space: pre-wrap; }
+.mailprev__counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--outline); border-radius: 10px; overflow: hidden; }
+.mailprev__count { padding: 16px; border-inline-end: 1px solid var(--outline); }
+.mailprev__count:last-child { border-inline-end: 0; }
+.mailprev__countValue { font: 300 32px/40px var(--font); color: var(--on-surface); font-variant-numeric: tabular-nums; }
+.mailprev__countLabel { font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+.mailprev__accepted { font: 400 13px/18px var(--font); color: var(--on-surface-muted); }
+.mailprev__subTitle { font: 400 16px/24px var(--font); color: var(--on-surface); }
+.mailprev__table { width: 100%; border-collapse: collapse; }
+.mailprev__table th { text-align: start; padding: 10px 12px; background: var(--surface-dim); font: 400 13px/18px var(--font); color: var(--on-surface-variant); }
+.mailprev__table td { padding: 12px; border-bottom: 1px solid var(--outline); font: 400 14px/20px var(--font); color: var(--on-surface); }
+.mailprev__table tr:last-child td { border-bottom: 0; }
+.mailprev__overdue { display: block; font: 400 12px/16px var(--font); color: var(--error); }
+.mailprev__foot { font: 400 12px/18px var(--font); color: var(--on-surface-muted); }
+
+/* --- RTL --- */
+[dir="rtl"] .api-chart__title { margin-right: 0; margin-left: auto; }
+/* the arrow points the way the reader travels, so it turns round with the layout */
+[dir="rtl"] .api-actions__arrow { transform: scaleX(-1); }
+[dir="rtl"] .api-table tr.is-silent td:first-child { box-shadow: inset -3px 0 0 var(--error); }
+
+/* "57 / 100" is one left-to-right figure, not two numbers for the bidi algorithm to
+   reorder: without isolation Arabic renders it as "100 / 57", which reads as a different
+   score. The same applies to every pair the page prints. */
+[dir="rtl"] .api-stat__value,
+[dir="rtl"] .api-stat__share,
+[dir="rtl"] .api-cover__value,
+[dir="rtl"] .api-wave__value,
+[dir="rtl"] .score-break__value { direction: ltr; unicode-bidi: isolate; }
+
+/* the plot is drawn in its own coordinate space, and its text anchors are computed against
+   that space — letting the page direction into the SVG pushes the y labels off the canvas */
+[dir="rtl"] .api-plot { direction: ltr; }
+/* the OTHERWISE branch is editable inside the composer, so it reads as a control, not a label */
+.cfg-diag__else { display: inline-flex; align-items: center; gap: 6px; }
+.cfg-diag__node.is-editable { cursor: pointer; font: inherit; }
+.cfg-diag__node.is-editable:hover { border-style: solid; border-color: var(--primary); color: var(--primary); }
+.cfg-diag__node.is-editable:focus-visible { outline: none; border-color: var(--primary); box-shadow: var(--focus-ring); }
+/* compact copies of .control/.btn: the chevron moves in with the padding, or the longest
+   option ("May be left blank") runs underneath it */
+.cfg-diag__else-mode { height: 36px; width: auto; font-size: 14px;
+  padding-inline: 10px 34px; background-position: right 8px center; background-size: 20px 20px; }
+.cfg-diag__else-mode:dir(rtl) { background-position: left 8px center; }
+.cfg-diag__else-value { height: 36px; width: 110px; padding-inline: 10px; font-size: 14px; }
+.cfg-diag__else-ok { height: 36px; min-width: 0; padding: 0 14px; }
+/* the same picker inline in a form row, where it stands in for a <select> */
+.cfg-picker--inline { flex: 1 1 auto; gap: 0; min-width: 0; }
+.cfg-picker--inline .cfg-picker__panel { min-width: 260px; }
+.cfg-picker--inline .cfg-picker__list { max-height: 280px; }

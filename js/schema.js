@@ -114,12 +114,152 @@
     }
 
     // Grid columns: primary key first, then field order
+    // The dictionary's "Key Constraints" column states placeholders and conditional mandatories
+    // in prose. Only high-confidence shapes are read; anything else is left alone rather than
+    // guessed at, because a wrong rule here would be exported as real validation.
+
+    // "If not available use X" is only one of the ways the sheet states a placeholder; it also
+    // writes "use xyz@xyz.com if email not available", "For undeclared programs, use 99" and
+    // "Use 0 for non credit programs". Only value-shaped tokens are accepted, so wording like
+    // "Use the CAA licensed list" is never mistaken for a placeholder.
+    // A value-shaped token only: a quoted literal, an email, or a number (optionally signed,
+    // decimal or hyphenated like a phone placeholder). Bare words are deliberately excluded —
+    // with the /i flag a class such as [A-Z]{2,4} also matches prose like "xyz" or "TR".
+    const VALUE_TOKEN = "(?:[\"'][^\"']+[\"']|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}|[+]?[0-9][0-9.-]*)";
+    const SENTINELS = [
+      new RegExp('(?:if\\s+)?not\\s+available[,;\\s]*(?:then\\s+)?use\\s*(' + VALUE_TOKEN + ')', 'i'),
+      new RegExp('\\buse\\s+(' + VALUE_TOKEN + ')\\s+(?:if|for|when)\\b', 'i'),
+      new RegExp('\\buse\\s+(' + VALUE_TOKEN + ')\\s*(?:[.;]|$)', 'i'),
+    ];
+    const NO_RULE = /leave (?:it )?blank/i;
+    for (const f of fields) {
+      const text = String(f.keyText || '').replace(/\s+/g, ' ');
+      if (!text) continue;
+      // "If not available, then leave it blank" states the absence of a constraint
+      if (NO_RULE.test(text) && !/\buse\b/i.test(text)) { f.nullableByDictionary = true; continue; }
+      // A field with its own option list has no placeholder: wording such as "use 'Y' otherwise
+      // 'N'" describes the allowed values, which ALLOWED_VALUE already carries.
+      if (f.opts && f.opts.length) continue;
+      // The same wording appears on fields the dictionary never turned into a list, because it
+      // writes "Y or N" where the option parser expects "Y, N". Two uses joined by else/otherwise
+      // state a choice between values, and a short enum in the values column says the same.
+      if (/\buse\b[^.]{0,40}\b(?:else|otherwise)\b[^.]{0,20}\buse\b/i.test(text)) continue;
+      if (/^\s*[A-Za-z0-9]{1,3}(\s*(?:,|or|\/)\s*[A-Za-z0-9]{1,3})+\s*$/i.test(String(f.values || ''))) continue;
+      for (const re of SENTINELS) {
+        const m = re.exec(text);
+        if (!m) continue;
+        // a sentence-ending full stop is punctuation, not part of the placeholder
+        const raw = m[1].trim().replace(/^["']|["']$/g, '').replace(/[.,;]+$/, '');
+        if (!raw || /^(the|a|an|this|that|it)$/i.test(raw)) continue;
+        f.placeholder = raw.replace(/\s+/g, '');
+        break;
+      }
+    }
+
+    // "greater than or equal to 0", "Less than 0 not allowed", "should be greater than 0"
+    for (const f of fields) {
+      if (f.min != null || f.control !== 'number') continue;
+      const text = String(f.keyText || '') + ' ' + String(f.values || '');
+      let m = /greater than or equal to\s*["']?(-?\d+(?:\.\d+)?)/i.exec(text)
+        || /less than\s*["']?(-?\d+(?:\.\d+)?)["']?\s*(?:is\s+)?not\s+allowed/i.exec(text)
+        || /(?:no|not)\s+(?:less than|below)\s*["']?(-?\d+(?:\.\d+)?)/i.exec(text);
+      if (m) { f.min = Number(m[1]); continue; }
+      // "greater than 0" is exclusive, so on a whole-number field the floor is the next integer
+      m = /(?:should be |must be )?greater than\s*["']?(-?\d+(?:\.\d+)?)["']?(?!\s*or equal)/i.exec(text);
+      if (m && f.integer) f.min = Number(m[1]) + 1;
+    }
+
+
+    // Each entry: the field that cannot be blank, and the condition that makes it mandatory.
+    // `requires` is set only when the field to fill lives in a different dataset.
+    const conditional = [];
+    const condRules = [
+      // the sheet writes the same idea as "cannot be blank", "cannot be NULL" and "cannot be empty"
+      // "If Nationality is United Arab Emirates then this field cannot be NULL"
+      // "If Employment status= Y then this field cannot be blank"
+      { re: /if\s+(?:the\s+)?["']?([a-z0-9 /&'-]+?)["']?\s*(?:indicator\s*)?(?:is|=)\s*["']?([a-z0-9 ]+?)["']?\s*,?\s*then\s+.{0,40}?can\s?not\s+be\s+(?:blank|null|empty)/i, op: '=' },
+      // "Cannot be blank if teaching workload is NOT 0"
+      { re: /can\s?not\s+be\s+(?:blank|null|empty)\s+if\s+(?:the\s+)?["']?([a-z0-9 /&'-]+?)["']?\s+is\s+not\s+["']?([a-z0-9 ]+?)["']?\s*(?:[.;]|$)/i, op: '≠' },
+      // "If there is a value present for EXCH_IN_OUT, then ... cannot be blank"
+      { re: /if\s+there\s+is\s+a\s+value\s+present\s+for\s+([a-z0-9_ /&'-]+?)\s*,?\s*then\s+.{0,60}?can\s?not\s+be\s+(?:blank|null|empty)/i, op: 'is not empty' },
+      // "If Emirates ID is not available(or is 999999999999999), then this field cannot be blank"
+      { re: /if\s+([a-z0-9 /&'-]+?)\s+is\s+not\s+available\s*\(?\s*or\s+is\s+([0-9\s]+)\)?\s*,?\s*then\s+.{0,40}?can\s?not\s+be\s+(?:blank|null|empty)/i, op: '=' },
+      // "For Student Degree( FD,CR,DP ...) CANNOT be blank"
+      { re: /for\s+(?:the\s+)?([a-z0-9 /&'-]+?)\s*\(\s*([a-z0-9,\s]+?)\s*\)\s*,?\s*.{0,60}?can\s?not\s+be\s+(?:blank|null|empty)/i, op: 'in' },
+    ];
+
+    for (const f of fields) {
+      const text = String(f.keyText || '').replace(/\s+/g, ' ');
+      if (!/cans?not be (?:blank|null|empty)|must be provided|has to be provided/i.test(text)) continue;
+
+      // "(If above row is Y then a value must be provided here)" — the row before this one
+      const above = /if\s+above\s+row\s+is\s+["']?([a-z0-9]+)["']?/i.exec(text);
+      if (above && f.idx > 0) {
+        conditional.push({ key: f.key, field: fields[f.idx - 1].key, op: '=', value: above[1].toUpperCase() });
+        continue;
+      }
+
+      // "... the reason for missing ID MUST be provided in the enrollment dataset" — the field
+      // that must be filled lives in another dataset, so the target is recorded for resolution.
+      const other = /reason\s+for\s+missing\s+(?:e)?id\s+must\s+be\s+provided\s+in\s+the\s+([a-z ]+?)\s*(?:sheet|dataset)/i.exec(text);
+      if (other) {
+        conditional.push({
+          key: f.key, field: f.key, op: '=',
+          value: f.placeholder || '999999999999999',
+          requires: { sheet: other[1].trim(), field: 'missing' },
+        });
+        continue;
+      }
+
+      // One cell can state several clauses — "If not available use '999' If Nationality is
+      // United Arab Emirates then cannot be NULL" is a placeholder AND a condition. Every
+      // shape that matches is kept, deduplicated, rather than stopping at the first.
+      const seen = new Set();
+      for (const r of condRules) {
+        const m = r.re.exec(text);
+        if (!m) continue;
+        const src = findField(m[1]);
+        if (!src || src.key === f.key) continue;
+        let value = r.op === 'in'
+          ? m[2].split(',').map(x => x.trim()).filter(Boolean)
+          : String(m[2] || '').replace(/\s+/g, ' ').trim();
+        // the sheet writes the Emirates ID sentinel as "999999999 999999"; a number carries no
+        // spaces, so they are stripped rather than exported into the rule
+        if (typeof value === 'string' && /^[\d\s]+$/.test(value)) value = value.replace(/\s+/g, '');
+        // The dictionary names the value ("If Nationality is United Arab Emirates") but a coded
+        // field stores the code ("AE"). Comparing against the name would match no record, so the
+        // name is resolved to its code whenever the source field carries a list.
+        const toCode = v => {
+          if (!src.opts || !src.opts.length) return v;
+          const want = norm(v);
+          if (src.opts.some(o => norm(o.v) === want)) return v;
+          const hit = src.opts.find(o => norm(o.l) === want)
+            || src.opts.find(o => norm(o.l).endsWith(' ' + want) || norm(o.l) === norm(o.v + ' ' + v));
+          return hit ? hit.v : v;
+        };
+        value = Array.isArray(value) ? value.map(toCode) : toCode(value);
+        // "If the High School System is present" and "... is NOT NULL" describe presence, not a
+        // value to compare against, so they become the operator that actually says that.
+        let op = r.op;
+        if (typeof value === 'string' && /^(?:present|not null|not blank|filled|available)$/i.test(value)) {
+          op = 'is not empty';
+          value = '';
+        }
+        if (op !== 'is not empty' && !(Array.isArray(value) ? value.length : value)) continue;
+        const entry = { key: f.key, field: src.key, op, value: op === 'is not empty' ? '' : value };
+        const id = entry.field + '|' + entry.op + '|' + entry.value;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        conditional.push(entry);
+      }
+    }
+
     const order = [...pk, ...fields.map(f => f.key).filter(k => !pk.includes(k))];
     const gridCols = order.slice(0, GRID_COLS);
 
     return {
       sheet: ds.sheet, title: ds.title, desc: ds.desc, group: ds.group,
-      fields, pk, cross, gridCols,
+      fields, pk, cross, conditional, gridCols,
       field: key => fields.find(f => f.key === key),
       storageKey: 'khda.hedb.' + ds.sheet.replace(/[^A-Za-z0-9]+/g, '_') + '.v1',
     };

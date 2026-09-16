@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KHDA</title>
+  <meta name="application-name" content="KHDA">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260926z">
+  <meta name="theme-color" content="#A8305C">
+  <link rel="stylesheet" href="css/khda.css?v=20260926z">
+</head>
+<body class="on-canvas on-canvas--admin">
+
+  <!-- ===== Portal header ===== -->
+  <header class="portal-header">
+    <div class="portal-header__inner">
+      <div class="portal-header__top">
+        <a class="brand-gov" href="#" aria-label="Government of Dubai">
+          <img src="assets/gov-dubai.svg" width="129" height="51" alt="Government of Dubai">
+        </a>
+        <a class="brand-khda" href="#" aria-label="Dubai Knowledge">
+          <img src="assets/khda-logo.svg?v=20260926z" width="85" height="44" alt="Dubai Knowledge">
+        </a>
+      </div>
+      <div class="portal-header__sub">
+        <nav class="portal-nav" aria-label="Portal">
+          <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
+          <a href="submissions.html" data-i18n="nav.submissions">Submissions</a>
+          <a href="governance.html" data-i18n="nav.governance">Data Governance Policies</a>
+          <a href="api.html" aria-current="page" data-i18n="nav.api">API Integration</a>
+        </nav>
+        <div class="portal-tools">
+          <button class="tool-pill tool-pill--demo" type="button" id="demoToggle" aria-pressed="false" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+            <span id="demoToggleLabel">Demo data</span>
+          </button>
+          <button class="tool-pill tool-pill--icon" type="button" aria-label="Accessibility" data-i18n-aria="tool.accessibility">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M4 9h16M12 9v6m0 0-3 6m3-6 3 6"/></svg>
+          </button>
+          <button class="tool-pill tool-pill--lang" type="button" id="langToggle" data-i18n="tool.lang" data-i18n-aria="tool.langAria">العربية</button>
+          <div class="tool-account">
+            <button class="tool-pill tool-user" type="button" id="userPill" aria-haspopup="true" aria-expanded="false" aria-controls="userMenu">
+              <span class="tool-user__avatar" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              </span>
+              <span class="tool-user__text">
+                <span class="tool-user__role" data-i18n="user.role">Institution Admin</span>
+                <span class="tool-user__name" data-i18n="user.name">Noura Al Khatib</span>
+              </span>
+              <svg class="tool-user__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="user-menu" id="userMenu" role="menu" aria-label="Account menu" data-i18n-aria="user.menu" hidden>
+              <button class="user-menu__logout" type="button" id="btnLogout" role="menuitem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17l5-5-5-5"/><path d="M20 12H9"/><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"/></svg>
+                <span data-i18n="user.logout">Log out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page" id="main" tabindex="-1">
+    <div class="service-header">
+      <h1 data-i18n="api.title">API Integration Overview</h1>
+    </div>
+
+    <!-- ===== Sector totals =====
+         The figures lead the page with no heading over them: they are the summary of the
+         title above, and a label saying so only pushed the numbers further down. The
+         section keeps its name for assistive technology. -->
+    <section aria-label="Sector totals" data-i18n-aria="api.totals">
+      <div class="api-stats" id="apiStats"></div>
+    </section>
+
+    <!-- ===== Charts ===== -->
+    <section class="report-block" aria-labelledby="apiChartsTitle">
+      <h2 class="report-block__title" id="apiChartsTitle" data-i18n="api.analytics">Integration analytics</h2>
+      <div class="api-charts">
+
+        <!-- adoption: a ring with the figure in the middle, and the three tiers read as a
+             list beside it rather than a legend squeezed above the plot -->
+        <article class="api-chart">
+          <div class="api-chart__head">
+            <h3 class="api-chart__title" data-i18n="api.chartAdoption">API adoption</h3>
+            <span class="api-chart__note" id="adoptNote"></span>
+          </div>
+          <div class="api-chart__body api-donut">
+            <div class="api-donut__plot">
+              <svg viewBox="0 0 180 180" role="img" aria-labelledby="adoptGaugeLabel">
+                <title id="adoptGaugeLabel" data-i18n="api.chartAdoptionAria">Institutions by integration status</title>
+                <circle class="api-donut__track" cx="90" cy="90" r="70"></circle>
+                <g id="adoptArcs" fill="none" stroke-linecap="butt" stroke-width="20"></g>
+              </svg>
+              <div class="api-donut__centre">
+                <span class="api-donut__value" id="adoptNumber">0</span>
+                <span class="api-donut__caption" id="adoptCaption"></span>
+              </div>
+            </div>
+            <ul class="api-breakdown" id="adoptLegend"></ul>
+          </div>
+        </article>
+
+        <!-- dataset outcomes: the whole sector as one bar, then each status on its own line
+             with its count and share, so the card carries the detail the bar cannot -->
+        <article class="api-chart">
+          <div class="api-chart__head">
+            <h3 class="api-chart__title" data-i18n="api.chartOutcomes">Dataset outcomes</h3>
+            <span class="api-chart__note" id="outcomeNote"></span>
+          </div>
+          <div class="api-chart__body">
+            <div class="api-stack" id="outcomeStack" role="img" aria-labelledby="outcomeAria"></div>
+            <span class="sr-only" id="outcomeAria" data-i18n="api.chartOutcomesAria">Every institution and dataset pairing by status</span>
+            <ul class="api-breakdown api-breakdown--split" id="outcomeLegend"></ul>
+          </div>
+        </article>
+
+        <!-- call volume: an area rather than columns, so twelve weeks read as a trend -->
+        <article class="api-chart">
+          <div class="api-chart__head">
+            <h3 class="api-chart__title" data-i18n="api.chartVolume">API call volume</h3>
+            <span class="api-chart__note" data-i18n="api.chartVolumeNote">Last 12 weeks</span>
+          </div>
+          <div class="api-chart__body">
+            <div class="api-figures" id="volumeFigures"></div>
+            <svg class="api-plot" id="volumePlot" viewBox="0 0 520 220" preserveAspectRatio="none" role="img" aria-labelledby="volumeAria">
+              <title id="volumeAria" data-i18n="api.chartVolumeAria">Calls received per week across the sector</title>
+            </svg>
+          </div>
+        </article>
+
+        <!-- adoption by wave -->
+        <article class="api-chart">
+          <div class="api-chart__head">
+            <h3 class="api-chart__title" data-i18n="api.chartWaves">Adoption by onboarding wave</h3>
+            <span class="api-chart__note" data-i18n="api.chartWavesNote">Consuming of total</span>
+          </div>
+          <ul class="api-chart__body api-waves" id="waveChart"></ul>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ===== Institutions =====
+         Laid out as the data grid on the entry page: headline with count, tools on the
+         right, sortable table, then the paginated footer. One grid pattern across the
+         portal rather than a second one invented here. -->
+    <section class="records" aria-labelledby="apiRosterTitle">
+      <div class="records__header">
+        <h2 class="records__headline" id="apiRosterTitle">
+          <span data-i18n="api.roster">Institutions</span>
+          <span class="chip chip--outline" id="rosterCount">0</span>
+        </h2>
+        <div class="records__tools">
+          <label class="search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" id="apiSearch" placeholder="Search" data-i18n-ph="common.search" aria-label="Search institutions" data-i18n-aria="api.searchAria">
+          </label>
+          <div class="segmented" role="group" id="apiFilter" aria-label="Filter institutions" data-i18n-aria="api.filterAria">
+            <button type="button" data-filter="all" aria-pressed="true" data-i18n="api.filterAll">All</button>
+            <button type="button" data-filter="consuming" aria-pressed="false" data-i18n="api.filterConsuming">Consuming</button>
+            <button type="button" data-filter="silent" aria-pressed="false" data-i18n="api.filterSilent">Not consuming</button>
+            <button type="button" data-filter="errors" aria-pressed="false" data-i18n="api.filterErrors">Has errors</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table api-table" id="apiTable">
+          <thead>
+            <tr>
+              <th scope="col" class="sortable" data-sort="name"><span data-i18n="api.colInstitution">Institution</span> <span class="sort-ind">⇅</span></th>
+              <th scope="col" class="sortable" data-sort="channel"><span data-i18n="api.colChannel">Channel</span> <span class="sort-ind">⇅</span></th>
+              <th scope="col" class="sortable" data-sort="accepted"><span data-i18n="api.colAccepted">Datasets accepted</span> <span class="sort-ind">⇅</span></th>
+              <th scope="col" class="sortable num" data-sort="errors"><span data-i18n="api.colErrors">Errors</span> <span class="sort-ind">⇅</span></th>
+              <th scope="col" class="sortable" data-sort="last"><span data-i18n="api.colLastCall">Last API call</span> <span class="sort-ind">⇅</span></th>
+              <th scope="col" class="actions"><span data-i18n="api.colActions">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="apiBody"></tbody>
+        </table>
+        <div class="api-empty" id="apiEmpty" hidden data-i18n="api.noMatch">No institution matches this filter.</div>
+      </div>
+
+      <div class="pagination" id="apiPagination">
+        <span class="pagination__info" id="apiPageInfo"></span>
+        <div class="pagination__right">
+          <label class="pagination__size"><span data-i18n="common.rows">Rows</span>
+            <select class="control control--select control--sm" id="apiPageSize">
+              <option>5</option><option selected>10</option><option>25</option><option>50</option>
+            </select>
+          </label>
+          <div class="pagination__pages" id="apiPageButtons"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Drawer: the 46-dataset ledger for one institution ===== -->
+    <div class="cfg-drawer__scrim" id="dsScrim" hidden></div>
+    <aside class="cfg-drawer api-drawer" id="dsDrawer" role="dialog" aria-modal="true" aria-labelledby="dsDrawerTitle" hidden>
+      <div class="cfg-drawer__head">
+        <h2 class="dash-card__title" id="dsDrawerTitle" data-i18n="api.datasetsTitle">Datasets</h2>
+        <button class="icon-btn" type="button" id="dsDrawerClose" aria-label="Close" data-i18n-aria="cfg.close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="cfg-drawer__body">
+        <p class="api-drawer__lede" id="dsDrawerLede"></p>
+        <div class="score-break" id="dsScore"></div>
+        <div class="segmented" role="group" id="dsScope" aria-label="Filter datasets" data-i18n-aria="api.dsScopeAria">
+          <button type="button" data-scope="all" aria-pressed="true" data-i18n="api.dsScopeAll">All 46</button>
+          <button type="button" data-scope="errors" aria-pressed="false" data-i18n="api.dsScopeErrors">Errored only</button>
+        </div>
+        <div class="api-ledger" id="dsLedger"></div>
+      </div>
+      <div class="api-drawer__foot">
+        <button class="btn btn--primary btn--sm" type="button" id="dsNotify" data-i18n="api.notifyErrors">Notify about these errors</button>
+      </div>
+    </aside>
+
+    <!-- ===== Drawer: the email composer ===== -->
+    <div class="cfg-drawer__scrim" id="mailScrim" hidden></div>
+    <aside class="cfg-drawer api-drawer" id="mailDrawer" role="dialog" aria-modal="true" aria-labelledby="mailDrawerTitle" hidden>
+      <div class="cfg-drawer__head">
+        <h2 class="dash-card__title" id="mailDrawerTitle" data-i18n="api.sendEmail">Send email</h2>
+        <button class="icon-btn" type="button" id="mailClose" aria-label="Close" data-i18n-aria="cfg.close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="cfg-drawer__body api-mail">
+        <p class="api-drawer__lede" id="mailTo"></p>
+        <label class="api-mail__field">
+          <span data-i18n="api.subject">Subject</span>
+          <input type="text" id="mailSubject">
+        </label>
+        <div class="api-mail__modes">
+          <span class="api-mail__label" data-i18n="api.message">Message</span>
+          <div class="segmented" role="group" id="mailMode" aria-label="Message view" data-i18n-aria="api.modeAria">
+            <button type="button" data-mode="preview" aria-pressed="true" data-i18n="api.preview">Preview</button>
+            <button type="button" data-mode="edit" aria-pressed="false" data-i18n="api.editMessage">Edit message</button>
+          </div>
+        </div>
+        <div class="mailprev" id="mailPreview"></div>
+        <label class="api-mail__field" id="mailEditWrap" hidden>
+          <span class="sr-only" data-i18n="api.message">Message</span>
+          <textarea id="mailBody"></textarea>
+        </label>
+      </div>
+      <div class="api-drawer__foot">
+        <button class="btn btn--tonal btn--sm" type="button" id="mailCancel" data-i18n="common.cancel">Cancel</button>
+        <button class="btn btn--primary btn--sm" type="button" id="mailSend" data-i18n="api.send">Send</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Toasts -->
+  <div class="toast-host" id="toastHost" aria-live="polite"></div>
+
+  <script src="js/i18n.js?v=20260926z"></script>
+  <script src="js/a11y.js?v=20260926z"></script>
+  <script src="js/fit.js?v=20260926z"></script>
+  <script src="js/lists.js?v=20260926z"></script>
+  <script src="js/datasets.js?v=20260926z"></script>
+  <script src="js/api-data.js?v=20260926z"></script>
+  <script src="js/api.js?v=20260926z"></script>
+</body>
+</html>

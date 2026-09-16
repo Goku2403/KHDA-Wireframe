@@ -33,6 +33,21 @@
     };
   });
 
+  // requirement + receipt per dataset from the sector model (own institution, selected period);
+  // local drafts override: a draft submitted here shows as "in validation" until the pipeline reports
+  const K = window.KHDA_SECTOR;
+  const OWN = K ? K.own() : null;
+  const PER = K ? K.period() : null;
+  rows.forEach(r => {
+    const sub = K ? K.subsOf(OWN, PER)[r.idx] : null;
+    r.sub = sub;
+    r.due = sub && sub.req.due;
+    r.dueText = sub ? K.dueText(sub) : '';
+    r.overdue = !!(sub && sub.req.due && sub.req.due < K.TODAY && !K.RECEIVED(sub) && r.status !== 'submitted');
+    r.upcoming = !!(sub && sub.req.due && sub.req.due >= K.TODAY && !K.RECEIVED(sub) && r.status !== 'submitted');
+    r.pipeline = r.status === 'submitted' ? { ...sub, status: 'in_validation', receivedAt: new Date(r.submittedAt), channel: 'portal', issues: [] } : (sub && K.RECEIVED(sub) ? sub : null);
+  });
+
   const totals = {
     datasets: rows.length,
     started: rows.filter(r => r.records > 0).length,
@@ -104,12 +119,14 @@
     attention: r => r.status === 'errors' || r.status === 'progress',
     progress: r => r.status === 'progress',
     new: r => r.status === 'new',
+    overdue: r => r.overdue,
+    upcoming: r => r.upcoming,
     all: () => true,
   };
 
   function renderTasks() {
     const matching = rows.slice()
-      .sort((a, b) => (RANK[a.status] - RANK[b.status]) || (b.records - a.records) || (a.idx - b.idx))
+      .sort((a, b) => (taskFilter === 'overdue' || taskFilter === 'upcoming') && a.due && b.due ? a.due - b.due : (RANK[a.status] - RANK[b.status]) || (b.records - a.records) || (a.idx - b.idx))
       .filter(r => taskFilter === 'all' ? true : MATCHES[taskFilter](r));
     const list = taskExpanded ? matching : matching.slice(0, TASK_PAGE);
 
@@ -123,8 +140,9 @@
     $('#taskList').hidden = list.length === 0;
     if (!list.length) {
       // say why the list is empty, which depends on what is being filtered for
-      $('#taskEmpty').querySelector('.empty__title').textContent = t('dash.empty.' + taskFilter + '.title');
-      $('#taskEmpty').querySelector('.empty__text').textContent = t('dash.empty.' + taskFilter + '.text');
+      const custom = { overdue: ['Nothing overdue', 'Every dated dataset is in before its due date.'], upcoming: ['Nothing due soon', 'No dated dataset is still waiting for a submission.'] }[taskFilter];
+      $('#taskEmpty').querySelector('.empty__title').textContent = custom ? custom[0] : t('dash.empty.' + taskFilter + '.title');
+      $('#taskEmpty').querySelector('.empty__text').textContent = custom ? custom[1] : t('dash.empty.' + taskFilter + '.text');
     }
     $('#taskList').innerHTML = list.map(r => {
       const detail = r.status === 'errors' ? t('dash.task.errors', { n: r.errors })
@@ -135,7 +153,7 @@
         <span class="task__ref">${esc(r.ref)}</span>
         <span class="task__main">
           <span class="task__name">${esc(r.title)}</span>
-          <span class="task__sub">${esc(t('dash.task.sub', { g: t('group.' + r.group), n: r.fields }))}</span>
+          <span class="task__sub">${esc(t('dash.task.sub', { g: t('group.' + r.group), n: r.fields }))}${r.due ? ` · <span class="${r.overdue ? 'is-late' : ''}" style="${r.overdue ? 'color:var(--error)' : ''}">${esc(r.dueText)}</span>` : ''}</span>
         </span>
         <span class="task__count">
           <span class="task__countValue">${esc(count)}</span>
@@ -233,7 +251,7 @@
       }
     }
     const best = [...tally].sort((a, b) => b[1] - a[1])[0];
-    return best ? best[0] : t('dash.institutionFallback');
+    return best ? best[0] : (OWN ? OWN.name : t('dash.institutionFallback'));
   }
 
   // The institution code this account files under, read from the data rather than invented.
@@ -409,7 +427,32 @@
   }
 
 
+  // ---------- KPI tiles (plan I-1) ----------
+  function renderKpis() {
+    const host = $('#kpis'); if (!host || !K) return;
+    const sm = K.summary(OWN, PER);
+    const submitted = rows.filter(r => r.status === 'submitted').length + sm.received;
+    const accepted = sm.accepted, needs = sm.needsCorrection, overdue = rows.filter(r => r.overdue).length;
+    host.innerHTML = `
+      <a class="kpi kpi--primary" href="submissions.html"><div class="kpi__label">Total datasets</div><div class="kpi__value">${totals.datasets}</div><div class="kpi__note">in the catalogue · ${sm.required} required this period</div><span class="kpi__link">View all datasets →</span></a>
+      <a class="kpi kpi--success" href="submissions.html?view=table&status=accepted"><div class="kpi__label">Accepted</div><div class="kpi__value">${accepted}</div><div class="kpi__note">${Math.round(accepted / Math.max(1, sm.required) * 100)}% of required · ${Math.min(submitted, sm.required)} received</div><span class="kpi__link">${esc(PER.label)} →</span></a>
+      <a class="kpi kpi--error" href="remediation.html"><div class="kpi__label">Needs correction</div><div class="kpi__value">${needs + rows.filter(r => r.status === 'errors').length}</div><div class="kpi__note">${sm.rowsRejected.toLocaleString()} rows rejected · ${sm.openIssues} open rules</div><span class="kpi__link">Remediation report →</span></a>
+      <button class="kpi kpi--warning" type="button" id="kpiOverdue" style="text-align:left;cursor:pointer"><div class="kpi__label">Overdue</div><div class="kpi__value">${overdue}</div><div class="kpi__note">past their due date with no receipt</div><span class="kpi__link">Show overdue →</span></button>
+      <a class="kpi kpi--info" href="leaderboard.html"><div class="kpi__label">Readiness rank</div><div class="kpi__value">#${K.ranking(PER.id).find(x => x.inst.id === OWN.id).rank}<small style="font:400 16px/24px var(--font);color:var(--on-surface-muted)"> of ${K.INSTITUTIONS.length}</small></div><div class="kpi__note">${K.ranking(PER.id).find(x => x.inst.id === OWN.id).total} / 1,000 points</div><span class="kpi__link">Leaderboard →</span></a>`;
+    $('#kpiOverdue').addEventListener('click', () => { document.querySelector('#taskFilter [data-filter="overdue"]').click(); document.querySelector('.dash-card--tasks').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  }
+
+  // ---------- in-flight journeys (plan X-2) ----------
+  function renderJourneys() {
+    const host = $('#journeys'); if (!host || !K || !window.KHDA_JOURNEY) return;
+    const live = rows.filter(r => r.pipeline && ['in_validation', 'dispatched', 'needs_correction'].includes(r.pipeline.status)).slice(0, 4);
+    if (!live.length) { host.innerHTML = '<div class="empty empty--inline"><div class="empty__title">Nothing in the pipeline</div><div class="empty__text">Submit a dataset and its journey through iPaaS, the API Hub and the Qlik DQ layer appears here.</div></div>'; return; }
+    host.innerHTML = live.map(r => `<div class="journey-row"><div><div class="task__name">${esc(r.title)}</div><div class="task__sub">${K.STATUS[r.pipeline.status][0]} · v${r.pipeline.version || 1} · ${r.pipeline.channel === 'api' ? 'API' : 'Portal'} · <a href="submissions.html?details=${encodeURIComponent(r.sheet)}&tab=journey">Full journey →</a></div></div>${window.KHDA_JOURNEY.render(r.pipeline, { compact: true })}</div>`).join('');
+  }
+
   // ---------- boot ----------
+  renderKpis();
+  renderJourneys();
   renderHero();
   renderTasks();
   bindTasks();

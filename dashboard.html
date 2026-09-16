@@ -7,7 +7,7 @@
   <meta name="application-name" content="KHDA">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260920f">
   <meta name="theme-color" content="#A8305C">
-  <link rel="stylesheet" href="css/khda.css?v=20260920f">
+  <link rel="stylesheet" href="css/khda.css?v=20260921d">
 </head>
 <body class="on-canvas">
 
@@ -61,7 +61,10 @@
 
   <main class="page page--dash">
 
-    <div class="dash">
+    <div class="dash dash--v2">
+
+      <!-- ===== KPI tiles (plan I-1) ===== -->
+      <section class="dash-card dash-card--kpis" aria-label="Key figures"><div class="kpi-grid" id="kpis"></div></section>
 
       <!-- ===== Highlights carousel ===== -->
       <section class="dash-card dash-card--hero" aria-label="Highlights">
@@ -86,6 +89,8 @@
           <button type="button" data-filter="attention" aria-pressed="true" data-i18n="dash.filter.attention">Needs remediation</button>
           <button type="button" data-filter="progress" aria-pressed="false" data-i18n="dash.filter.progress">In progress</button>
           <button type="button" data-filter="new" aria-pressed="false" data-i18n="dash.filter.new">Not started</button>
+          <button type="button" data-filter="overdue" aria-pressed="false">Overdue</button>
+          <button type="button" data-filter="upcoming" aria-pressed="false">Upcoming</button>
           <button type="button" data-filter="all" aria-pressed="false" data-i18n="dash.filter.all">All</button>
         </div>
         <ul class="task-list" id="taskList"></ul>
@@ -164,6 +169,15 @@
         </div>
       </section>
 
+      <!-- ===== In-flight journeys (plan X-2) ===== -->
+      <section class="dash-card dash-card--journeys">
+        <div class="dash-card__head">
+          <h2 class="dash-card__title">Submissions in the pipeline</h2>
+          <a class="btn btn--outline btn--sm" href="submissions.html?view=table">All datasets</a>
+        </div>
+        <div id="journeys"></div>
+      </section>
+
       <!-- ===== Analytics ===== -->
       <section class="dash-card dash-card--analytics">
         <h2 class="dash-card__title" data-i18n="dash.analyticsTitle">Analytics updates</h2>
@@ -181,6 +195,10 @@
   <script src="js/lists.js?v=20260920f"></script>
   <script src="js/datasets.js?v=20260920f"></script>
   <script src="js/schema.js?v=20260920f"></script>
+  <script src="js/sector.js?v=20260921d"></script>
+  <script src="js/roles.js?v=20260921d"></script>
+  <script src="js/journey.js?v=20260921d"></script>
+  <script src="js/chatbot.js?v=20260921d"></script>
   <script src="js/template.js?v=20260920f"></script>
   <script src="js/export.js?v=20260920f"></script>
   <script src="js/demo.js?v=20260920f"></script>

@@ -1,0 +1,557 @@
+{
+  "screens": [
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (9).png",
+      "name": "Institution Home (top) - BITS Pilani workspace",
+      "role": "Institution",
+      "features": [
+        "Header: Government of Dubai crest + 'KHDA DATA GATEWAY' wordmark left, Dubai Knowledge lockup right",
+        "Nav: Home, Remediation; right cluster: Leaderboard (trophy) button, dark-mode moon toggle, logout icon, 'Workspace: BITS Pilani' pill (no user name, no role)",
+        "Eyebrow 'BITS PILANI', H1 'Welcome, BITS Pilani', subtitle 'Your submissions, deadlines and next steps.'",
+        "Reporting-period picker top-right: 'REPORTING PERIOD  Fall - 2026-2027'",
+        "Three KPI tiles with coloured top borders: Total datasets 46 'in the catalogue' (View all datasets), Submitted 18 'received this period' (39% of catalogue), Non-submitted 28 'awaiting submission' (61% of catalogue); each has an arrow deep-link",
+        "Submission progress card: half-ring gauge 18/46 'datasets submitted', '39% received', legend Accepted 9 / Processing 0 / Needs correction 9 / Non-submitted 28",
+        "Dataset agenda card: tabs Upcoming 20 / Overdue 5 / Real time 12; items with date block (18 SEPT), 'Due in 3 days', status chip Non-submitted, 'View Details ->'; footer 'View full agenda' + '20 datasets'",
+        "Quick services card: Data dictionary 'Download the latest reference files', KHDA API documentation 'Link pending' (greyed, external-link icon), Remediation 'Review records needing correction', 'View leaderboard'",
+        "Dataset catalogue section header with count 46 and 'Find a dataset...' search"
+      ],
+      "strengths": [
+        "Clear hierarchy: KPI -> progress -> agenda -> services -> catalogue",
+        "Period picker anchors every number to a reporting period",
+        "Honest labelling of unavailable features ('Link pending')"
+      ],
+      "gaps": [
+        "Agenda tab counts (20+5+12=37) do not reconcile with 46 datasets or 28 non-submitted; semantics unexplained",
+        "API documentation is a dead link; no upload/submit entry point on the home page",
+        "No user identity, role, notifications, language toggle, accessibility control or global search in the header",
+        "Data dictionary is a file download, not a browsable in-portal object"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (10).png",
+      "name": "Institution Home (scrolled) - Dataset catalogue grouped by subject area",
+      "role": "Institution",
+      "features": [
+        "Agenda 'Overdue' tab shown: Institute - Employers, 8 SEPT, '7 days overdue', Non-submitted, View Details; 'View full agenda  5 datasets'",
+        "Catalogue toolbar: 'Group by' segmented control Subject area / Frequency / All datasets; dropdown filters 'All submissions', 'All frequencies'; 'Expand all'",
+        "Six collapsible group rows: Employees 4 datasets - 2 submitted; Graduates 3 - 0; Institution 7 - 4; Programs & courses 11 - 6; Research & innovation 7 - 2; Students & applicants 14 - 4",
+        "Each group row: folder icon, mini progress bar, pink pill 'N need attention' (2/4/2/2/3), chevron",
+        "Footer '46 of 46 datasets' and helper 'Freshness shows when a submission was received.'",
+        "Page footer '(c) 2026 Knowledge and Human Development Authority' | 'Higher education - Data readiness'"
+      ],
+      "strengths": [
+        "Three grouping modes plus two filters and search on one catalogue",
+        "Group-level progress and attention counts give a fast scan"
+      ],
+      "gaps": [
+        "No bulk actions, no saved views, no export of the catalogue",
+        "'Need attention' is not defined (overdue? needs correction? both?)",
+        "No indication of which datasets are API-only vs portal-eligible at group level"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (11).png",
+      "name": "Dataset catalogue - Employees group expanded (table)",
+      "role": "Institution",
+      "features": [
+        "Sortable columns: Dataset, Frequency, Due, Submission status, Freshness; plus Upload, Remediation, Details",
+        "Row = display name + code line with a small icon (plug icon vs check-circle icon; meaning not explained)",
+        "Rows: Employee - Basic Details (EMPLOYEE_BASIC_DETAILS) Semester, 22 Sept 2026, Non-submitted, 'No receipt yet'; Employee - Workload (EMPLOYEE_WORKLOAD_B) Semester, 29 Sept 2026, Needs correction, 'Received 24 days ago / API submission', 13 open issues; EMPLOYEE_PROFILE Event-based, Due '-', Needs correction, 'Received 5 days ago / API submission', 12 open issues; EMPLOYEE_WORKLOAD Event-based, '-', Non-submitted, No open issues",
+        "Upload column: disabled button with 'Not available' caption on every row",
+        "Remediation column: 'Remediation' link + 'N open issues' / 'No open issues'",
+        "Details column: outlined 'View Details ->' button",
+        "Status chips: grey Non-submitted, pink Needs correction"
+      ],
+      "strengths": [
+        "Freshness column combines recency + channel (API submission) in one cell",
+        "Open-issue count surfaces remediation load per dataset"
+      ],
+      "gaps": [
+        "Upload disabled everywhere - no portal/Excel submission path at all",
+        "Real-time (event-based) datasets shown with raw codes as display names and '-' due dates; no event-stream metrics (last event, events/day, lag)",
+        "Only an issue count - no severity, no row/field breakdown, no downloadable error report",
+        "No template download, no submission history/versions, no schema version per dataset",
+        "Unexplained icon next to dataset code"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (12).png",
+      "name": "Dataset specification drawer - Employee - Basic Details",
+      "role": "Institution",
+      "features": [
+        "Right-side drawer over dimmed page; title 'Employee - Basic Details', subtitle 'BITS Pilani - EMPLOYEE_BASIC_DETAILS - Fall - 2026-2027', Close",
+        "Chips: Non-submitted, Semester, 33 fields, Due 22 Sept 2026",
+        "Section 'Dataset specification' with intro 'Field definitions and rules for this dataset. Cross-dataset and reference checks appear with the field they apply to.'",
+        "Table FIELD / TYPE / RULE; field cell shows technical name, label, 'Dictionary: Employee - Basic Details, row 11', 'required'",
+        "Emp_Institution_Code NUMBER(3): Required; use CAA licensed Institution Code list provided by CHEDS; hyperlink 'Go to CAA licensed Institutions list'; 'Primary key (Institution CODE & Academic Period & Employee ID)'; 'Reference sheet: Institutional Codes'",
+        "Emp_Institution_Name TEXT(255): Required; Maximum 255 characters; must match institution code; reference sheet",
+        "Emp_Academic_Period NUMBER(6): Required; enumerated period codes 202200...202505 printed inline"
+      ],
+      "strengths": [
+        "Traceability to dictionary row numbers and reference sheets",
+        "Primary key and cross-reference rules stated per field",
+        "Field count and due date in chips"
+      ],
+      "gaps": [
+        "Drawer has no tabs: no validation results, no submission history, no sample/template download, no API payload example",
+        "Rules are free-text bullets, not machine-readable (cannot drive forms/validation)",
+        "No dictionary version (2026 vs 2027), no change log, no Arabic labels",
+        "Enumerations dumped as inline text rather than a linked code list"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (13).png",
+      "name": "Leaderboard overlay - Your rank, podium (top)",
+      "role": "Shared (Institution view shown; KHDA nav also links to it)",
+      "features": [
+        "Full-screen overlay titled 'Leaderboard - Birla Institute Of Technology And Science Pilani' with Close",
+        "Eyebrow 'KHDA - DATA READINESS', H1 'Institution leaderboard', 'Compare submission coverage, data quality and timeliness.'",
+        "Buttons: 'How scores are calculated', '37 institutions ranked'",
+        "Your rank card: '#33 of 37', movement 'v 17 places', Readiness score 527/1,000 with 4-segment stacked bar, '9 of 46 datasets accepted'",
+        "'Why this position?' text: '37 datasets are not yet accepted. 93% of reported rows passed validation.' + 'Review my datasets ->'",
+        "'Leading the way' podium: 2nd Saint Joseph (Academic City) 824 pts v1; 1st University of Europe (Trade Centre) 824 pts ^1; 3rd Istituto Marangoni (DIFC) 706 pts ^1; each with 4 sub-score tiles (Coverage/Data quality/Timeliness/Automation), sparkline 'Score trend - 4 recorded periods', arrow",
+        "'Current standings - 1,000 points available'",
+        "Full rankings header: '37 institutions - 10 per page', 'Find my position', 'Find an institution...' search, legend",
+        "Right rail 'YOUR NEXT MOVE - Climb the rankings - Focus on the gaps in BITS Pilani's data.'"
+      ],
+      "strengths": [
+        "Explains rank in plain language and offers a CTA",
+        "Podium + movement + trend sparklines make standings engaging",
+        "Score composition visible at a glance"
+      ],
+      "gaps": [
+        "#1 and #2 are tied at 824 - the top spot is decided by institution code (tie-break flaw visible)",
+        "Overlay replaces the page; no URL/route, no export/share of standings",
+        "Location metadata (Academic City, Trade Centre, DIFC) but no wave, size or peer-group normalisation",
+        "Sparklines have no axes or values"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (14).png",
+      "name": "Leaderboard - rankings tail, Your score breakdown panel, Ranking over time",
+      "role": "Shared",
+      "features": [
+        "Ranking rows 8 Middlesex (Knowledge Park) 648 pts 25/46 ^2 places; 9 Georgetown (DIFC) 636 24/46 ^11; 10 Luiss (Trade Centre) 632 25/46 ^18; each with stacked bar, sparkline, expand chevron",
+        "'Showing 1 to 10 of 37 institutions' + Previous / 1 2 3 4 / Next pagination; hint 'Open a row's breakdown to see where its points come from.'",
+        "Right panel 'Your score breakdown - 1,000 points available': Coverage 78/400 '9 of 46 datasets accepted' Round(9 / 46 x 400) = 78; Data quality 232/250 '93% of reported rows accepted' Round(2,108 / 2,267 x 250) = 232; Timeliness 67/200 '6 of 18 submissions received at least 30 days early' Round(6 / 18 x 200) = 67; Automation 150/150 '18 of 18 submissions received via API' Round(18 / 18 x 150) = 150",
+        "'Ranking over time - Your position across reporting periods. Rank 1 is the highest.' line chart with inverted axis (#1 at top, #19 lower), point labels #29 -> #23 -> #16 -> (#33 latest), institution selector 'BITS Pilani (You)', '#33 Latest recorded rank'"
+      ],
+      "strengths": [
+        "Every score shows its formula and inputs inline",
+        "Rank history chart with institution comparison selector",
+        "Pagination + movement arrows"
+      ],
+      "gaps": [
+        "Automation 150/150 for an institution with 9/46 accepted - ratio uses submitted, not required",
+        "Timeliness ignores lateness entirely",
+        "Chart has only two axis ticks and no period labels visible in frame; no download",
+        "No peer comparison, no target/benchmark line"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (15).png",
+      "name": "Leaderboard - How the ranking is calculated (formula spec)",
+      "role": "Shared",
+      "features": [
+        "Collapsible panel 'How the ranking is calculated' with '1,000 points available'",
+        "'See the numbers behind the score - Each ratio is multiplied by its maximum points and rounded. The four rounded scores are then added.'; 'Worked example' dropdown 'BITS Pilani (Selected)'",
+        "Table Measure / Formula and what counts / BITS Pilani: calculation / Points",
+        "Coverage max 400: Accepted datasets / total datasets x max; 'Only datasets whose latest receipt is accepted count in the numerator.'",
+        "Data quality max 250: Accepted rows / (accepted + rejected rows) x max; 'Rows without a validation result do not count.'; '2,108 accepted + 159 rejected = 2,267 validated rows.'",
+        "Timeliness max 200: Early datasets / received datasets x max; 'Early means the receipt date is at least 30 calendar days before the configured due date. All received datasets count in the denominator, including those without a due date; those without a due date earn no early credit.'",
+        "Automation max 150: Datasets received via API / received datasets x max; 'API receipts count whether accepted, processing or needing correction. Other receipt channels count only in the denominator.'",
+        "Total banner: '78 + 232 + 67 + 150 = 527 / 1,000 points', 'Current rank #33 of 37'",
+        "Footnotes: banker's rounding ('an exact .5 rounds to the nearest even number (12.5 becomes 12; 13.5 becomes 14)'), 'A zero denominator earns 0 points', 'Standings use Fall - 2026-2027, with one receipt per dataset. Changing the Home reporting period does not change these standings.', 'Equal scores have separate rank positions. Ties are ordered by institution code.', 'Early submission ... is not the percentage of missed deadlines.'"
+      ],
+      "strengths": [
+        "Fully transparent, worked-example methodology with a selector to re-run for any institution",
+        "Edge cases (rounding, zero denominator, ties) documented"
+      ],
+      "gaps": [
+        "Documented model confirms the flaws: lateness not penalised, no-due-date datasets in the timeliness denominator, DQ/timeliness/automation normalised by submitted rather than required, one receipt per dataset (no resubmission), tie-break by code",
+        "Weights are hard-coded; no versioning of the methodology or effective-date",
+        "Standings pinned to Fall 2026-2027 regardless of period picker"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (16).png",
+      "name": "Leaderboard - Full rankings with expanded row breakdown and Your next move",
+      "role": "Shared",
+      "features": [
+        "Columns: Rank (medal icons for 1-3), Institution (+ location), Points (stacked bar), Accepted n/46, Score trend sparkline, Movement, expand chevron",
+        "Expanded row 'University of Europe - score breakdown': Coverage 400/400 (46 of 46 accepted, Round(46 / 46 x 400) = 400); Data quality 250/250 (100% rows, Round(5,569 / 5,569 x 250) = 250); Timeliness 70/200 (16 of 46 at least 30 days early, Round(16 / 46 x 200) = 70); Automation 104/150 (32 of 46 via API, Round(32 / 46 x 150) = 104); footer '46 datasets submitted - 5,569 rows accepted - 0 rows rejected - Previous recorded rank: #2'",
+        "Rows 2 Saint Joseph 824 46/46 v1; 3 Istituto Marangoni 706 34/46 ^1; 4 American University of Beirut (Dubai) 694 30/46 ^7 places; 5 Heriot-Watt (Knowledge Park) 656 29/46 v2",
+        "Right rail 'YOUR NEXT MOVE - Climb the rankings': numbered actions 1) '28 datasets have no submission - Start with the next due datasets in your agenda.' 2) '159 rows need correction - Review field rules and resolve the rejected records.' 3) '9 submitted datasets are not yet accepted - Check their status and follow up on processing or corrections.'; 'Open my datasets ->'; caveat 'Rank also depends on other institutions' scores.'",
+        "'Your score breakdown' card follows below"
+      ],
+      "strengths": [
+        "Per-row expandable breakdown with the same formula pattern",
+        "Prioritised, quantified next actions for the institution"
+      ],
+      "gaps": [
+        "Next-move actions link to a generic 'Open my datasets' rather than deep-linking each action",
+        "Top institution gets only 70/200 timeliness because 15 event-based datasets can never be 'early'",
+        "No filter by wave/group; no export"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (17).png",
+      "name": "Sign-in - institution picker, UAE PASS, Active Directory, animated Dubai map",
+      "role": "Shared (Institution + KHDA staff)",
+      "features": [
+        "Header: Government of Dubai crest + 'Knowledge and Human Development Authority', dark-mode toggle, Dubai Knowledge logo",
+        "Card: icon + 'e-portal / KHDA Digital Platform' sub-brand; 'Welcome to KHDA Data Gateway'; 'Your institution's data, in one place. Sign in to manage submissions and track readiness.'",
+        "'Your institution' select 'Select your institution' with hint 'Choose from 37 institutions or select a map pin.'",
+        "'Sign in with UAE PASS ->' button, disabled until institution chosen ('Choose your institution above to continue.')",
+        "Divider 'For KHDA employees' then 'Sign in with Active Directory - KHDA employee account' with external-link arrow",
+        "Right: animated map of Dubai with campus pins (Downtown, Academic City, Silicon Oasis), lines converging on 'KHDA - Block 8, Academic City' hub with pulsing halo; badge 'Dubai's education network - 37 workspaces'",
+        "Map controls: 'Perspective view', 'Pause animation'; 'Dubai, United Arab Emirates - Drag the map to explore' with north arrow; disclaimer 'Campus positions approximate - Lines illustrate the education network'"
+      ],
+      "strengths": [
+        "Two clear personas (institution via UAE PASS, staff via AD)",
+        "Memorable branded map with motion controls and an honest accuracy disclaimer",
+        "Institution selectable by pin or dropdown"
+      ],
+      "gaps": [
+        "Institution chosen before authentication - identity should determine institution, not the reverse",
+        "No language toggle (EN/AR), no accessibility entry, no help/contact, no MFA/credential-recovery messaging",
+        "No role selection or multi-institution support for a single identity",
+        "Map is decorative; no status encoded in pins"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (18).png",
+      "name": "KHDA Home - API integration Overview (top)",
+      "role": "KHDA staff (Data)",
+      "features": [
+        "Nav: Home, Monitor, Compliance History; Leaderboard button; dark mode; logout; 'Workspace: KHDA staff'",
+        "Eyebrow KHDA, H1 'API integration Overview', 'Submission progress and follow-up priorities.'; reporting period picker Fall 2026-2027",
+        "KPI tiles: Total HEIs 37 'Institutions in scope'; Compliant 2 'No overdue work or open corrections'; Needs follow-up 35 'Missing submissions, corrections or blockers' (highlighted border); each with arrow",
+        "Collapsible 'Onboarding overview - Groups, owners, commitments and blockers - 37 institutions'",
+        "'Entity submissions - See who needs follow-up and open their dataset agenda.' with Refresh button, tabs Needs follow-up / Compliant / All entities, search 'Find an entity or owner...'",
+        "Bulk row: checkbox 'Select all 35 shown', 'Select institutions to email', 'Bulk send' (disabled)",
+        "Table columns: Entity, Outstanding, DQ score, Submissions missed, Contact & next step",
+        "Row: American University In The Emirates, chip Needs follow-up, reason 'Data corrections'; 36/46 outstanding (24 non-submitted, 8 need correction); DQ 91% 'Row validation'; missed 43% '3 of 7 past-due datasets'; contact 'AUE demo liaison', 'Owner: Demo onboarding team'; buttons View datasets, Send email",
+        "Right card 'Submission progress - 65% received' gauge 1099/1702 datasets submitted; Accepted 786, Processing 97"
+      ],
+      "strengths": [
+        "Sector-level gauge with status breakdown and 'select a status to filter' affordance",
+        "Per-entity outstanding / DQ / missed % with owner and next-step actions in one row",
+        "Bulk selection pattern present"
+      ],
+      "gaps": [
+        "Title says 'API integration' but no API/integration content (credentials, endpoints, error rates, whitelisting, pipeline health)",
+        "Bulk send disabled; owners are 'Demo ... team'; contacts are placeholders",
+        "Only 2 of 37 compliant - no severity tiers or escalation levels",
+        "No KHDA IT persona; no notifications, tasks, or SLA timers"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (19).png",
+      "name": "KHDA Home - Entity submissions table rows + sector gauge legend",
+      "role": "KHDA staff (Data)",
+      "features": [
+        "Second row: American University In Dubai, Needs follow-up, reason '6 datasets past their deadline'; 28/46 (22 non-submitted, 4 need correction); DQ 97% Row validation; missed 71% '5 of 7 past-due datasets'; contact 'American University in Dubai demo liaison', 'Owner: Demo quality team'; View datasets, Send email, 'Compliance history' link",
+        "Gauge legend: Accepted 786, Processing 97, Needs correction 216, Non-submitted 603 (sum 1,702); caption '786 accepted of 1702 catalogue datasets across 37 entities. Select a status to filter the ...'",
+        "Row reason line varies by entity (data corrections vs past deadline)"
+      ],
+      "strengths": [
+        "Per-row reason text explains why an entity needs follow-up",
+        "Three cross-links per entity (datasets, email, history)"
+      ],
+      "gaps": [
+        "DQ score defined only as 'Row validation' - no dimension breakdown (completeness, validity, consistency)",
+        "'Submissions missed' uses past-due datasets only (3 of 7) - not aligned with 46-dataset scope",
+        "No column chooser, no export, no saved filters, no assignment/reassignment of owner"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (20).png",
+      "name": "Dataset agenda drawer - American University In The Emirates, Fall 2026-2027",
+      "role": "KHDA staff (Data) (same drawer pattern used for institution)",
+      "features": [
+        "Drawer title 'Dataset agenda', subtitle institution + period, Close",
+        "Columns: Dataset (name + code + icon), Due date (sorted asc), Last submission, Submission status, Next step",
+        "Rows: Applicants - Basic Details 08 Sept 2026 '7 days overdue', last '11 Aug 2026, 13:00 (Dubai time) / Portal submission / Received on time', Processing; Course Faculty (COURSE_FACULTY_B) No receipt, Non-submitted; Course learning outcomes 15 Aug 2026 API Received on time, Processing; Institute - Employers 9 Sept 2026 API 'Received 1 days late' (red), Needs correction, next step View Details + 'Remediation ->'; Institute - Overview No receipt; Institute - R&D 12 Aug API on time, Needs correction, Remediation; Students - Enrollments No receipt; Graduate Licensure 18 Sept 2026 No receipt; Graduates 18 Sept, 30 Aug 2026 API on time, Needs correction, Remediation",
+        "Status chips: amber Processing, grey Non-submitted, pink Needs correction",
+        "Timestamps explicitly labelled '(Dubai time)'; channel shown per receipt (Portal submission / API submission)"
+      ],
+      "strengths": [
+        "Per-dataset last receipt with timestamp, channel and on-time/late verdict",
+        "Contextual next step (Remediation) only where relevant",
+        "Explicit timezone"
+      ],
+      "gaps": [
+        "'7 days overdue' shown even for datasets received on time and now Processing - overdue derived from due date, not receipt",
+        "'Received 1 days late' grammar defect",
+        "Datasets received 11-15 Aug still 'Processing' a month later - no processing SLA or pipeline stage visible",
+        "Only the latest receipt; no attempt history, no who-submitted, no acknowledgement/receipt ID",
+        "All timestamps identically 13:00 - synthetic data"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (21).png",
+      "name": "Send email drawer - branded follow-up preview",
+      "role": "KHDA staff (Data)",
+      "features": [
+        "Drawer 'Send email - American University In The Emirates', Close",
+        "Subject field 'Data submission follow-up | AUE | Fall - 2026-2027'",
+        "'Message - Formatted email preview' with Preview / Edit message toggle",
+        "Branded preview: maroon top rule, 'KHDA' wordmark + 'Knowledge and Human Development Authority'; eyebrow 'Fall - 2026-2027'; H 'Data submission follow-up'; 'Dear AUE team, We are following up on your institution's data submissions. Please review the summary and priority items below.'",
+        "Summary tiles 24 Non-submitted / 8 Need correction / 4 Processing; '10 of 46 datasets accepted.'",
+        "'Priority datasets' table Dataset / Status / Due date: Course Faculty Non-submitted 08 Sept 2026 (7 days overdue); Institute - Employers Needs correction 08 Sept 2026 (7 days overdue); Institute - Overview Non-submitted 08 Sept 2026 (7 days overdue)",
+        "Footer: envelope icon 'Preview only. Email sending is not enabled.'; 'Close preview'; 'Send' disabled"
+      ],
+      "strengths": [
+        "Auto-composed, data-driven, branded email with summary tiles and priority table",
+        "Editable message toggle",
+        "Honest disabled state"
+      ],
+      "gaps": [
+        "Cannot send; no To/CC recipients, no template picker, no attachments, no schedule, no delivery log",
+        "No in-portal notification alternative; no record on the institution's side",
+        "English only; no Arabic template"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (22).png",
+      "name": "KHDA Home - Onboarding overview expanded (Wave 2)",
+      "role": "KHDA staff (Data / IT)",
+      "features": [
+        "Group tabs with counts: All groups 37, Pilot Wave 1 7, Wave 2 14 (active), Wave 3 13, Wave 4 3; search 'Find an institution or owner...'",
+        "Columns: Institution, Group, KHDA owner, Commitment, Blocker, action 'View journey ->'",
+        "Rows: Curtin / Wave 2 / Demo onboarding team / Confirmed / Data corrections; DIDI / Demo quality team / Confirmed / None recorded; EM Normandie / Demo quality team / Confirmed / Data corrections; Heriot-Watt / Demo onboarding team / Confirmed / None recorded; Istituto Marangoni / Demo quality team / Confirmed / Data corrections; London Business School / Demo integration team / Confirmed / None recorded",
+        "Footer '14 of 37 institutions', 'Clear filters'"
+      ],
+      "strengths": [
+        "Wave grouping with counts matches KHDA's onboarding plan",
+        "Owner / commitment / blocker fields exist as a concept"
+      ],
+      "gaps": [
+        "All owners are demo teams, all commitments 'Confirmed', blockers limited to two values - no real workflow",
+        "No dates, milestones, credentials status, environment (sandbox/prod), or technical contact per institution",
+        "No assignment editing, no notes, no history"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (23).png",
+      "name": "Monitor - institution detail (American University In Dubai) with Onboarding journey",
+      "role": "KHDA staff (Data / IT)",
+      "features": [
+        "Sub-header: '<- Sector Home', institution dropdown, 'Onboarding board' button, 'View compliance history' button",
+        "'Onboarding journey' card with 'At risk' chip; attributes Group 'Pilot Wave 1', Owner 'Demo quality team', Commitment 'Confirmed', Blocker 'None recorded', Complexity 'Complex'",
+        "Six-step tracker Touch Point 1..6, each 'Not available'",
+        "Disclaimers: 'Touch-point completion and dates have not been provided. Submission status does not establish completion of an onboarding milestone.' and 'Scope and wave allocation are from the supplied Wave allocation PDF. Contact, owner, commitment, complexity, submission activity and dates are illustrative.'",
+        "Eyebrow 'INSTITUTION MONITOR', H1 'American University In Dubai', 'Follow submissions and resolve outstanding work.'; reporting period picker",
+        "'YOUR NEXT STEPS - Next in your agenda - Fall - 2026-2027 - 6 overdue - 4 need correction'; item 8 SEPT Applicants - Basic Details, 7 days overdue, Non-submitted, View Details",
+        "'Upcoming semesters' card: 'Current period' chip, 'Fall - 2026-2027 - 28 datasets outstanding in the catalogue', 'Winter - 2026-2027 ->'"
+      ],
+      "strengths": [
+        "Single institution cockpit linking journey, agenda, next period and history",
+        "Honest disclaimers about data provenance",
+        "Risk chip and complexity attribute"
+      ],
+      "gaps": [
+        "Onboarding journey is empty - no milestone names, dates, owners, evidence",
+        "Copy written in institution voice ('Your next steps') on a KHDA screen",
+        "No credential/API status, no integration health, no contact details, no notes/activity log",
+        "Wave allocation sourced from a PDF - not a managed object"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (24).png",
+      "name": "Monitor - sector cards view grouped by wave",
+      "role": "KHDA staff (Data)",
+      "features": [
+        "KPI strip: Accepted datasets 46% '786 of 1,702 across the sector'; Needs correction 216 'dataset submissions'; Rows to fix 4,176 'awaiting correction'; Automated 798 'datasets via API'; Needs follow-up 35 'of 37 institutions'",
+        "Toolbar: Cards / Matrix toggle; 'Find an institution...'; Sort 'Least progress first'; Filters button; 'Follow-up queue 35' button; 'Group by: Wave'",
+        "'37 of 37 institutions'; section 'Pilot Wave 1 (7)' then 'Wave 2 (14)'",
+        "Institution cards: name + free-zone location (AUE Academic City; Abu Dhabi University Knowledge Park; American University in Dubai Media City; Amity Academic City; Hult Internet City; Wollongong Knowledge Park; Manipal Academic City; BITS Pilani Academic City; DIDI Design District; Symbiosis Knowledge Park; Curtin Academic City; Murdoch Knowledge Park)",
+        "Card body: '% accepted' + n/46, progress bar, 'N need correction' / 'N non-submitted', footer risk state ('Blocked or declined' / 'At risk') and staleness ('3d without update', '2d without update', 'updated yesterday')",
+        "Example values: AUE 22% 10/46; ADU 37% 17/46; AUD 39% 18/46; Amity 43% 20/46; Hult 48% 22/46; Wollongong 48% 22/46; Manipal 50% 23/46"
+      ],
+      "strengths": [
+        "Sector KPIs include row-level backlog (4,176) and automation share (798)",
+        "Cards carry risk state and staleness - useful triage cues",
+        "Sort/filter/group toolbar and a dedicated follow-up queue"
+      ],
+      "gaps": [
+        "Risk states not defined; no thresholds shown",
+        "Cards not actionable beyond open (no assign, note, email)",
+        "No time dimension (trend vs last period) on cards"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (25).png",
+      "name": "Monitor - 37 x 46 dataset compliance matrix",
+      "role": "KHDA staff (Data)",
+      "features": [
+        "Matrix toggle active; same toolbar; '37 of 37 institutions'",
+        "Legend: Accepted (dark green), In progress / unchecked (light green), Needs correction (maroon), Non-submitted (light grey)",
+        "'Dataset compliance - All 46 datasets - one square per institution and dataset'; 'Jump to dataset: Choose a dataset' dropdown",
+        "Column headers rotated ~45 deg with all 46 dataset names; long names truncated ('Institute - Leadership Contact Information (...', 'Institute - Scholarly Output (formerly: Public...', 'Institute - Startup Spinoffs Optional (only if...'); hovered column highlighted maroon ('Course Faculty')",
+        "Rows: institution + 'Wave - risk' subtitle, e.g. BITS Pilani (Wave 2 - Blocked or declined) 20% 9/46; AUE (Pilot Wave 1 - Blocked or declined) 22% 10/46; Plekhanov (Wave 3 - At risk) 26% 12/46; British University (Wave 3 - Blocked or declined) 28% 13/46; DIDI 28%; Symbiosis 28%; Curtin 35% 16/46; ESCP (Wave 3 - At risk) 35% 16/46; right column 'Done accepted' %",
+        "Footer row 'Accepted of 37 institutions shown' with per-dataset totals (18, 21, 14, 16 ... 15) and sector 46%",
+        "Hint: 'Hover over a square for its status. Select a dataset to see totals, or an institution to open its details. Scroll sideways if needed.'",
+        "Real-time columns appear as raw codes: PERSON_PROFILE, EDUCATION_BACKGROUND, ACADEMIC_PROGRAM, COURSE, STUDENT_LIFECYCLE_EVENT, GRADUATE_LICENSURE, SCHOLARSHIP_TXN, INTERNSHIP_TXN, STUDENT_RESEARCH_TXN, SOD_TXN, EMPLOYEE_PROFILE, EMPLOYEE_WORKLOAD, COURSE_FACULTY; plus 'Program Learning Outcomes' and 'Course Learning Outcomes' (title case) which duplicate semester names"
+      ],
+      "strengths": [
+        "Whole sector on one screen; per-dataset and per-institution totals",
+        "Jump-to-dataset and hover states",
+        "Sorted least-progress-first for triage"
+      ],
+      "gaps": [
+        "13 raw dataset codes and 2 duplicate names in headers; long names truncated",
+        "Squares are not clickable into a submission; no drill to validation issues",
+        "No sticky headers evident; requires sideways scroll; not printable/exportable",
+        "Four states only; no 'late-but-accepted', 'waived', or 'not applicable' states"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (26).png",
+      "name": "Compliance history - Abu Dhabi University (KPIs, submission trend, recurring datasets)",
+      "role": "KHDA staff (Data)",
+      "features": [
+        "Nav 'Compliance History' active; eyebrow 'KHDA - PERFORMANCE OVER TIME'; H1 'Compliance history'; 'See how an institution is progressing and where follow-up keeps recurring.'",
+        "Institution picker (history icon) 'Abu Dhabi University'; subline 'Receipts available from 05 Aug 2025'; 'Show: All reporting periods' range select; 'Open current Monitor ->'; refresh icon",
+        "KPI tiles: Reporting periods 4 'In the selected range'; Datasets received 68 'Counted once within each period'; Recurring corrections 3 'Datasets needing correction in multiple periods'; On-time compliance 'Not available' 'Historical deadlines have not been recorded'",
+        "'Submission trend - Unique datasets received per period - latest outcome': stacked bars 11 (Fall 2025-2026), 17 (Winter 2025-2026), 20 (Spring 2025-2026), 20 (Fall 2026-2027); legend Accepted / Needs correction / Processing; no y-axis",
+        "'What to follow up on - 3 recurring datasets - These datasets still need correction in more than one reporting period.': Course Faculty, STUDENT_LIFECYCLE_EVENT, ACADEMIC_PROGRAM",
+        "Info note: 'Required, late and missing counts need historical requirements and deadlines. They remain unavailable until that information is recorded.'"
+      ],
+      "strengths": [
+        "Recurring-corrections concept (same dataset failing across periods) is a strong KHDA insight",
+        "Period range filter and cross-link to Monitor",
+        "Honest 'Not available' with reason"
+      ],
+      "gaps": [
+        "Cannot compute on-time compliance, late or missing - no requirement/deadline calendar",
+        "Chart lacks axes, values per segment, and tooltips",
+        "Raw codes leak into the follow-up list",
+        "No sector-wide history, no export, no annotations (e.g. waiver granted)"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (27).png",
+      "name": "Compliance history - Period-by-period status table",
+      "role": "KHDA staff (Data)",
+      "features": [
+        "'Period-by-period status' with search 'Find a dataset in history...'",
+        "Columns: Reporting period (+ 'N submission attempts'), Required, Received, Accepted, Late, Missing, 'Datasets' expander",
+        "Rows: Fall 2026-2027 (20 attempts) - / 20 / 17 / - / -; Spring 2025-2026 (20) - / 20 / 11 / - / -; Winter 2025-2026 (17) - / 17 / 11 / - / -; Fall 2025-2026 (11) - / 11 / 10 / - / -",
+        "Footnotes: 'Outcomes are based on each dataset's latest receipt within the period.' and '- = Not recorded'",
+        "Page footer with copyright and 'Higher education - Data readiness'"
+      ],
+      "strengths": [
+        "Period table with per-period dataset expander",
+        "Explicit 'not recorded' legend"
+      ],
+      "gaps": [
+        "Required / Late / Missing all '-' - the compliance table cannot measure compliance",
+        "'Submission attempts' equals received count - no resubmission tracking",
+        "Periods listed newest-first while chart is oldest-first (inconsistent ordering)"
+      ]
+    },
+    {
+      "image": "C:\\Users\\GokulImayavaramban\\Downloads\\EPortal Sample\\image (28).png",
+      "name": "Institution Home - ESCP workspace (second tenant)",
+      "role": "Institution",
+      "features": [
+        "Identical layout to image 9 with 'Workspace: ESCP'; 'Welcome, ESCP'",
+        "KPIs: Total 46; Submitted 21 (46% of catalogue); Non-submitted 25 (54%)",
+        "Progress ring 21/46, 46% received; Accepted 16, Processing 0, Needs correction 5, Non-submitted 25",
+        "Agenda tabs Upcoming 15 / Overdue 4 / Real time 11; Graduate Licensure due in 3 days Non-submitted 'View Details'; Graduates due in 3 days Needs correction with 'Remediation ->' link",
+        "Quick services and catalogue identical"
+      ],
+      "strengths": [
+        "Demonstrates multi-tenant workspaces with consistent layout",
+        "Agenda CTA switches to Remediation when status is needs-correction"
+      ],
+      "gaps": [
+        "Same stubs (upload, API docs) across tenants",
+        "Processing is 0 on both institution homes while sector shows 97 processing - state model inconsistently populated",
+        "No per-institution configuration (contacts, API status, exceptions) visible to the institution"
+      ]
+    }
+  ],
+  "detailsNotInBrief": [
+    "Header identity is a 'Workspace' pill (BITS Pilani / ESCP / KHDA staff) with a logout icon - no user name, avatar, role or profile menu anywhere",
+    "Product carries a second sub-brand on sign-in: 'e-portal - KHDA Digital Platform'; footer tagline 'Higher education - Data readiness'; runs at localhost:5173 (Vite dev SPA)",
+    "Sign-in flow forces institution selection before UAE PASS is enabled; AD sign-in opens externally; map has Perspective view / Pause animation controls and a 'positions approximate' disclaimer; KHDA hub labelled 'Block 8, Academic City'",
+    "Institution home KPI tiles show '% of catalogue' captions and coloured top borders (maroon/green/amber); agenda items use a calendar date block and switch CTA between 'View Details' and 'Remediation' by status",
+    "Agenda tab counts (Upcoming/Overdue/Real time = 20/5/12 for BITS, 15/4/11 for ESCP) do not sum to 46 or to non-submitted; semantics undefined",
+    "Catalogue rows show a small icon beside the dataset code (plug vs check-circle) that is never explained; group rows show a mini progress bar and a pink 'N need attention' pill; 'Expand all' control; filters 'All submissions' and 'All frequencies'",
+    "Freshness cell format: 'Received 24 days ago / API submission' or 'No receipt yet'; event-based datasets show Due '-'",
+    "Spec drawer chips: status, frequency, field count ('33 fields'), due date; rules include hyperlinks ('Go to CAA licensed Institutions list'), composite primary key text, 'Reference sheet: Institutional Codes', 'Dictionary: <sheet>, row N', and inline enumerations of academic-period codes (202200..202505); intro says 'Cross-dataset and reference checks appear with the field they apply to.'",
+    "Leaderboard is a full-screen overlay, not a routed page; shows long institution name; rank movement per row ('^ 18 places'); 'Previous recorded rank: #2'; 'Score trend - 4 recorded periods' sparklines; 'Find my position'; 10 per page over 4 pages",
+    "#1 University of Europe and #2 Saint Joseph are tied at 824 points - tie resolved by institution code at the very top of the table",
+    "Row-level counts exist in the model: BITS 2,108 accepted + 159 rejected = 2,267 validated rows; University of Europe 5,569 rows accepted, 0 rejected; sector 'Rows to fix 4,176'",
+    "Rounding is banker's rounding (half to even), zero denominator scores 0; standings pinned to Fall 2026-2027 and 'one receipt per dataset' regardless of the period picker",
+    "'Why this position?' sentence and 'Your next move' rail with three quantified actions (28 no submission, 159 rows to correct, 9 not yet accepted)",
+    "Ranking-over-time chart uses an inverted axis (#1 at top) with point labels #29 -> #23 -> #16 -> #33 and an institution comparison selector",
+    "KHDA home entity rows carry a reason line ('Data corrections', '6 datasets past their deadline'), DQ score qualified as 'Row validation', 'Submissions missed' as % of past-due datasets (e.g. '3 of 7'), a named liaison plus owner team, and three actions (View datasets, Send email, Compliance history); a Refresh button and select-all checkbox exist",
+    "Sector gauge breakdown: Accepted 786, Processing 97, Needs correction 216, Non-submitted 603 (=1,702); Monitor KPI strip adds 'Automated 798 datasets via API' (about 73% of the 1,099 received)",
+    "Onboarding overview columns: Institution / Group / KHDA owner / Commitment / Blocker / View journey; owner values are 'Demo onboarding team', 'Demo quality team', 'Demo integration team'; blockers only 'Data corrections' or 'None recorded'; all commitments 'Confirmed'",
+    "Institution detail adds attributes Commitment, Blocker and Complexity ('Complex'), an 'At risk' chip, an 'Onboarding board' button, and states that scope/wave came from a 'supplied Wave allocation PDF' with other fields illustrative; 'Upcoming semesters' card lists current period with outstanding count and next period (Winter 2026-2027)",
+    "Monitor cards include free-zone location (Academic City, Knowledge Park, Media City, Internet City, Design District, DIFC, Trade Centre), institution risk states 'At risk' / 'Blocked or declined', and staleness text ('3d without update', 'updated yesterday'); toolbar has Sort 'Least progress first', Filters, 'Follow-up queue 35', Group by Wave",
+    "Matrix legend uses 'In progress / unchecked' (light green) as the fourth state instead of 'Processing'; has 'Jump to dataset' dropdown, per-dataset accepted totals footer, per-row 'Done accepted' %, and column labels truncated with dictionary parentheticals leaking ('(formerly: Public...', 'Optional (only if...')",
+    "Of the 15 real-time datasets, 13 appear as raw codes and 2 ('Program Learning Outcomes', 'Course Learning Outcomes') carry title-case names that collide with the semester datasets 'Program learning outcomes' / 'Course learning outcomes'",
+    "Agenda drawer marks datasets '7 days overdue' even when a receipt arrived on time and is 'Processing'; receipts from 11-15 Aug are still 'Processing' in mid-September (no SLA); every timestamp is '13:00 (Dubai time)'",
+    "Send email drawer shows Subject and an editable/previewable message but no visible To/CC field, template picker, attachments or send log",
+    "Compliance history shows 'Receipts available from 05 Aug 2025', a 'Show: All reporting periods' range select, 'Datasets received - Counted once within each period', and 'N submission attempts' per period equal to received counts (no resubmissions); chart is oldest-first while the table is newest-first",
+    "Only local searches exist (Find a dataset, Find an entity or owner, Find an institution, Find a dataset in history); no global search, breadcrumbs, notifications, help or language switch",
+    "Navigation depth is shallow: institution nav = Home + Remediation; KHDA nav = Home + Monitor + Compliance History; Leaderboard is a button; the Remediation page itself is never shown in the 20 screenshots",
+    "Dark-mode toggle is present on every screen, but no screenshot shows dark mode rendered",
+    "Demo institution set observed: AUE, American University in Dubai, Abu Dhabi University, Amity, Hult, Wollongong, Manipal, BITS Pilani, DIDI, Symbiosis, Curtin, Murdoch, Middlesex, Georgetown, Luiss, Heriot-Watt, Plekhanov, British University, ESCP, EM Normandie, Istituto Marangoni, London Business School, Saint Joseph, University of Europe, American University of Beirut"
+  ],
+  "briefCorrections": [
+    "Brief weakness 4 says all 15 real-time datasets lack display names: screenshots show 13 raw codes (PERSON_PROFILE, EDUCATION_BACKGROUND, ACADEMIC_PROGRAM, COURSE, STUDENT_LIFECYCLE_EVENT, GRADUATE_LICENSURE, SCHOLARSHIP_TXN, INTERNSHIP_TXN, STUDENT_RESEARCH_TXN, SOD_TXN, EMPLOYEE_PROFILE, EMPLOYEE_WORKLOAD, COURSE_FACULTY) and 2 with title-case names that duplicate semester dataset names - a naming-collision defect rather than a missing name",
+    "Brief weakness 6 'no validation detail (only 13 open issues)' cannot be fully confirmed: the Remediation page is in the nav but never captured in the 20 screenshots; only the catalogue/agenda counts and the compliance-history recurring list are visible",
+    "Brief lists 'dark mode' as a competitor strength: only the toggle icon is visible; no screenshot shows the dark theme rendered, so its quality is unverified",
+    "Brief says 'charts without axes': confirmed for the submission-trend bars and all sparklines; the ranking-over-time chart does have sparse axis ticks (#1, #19) and point labels, so it is partially labelled",
+    "Brief statuses list four dataset states; the matrix legend actually labels the fourth as 'In progress / unchecked' rather than 'Processing', and the product also has institution-level states not in the brief: Compliant, Needs follow-up, At risk, Blocked or declined",
+    "Brief says 'Every action is a stub': accurate for write actions (Upload, Send, Bulk send, API docs), but read/navigation interactions do work in the demo (drawers, expand rows, wave filters, sort, cards/matrix toggle, find-my-position, pagination, hover states) - the product is display-only, not static",
+    "Brief describes the KHDA home as 'API integration Overview': the title is confirmed but the page contains no API or integration content (no credentials, endpoints, whitelisting, pipeline health) - the name over-promises",
+    "Brief item 'Send email drawer' is confirmed, and additionally the drawer shows no recipient (To/CC) field - only Subject and the message preview/edit toggle",
+    "Brief weakness 'no roles/multi-user' is confirmed in the UI (workspace pill, no user name), with the nuance that sign-in does distinguish two personas (institution via UAE PASS, KHDA staff via Active Directory) - two personas, zero role granularity",
+    "Brief says 'Dataset agenda (Upcoming/Overdue/Real time tabs)': confirmed, but the tab counts (20/5/12 and 15/4/11) do not reconcile with 46 datasets or the non-submitted totals - an unexplained count inconsistency not noted in the brief",
+    "Brief 'minor defects (1 days late)': confirmed, and there is a second related defect - datasets received on time and in Processing are still labelled '7 days overdue' in the agenda drawer",
+    "All other brief claims about the competitor (sign-in map with 37 workspaces, KPI tiles, gauge, catalogue columns with Upload 'Not available', spec drawer, leaderboard 400/250/200/150 model and its flaws, KHDA tiles 37/2/35, waves 7/14/13/3, sector gauge 1,099/1,702, email preview-only + bulk send disabled, matrix, Touch Points 1-6 'Not available', compliance history Required/Late/Missing '-') were confirmed in the screenshots"
+  ],
+  "mustMatch": [
+    "Sign-in with institution context, UAE PASS for institutions and Active Directory/SSO for KHDA staff; branded KHDA/Government of Dubai header and footer",
+    "Persistent reporting-period selector (Fall/Winter/Spring per academic year) on every page",
+    "Institution home: three KPI tiles (total / submitted / non-submitted with % of catalogue and deep links), submission-progress ring with four-status legend, dataset agenda (upcoming / overdue / real-time) with due-date blocks and status-aware CTAs, quick services",
+    "Dataset catalogue (46 datasets) groupable by subject area (Employees 4, Graduates 3, Institution 7, Programs & courses 11, Research & innovation 7, Students & applicants 14), by frequency, or flat; search, status and frequency filters, expand-all, group progress bars and attention counts",
+    "Catalogue table columns: frequency, due date, status chip, freshness (received N days ago + channel), open-issue count, details action",
+    "Dataset specification drawer: field, type, rule bullets, dictionary sheet/row reference, primary key, reference sheets, hyperlinks to code lists, field count and due date chips",
+    "Leaderboard with a transparent, fully worked scoring model (formula, inputs, rounding, tie rules), podium, full paginated rankings with per-row breakdown, movement arrows, score-trend sparklines, find-my-position, 'why this position' explanation and prioritised next actions, ranking-over-time chart",
+    "KHDA sector home: Total HEIs / Compliant / Needs follow-up tiles; entity table with outstanding n/46, DQ score, submissions missed, reason line, liaison + owner, per-row actions (datasets, email, history); sector gauge 1,099/1,702 with status breakdown; select-all bulk pattern",
+    "Onboarding overview by wave (Pilot Wave 1 = 7, Wave 2 = 14, Wave 3 = 13, Wave 4 = 3) with owner, commitment, blocker and a per-institution journey view",
+    "Monitor: KPI strip (accepted %, needs correction, rows to fix, automated via API, needs follow-up), cards view grouped by wave with % accepted, risk state and staleness, sort/filter toolbar, follow-up queue",
+    "37 x 46 compliance matrix with four-state legend, jump-to-dataset, per-dataset totals row, per-institution accepted %, hover states",
+    "Per-institution dataset agenda drawer with due date, last receipt timestamp labelled with timezone, channel (API / portal), on-time / late verdict, status chip and next step",
+    "Branded, data-driven follow-up email composer with summary tiles and priority-dataset table, preview/edit toggle",
+    "Compliance history per institution: period KPIs, recurring-corrections list, stacked submission trend by period, period-by-period table with per-period dataset expander",
+    "Institution metadata: free-zone location, wave, owner, risk state; display name + technical code on every dataset reference",
+    "Dark-mode toggle, clean card-based visual hierarchy, honest empty states and provenance disclaimers, explicit 'Dubai time' timestamps"
+  ],
+  "mustBeat": [
+    "Make every action real: portal/Excel upload with metadata-driven templates and row-level error flagging (our engine), live API documentation, working email send with To/CC, templates, attachments, bulk send and a delivery log, in-portal notifications feed",
+    "Submission journey tracker per submission mirroring the R1 pipeline (received via iPaaS -> API Hub auth/validation -> adapter -> Qlik validation -> profiling -> processing -> accepted / needs correction) with timestamps, receipt IDs and an SLA per stage - replacing 'Processing' black holes",
+    "Row- and field-level validation results with severity, downloadable error reports, fix-in-place remediation workbench, resubmission versions and a full receipt history per dataset per period (not 'one receipt per dataset')",
+    "Fix the scoring model: penalise lateness, exclude no-due-date/event datasets from timeliness, normalise DQ/timeliness/automation by required datasets not by submitted, secondary tie-breakers, configurable and versioned weights with an effective date, peer/wave normalisation, sector benchmark line",
+    "Compliance that can measure compliance: a requirements-and-deadline calendar per period so Required / Late / Missing / On-time compute; overdue derived from receipt not due date; late-but-accepted and waived states; sector-wide history and exports",
+    "Real onboarding journey: named Touch Points with dates, owners, evidence, credential issuance and go-live gates; editable owners/notes/activity log; wave allocation as a managed object rather than a PDF",
+    "KHDA IT surfaces the competitor lacks entirely: client ID / secret / key management, IP whitelisting, sandbox vs production environments, API health and error-rate dashboards, an API sandbox/tester, schema versioning (Dictionary 2026 -> 2027) with diff and deprecation notices",
+    "Roles and governance: Institution Admin / Data Steward / Approver / Read-only plus KHDA Data and KHDA IT; maker-checker approval before submission, audit trail, user identity with name/avatar/role, delegation and multi-institution access for staff",
+    "English + Arabic with full RTL and an accessibility panel (contrast, spacing, text size, reduce motion, skip links) - absent from the competitor",
+    "Human display names (EN/AR) for all 46 datasets including the 15 real-time ones, no naming collisions, untruncated labels, and event-stream metrics for real-time datasets (last event, events per day, lag) instead of due-date semantics",
+    "Escalation engine and waiver/exception workflow (portal-upload exceptions, deadline extensions) with rule-based reminders, SLA timers and a visible case history on both KHDA and institution sides",
+    "Institution-facing transparency: institutions see their own compliance history, onboarding milestones, API credentials status and contacts - not only KHDA",
+    "Enterprise conveniences: global search / command palette, saved views and filters, column choosers, exports and board packs (PDF/XLSX), printable matrix with sticky headers, charts with axes, values and tooltips, drill-down from any matrix square to the submission",
+    "Data dictionary as a browsable, versioned, searchable in-portal object (fields, code lists, cross-dataset rules) that drives forms, validation, templates and reports - not a file download",
+    "Beyond compliance: Qlik-style sector analytics on the actual submitted data (students, graduates, employees, programs) with KPIs, self-service reporting and drill-through, fulfilling the 'Qlik Portal' role in the R1 architecture",
+    "Reconcile every count (agenda tabs vs catalogue, processing on institution vs sector), fix grammar defects, and keep copy voice correct per role (no 'Your next steps' on KHDA screens)"
+  ]
+}

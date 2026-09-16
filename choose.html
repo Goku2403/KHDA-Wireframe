@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KHDA</title>
+  <!-- The step now runs over the catalogue rather than on a page of its own.
+       Old links and bookmarks land there with the step already open. -->
+  <script>
+    (function () {
+      var sheet = new URLSearchParams(location.search).get('sheet') || '';
+      location.replace('submissions.html' + (sheet ? '?choose=' + encodeURIComponent(sheet) : ''));
+    })();
+  </script>
+  <meta name="application-name" content="KHDA">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260920f">
+  <meta name="theme-color" content="#A8305C">
+</head>
+<body class="on-canvas">
+  <p>Taking you to <a href="submissions.html">Submissions</a>…</p>
+</body>
+</html>

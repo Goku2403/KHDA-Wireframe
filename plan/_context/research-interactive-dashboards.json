@@ -1,0 +1,208 @@
+{
+  "topic": "interactive-dashboards",
+  "findings": [
+    {
+      "insight": "Large heatmap matrices should be delivered as a summary-level grid with drill-through rather than one flat wall of cells: a 10x10 grid communicates better than 100x100, and matrices above ~5,000 cells become slow and unreadable. Colour-coded status grids (risk/compliance matrices) work when each cell has a small, fixed status vocabulary and a legend.",
+      "source": "https://www.epcgroup.net/power-bi-heatmap-visualization-enterprise-guide-2026 ; https://www.organizational-excellence.com/post/the-heatmap-matrix-a-practical-guide-for-visualizing-and-managing-business-risk",
+      "applyToPortal": "KHDA Data > Monitor > Compliance matrix: keep the 37 x 46 = 1,702-cell grid (it is under the 5,000-cell threshold) but default it to a collapsed 'summary matrix' of 4 wave rows (Pilot Wave 1 = 7, Wave 2 = 14, Wave 3 = 13, Wave 4 = 3) x 6 subject-area columns (Employees 4, Graduates 3, Institution 7, Programs & courses 11, Research & innovation 7, Students & applicants 14). Each summary cell shows 'accepted / required' as a mini-bar plus a count chip; clicking a wave row or subject column expands it to institution x dataset cells. Cells use the four brief statuses only (non-submitted = outline #E4E2E6 hollow, processing = Draft chip #E2F3FF/#3081E0 with a pulse dot, needs correction = Action Required #FFEEDD/#643F00 with a '!' glyph, accepted = Completed #C6FFC7/#00531F with a tick). Minimum cell 16 px, sticky institution column and sticky dataset header, a 'Frequency' band (19 Semester | 12 Annual | 15 Real-time) above the columns, and a second colour-by toggle: Status | Channel (API vs portal upload) | Days late | Open issues."
+    },
+    {
+      "insight": "Datadog's Host Map represents every entity as a hexagon whose fill colour is a chosen metric and whose size can be a second metric; entities are spatially grouped by tags (nested group-by such as region > instance type), filtered with AND/OR/NOT queries, and the product ships 'Suggested Queries' plus saved custom queries so users can 'watch resources change state directly on the map' during a rollout.",
+      "source": "https://docs.datadoghq.com/infrastructure/hostmap/ ; https://www.datadoghq.com/blog/datadog-host-map/",
+      "applyToPortal": "Add a 'Sector map' tab beside the matrix on the KHDA Data Monitor page: 37 hexagon tiles (one per institution) grouped by onboarding wave, fill-by selector (Completeness %, DQ score, Days-late, Open corrections, Channel = API/portal) and size-by selector (number of required datasets, or an illustrative enrolment size labelled 'example'). Provide six suggested queries as chips: 'Overdue in Wave 2', 'API-onboarded but zero submissions', 'Needs correction > 14 days', 'Real-time feeds silent > 48h', 'Exception-approved portal uploaders', 'Accepted 46/46'. Saving a query creates a personal or team saved view. Clicking a hexagon opens the institution drawer; the same tiles reuse DDS elevation-2 cards and the map works in RTL by mirroring the group order."
+    },
+    {
+      "insight": "Grafana's dashboard guidance: organise dashboards hierarchically with drill-down links from overview to detail, use template variables so ONE dashboard serves every entity instead of copies, lay rows out consistently (e.g. one row per service, rate/errors left, latency right), and actively fight 'dashboard sprawl' (no copies unless substantially different, audit and prune, prefix experiments).",
+      "source": "https://grafana.com/docs/grafana/latest/visualizations/dashboards/build-dashboards/best-practices/",
+      "applyToPortal": "Model the KHDA portal as four templated levels linked by drill-down, each parameterised by URL (never 37 hand-made institution dashboards): L0 Sector overview (?period=Fall-2026-2027), L1 Wave view (?wave=2), L2 Institution detail (?inst=<code>), L3 Dataset detail (?inst=<code>&dataset=<id>), L4 Submission run (?submission=<id>). Every analytics page uses the same row grammar per subject area: Coverage (left) | Data quality (middle) | Timeliness & channel (right), so a reader who learned one page can read all. Add a 'Views' admin list for KHDA Data with usage counts and an archive action to stop saved-view sprawl."
+    },
+    {
+      "insight": "GitHub Actions' run view is the reference pipeline tracker: a real-time graph where each job is a node with a status icon and dependency lines, a left sidebar of jobs, per-step duration and status, failed steps auto-expanded, in-log search, a permalink to any log line, downloadable logs, re-run of failed jobs, and (since Dec 2025) job filtering by status plus lazy loading for runs with 300+ jobs.",
+      "source": "https://docs.github.com/en/actions/how-tos/monitor-workflows/use-the-visualization-graph ; https://docs.github.com/en/actions/how-tos/monitor-workflows/use-workflow-run-logs ; https://github.blog/changelog/2025-12-22-improved-performance-for-github-actions-workflows-page/",
+      "applyToPortal": "Build the 'Submission journey' page (shared by Institution and KHDA Data, read-only for Read-only sub-role) as a horizontal node graph that mirrors the R1 architecture exactly: Received (REST API via iPaaS, or Portal upload bridge) -> Secured (API Hub: auth, token, IP whitelist checks) -> Stored (University adapter DB) -> Validated (Qlik DQ) -> Profiled (Qlik DQ) -> Processed (Qlik DQ) -> Published (Qlik Portal) -> Accepted / Needs correction. Each node: DDS status icon, elapsed duration, and an expandable step log; the failing node auto-expands to a validation table (row #, field, rule from the dictionary, value, message) with a copy-permalink per error row. Left rail lists all runs (attempts v1, v2...) for the dataset with a status filter; actions: 'Download error report (.xlsx)', 'Resubmit corrected rows', 'Re-run validation' (KHDA Data only). Virtualise the run list so an institution's 46 datasets x many attempts stays fast."
+    },
+    {
+      "insight": "Vercel's dashboard redesign surfaces deployment state where the user actually is: the deployment status (queued, building, error, ready) is shown in the browser tab icon because 'you probably have a lot of tabs open', logs are embedded in the deployment overview and filterable with one-click copy, and the team treated performance (First Meaningful Paint -1.2 s) as part of the UX.",
+      "source": "https://vercel.com/blog/dashboard-redesign",
+      "applyToPortal": "While a submission is in 'processing', update document.title and favicon on the Submission journey page ('Processing - Student Enrolment' with a Draft-blue dot; 'Needs correction' with an Action-Required amber dot; 'Accepted' with a Completed green tick) so a Data Steward can leave the tab open. Embed the validation log inside the submission page (not a separate 'issues' count) with filters by rule type (mandatory, code list, numeric limit, cross-field, date, primary-key duplicate — the validators the wireframe already has in js/schema.js) and 'Copy all errors'. Set a performance budget: skeleton cards within 200 ms, matrix interactive under 1 s."
+    },
+    {
+      "insight": "NN/G's 16 guidelines for status trackers: show the latest update first, use plain language (no backend jargon or internal codes), keep a dated history of every update, give specific diagnostic error messages, post regular low-granularity updates during long waits, notify on completion with a direct link that bypasses login friction, let users opt in to notification types/channels/frequency, and keep tracker and support channels consistent.",
+      "source": "https://www.nngroup.com/articles/status-tracker-progress-update/",
+      "applyToPortal": "Submission journey and Dataset agenda drawer: headline card = latest state in plain language ('Returned for correction: 12 rows fail the Nationality code list') with the technical stage name as secondary caption; below it a dated history of every attempt and stage transition. Give the 15 real-time datasets human display names in the dictionary metadata (the competitor leaks STUDENT_LIFECYCLE_EVENT, SOD_TXN, EMPLOYEE_PROFILE) and show the code only as a muted #5E5E62 caption. Emit a heartbeat update if a stage exceeds its expected duration ('Profiling is taking longer than usual, still running'). Acceptance/return emails deep-link to ?submission=<id>, and the notification preference centre is per dataset family (Semester / Annual / Real-time) and per channel (in-app, email, digest)."
+    },
+    {
+      "insight": "Stripe Radar's review queue is the reference for human-in-the-loop triage: a prioritised list view for scanning vs a detailed view with 'risk insights' explaining which factors drove the score and 'related payments' sharing the same email/IP/card; J/K keys and Previous/Next to move between items; reviewers assign items to themselves to avoid duplicate effort and can filter to 'mine' or 'unassigned'; every assignment and action is logged on a timeline; rules decide what enters the queue; actions are approve / refund / refund-and-report.",
+      "source": "https://docs.stripe.com/radar/reviews",
+      "applyToPortal": "Give KHDA Data a 'Review queue' page: list of submissions that a DQ rule placed into review (e.g. 'any dataset where >2% rows fail a code list' or 'first submission from a Wave 3 institution' — illustrative rules editable by KHDA Data). Columns: institution, dataset, period, DQ score, rows failed, age, assignee. Detail view: 'Why flagged' panel listing the fired dictionary rules with counts, 'Related submissions' (same institution previous periods, same dataset across the wave), J/K + Previous/Next navigation, 'Assign to me', and actions Accept / Return for correction (with templated message) / Grant waiver (time-boxed exception). Assignment and action history form the audit timeline the competitor lacks."
+    },
+    {
+      "insight": "Linear's patterns: a Cmd+K fuzzy command palette that shows the keyboard shortcut next to every command, whole-app keyboard control, a 100 ms 'instantaneous' interaction budget, natural-language filter creation, saved custom views (workspace vs team scope, favourites in the sidebar, subscribe to a view for change notifications), an inbox/triage queue with snooze ('H' then '2d'), and a universal shareable URL for every object.",
+      "source": "https://gunpowderlabs.com/2024/12/22/linear-delightful-patterns ; https://linear.app/docs/custom-views ; https://uxpatterns.dev/patterns/advanced/command-palette",
+      "applyToPortal": "Shared shell feature: Ctrl/Cmd+K command palette in the KHDA header (next to the EN/AR toggle) that searches institutions (37), datasets (46, by display name, code, subject area), submissions, credentials, code lists (44) and dictionary fields (1,226), and also runs actions with role gating: 'Open matrix filtered to overdue', 'Send reminder to Wave 2', 'Rotate client secret for <institution>', 'Switch to Arabic'. Show shortcuts inline (G then M = Monitor, G then C = Catalogue, ? = shortcut sheet). Add 'Saved views' to the catalogue, matrix, review queue and integration pages with Personal / KHDA Data team / KHDA IT team scope and a 'Subscribe' toggle that turns the view into a notification source. Every drawer state is a URL (?inst=..&tab=issues) so KHDA staff can paste links into emails."
+    },
+    {
+      "insight": "Airtable's record-detail 'sidesheet' slides over the list while keeping it visible, is resizable from its edge (size remembered per user), has Previous/Next buttons to walk through adjacent records, and supports sections, tabs and collapsible groups; a full-page layout is reserved for deep single-record work.",
+      "source": "https://support.airtable.com/articles/5805061650-airtable-interface-layout-record-detail",
+      "applyToPortal": "Standardise ONE drawer component (DDS elevation-3, radius 16, 560 px default, resizable 420-800 px, remembered in localStorage next to khda.lang) used for institution, dataset, submission and credential details, opened from the matrix, sector map, tables and search. Drawer header: entity name + status chip + 'Open full page' + Previous/Next (walks the current filtered list, so a KHDA Data analyst can step through all 'needs correction' rows). Tabs inside: Overview | Submissions | Issues | Contacts & next step | History. In RTL the drawer docks on the left and Previous/Next arrows mirror."
+    },
+    {
+      "insight": "Courier's notification-centre guidance: be specific (actor + action + object, deadline/amount in the title); match format to urgency (inbox for lasting-value updates, toast for confirmations, badge for glanceable counts, push/email for true emergencies only); batch identical events in a time window ('10 new comments'); cap the badge at 9+; tabs like All / Unread; hover actions (mark read, archive) with optimistic updates; a per-type, per-channel preference centre with quiet hours; digests scheduled in business hours in the recipient's time zone; deep links; server-side authorisation and audit logging of the feed.",
+      "source": "https://www.courier.com/guides/how-to-build-a-notification-center/chapter-3-best-practices-for-notification-centers ; https://www.courier.com/blog/in-app-notification-center-design",
+      "applyToPortal": "Add a bell with a 9+ badge to the portal header and a Notification centre (panel + full page /notifications) with tabs All | Unread | Needs action and a 'Today / Yesterday / Earlier' grouping. Event types (each with its own icon and DDS chip colour): Deadline approaching, Submission accepted, Returned for correction, Approval requested (maker-checker), Waiver decision, Credential expiring / IP whitelist change (KHDA IT), Pipeline incident, KHDA announcement. Batch per institution+dataset ('Student Enrolment: 3 validation runs completed'). Preference centre per role, per type, per channel (in-app / email / weekly digest) with quiet hours; security and credential alerts are not mutable. Every row deep-links to the drawer or submission page; the feed is authorised server-side per institution."
+    },
+    {
+      "insight": "Eleken's notification rules: only notify for what the user asked for, time-sensitive matters, or decisions only they can make; map urgency to channel (high = push/modal, medium = in-app banner, low = inbox/email, passive = badge); give 2-second context; one action button per notification (IBM Carbon); group in real time and batch on 15-minute windows; offer simple modes ('calm', 'regular', 'power user') before granular settings; design the muted state as a first-class 'what you missed' inbox.",
+      "source": "https://www.eleken.co/blog-posts/notification-ux",
+      "applyToPortal": "Define a four-level severity model in the plan and reuse it for toasts, inbox rows, emails and the digest: Critical (pipeline down, credential compromised) = modal/banner + email immediately; Action (returned for correction, approval waiting, due in 48 h) = inbox + email; Info (accepted, profile ready) = inbox only; Passive (leaderboard moved) = badge/digest. Preference centre defaults to 'Regular' with a one-click 'Calm' (digest only) and 'Power' (everything) mode; each inbox row has exactly one primary action button ('Review', 'Approve', 'Fix rows')."
+    },
+    {
+      "insight": "Real-time dashboard UX (Smashing): show a data-freshness indicator (sync state, last-updated time, manual refresh); do not over-refresh (motion and cognitive strain); use skeleton placeholders rather than spinners; auto-retry connectivity quietly; use binary status with plain-language explanations and a 'Why this alert?' tooltip; put sparklines with arrows and % deltas beside KPIs; limit visible elements to about five and group into cards; never hide failures or delays.",
+      "source": "https://www.smashingmagazine.com/2025/09/ux-strategies-real-time-dashboards/",
+      "applyToPortal": "Every dashboard card and the matrix carry a freshness chip 'Data as of 14:32 GST via Qlik DQ' with a refresh icon; Real-time datasets (15) show 'last event received' with a stale flag after a configurable threshold. KPI tiles (Total 46 / Submitted / Non-submitted / Needs correction) get a 12-week sparkline, an arrow and a delta vs the previous reporting period. Status chips get a 'Why?' tooltip that names the rule or deadline behind the status. Pipeline incidents are shown as a red-outlined banner on both KHDA IT and Institution homes rather than suppressed."
+    },
+    {
+      "insight": "Dashboard pattern analysis (Pencil & Paper): follow F/Z scanning so the most global number sits top-left; treat charts as a consistent card grammar (title, label, legend in the same place); make deltas eye-catching with baselines (target, average) as 'cognitive landmarks'; offer both drawer and dedicated page for drill-down; design loading and empty states; allow drag-and-drop or show/hide customisation; anti-patterns are 'a wall of text but make it data', unexplained jargon, missing baselines and 'rainbow salad' colour.",
+      "source": "https://www.pencilandpaper.io/articles/ux-pattern-analysis-data-dashboards",
+      "applyToPortal": "KHDA Data home: top-left hero = sector completeness for the current period (example: 1,099 / 1,702 accepted) with a target line (e.g. 100% by the period deadline) and delta vs the same period last year; second = institutions compliant / needs follow-up (competitor showed 2 / 35 — reuse that as an illustrative example); third = open corrections ageing. Every chart uses the same card grammar from khda.css (H6 title, caption legend, axis labels always on — fixes the competitor's chart-without-axes defect). Dashboard widgets can be reordered and hidden via the existing default-dashboard chooser pattern from the Portal Delivery Figma file."
+    },
+    {
+      "insight": "Qlik's own visualisation guidance (the portal is Qlik): 'less is more' — several small charts beat one crowded chart; at most nine KPIs on a sheet; use shapes with colour for performance indicators because red/green confuse colour-blind readers; put filters on the left (or top to save space); KPIs need context (YoY, mini trend); avoid side-by-side pies. Qlik's associative selection model colours values green (selected), white (possible) and grey (excluded) and lets users select in any object to refine context.",
+      "source": "https://help.qlik.com/en-US/sense/May2024/Subsystems/Hub/Content/Sense_Hub/Visualizations/create-viz-best-practices.htm ; https://help.qlik.com/en-US/sense/2.2/Subsystems/Hub/Content/Selections/associative-selection-model.htm",
+      "applyToPortal": "Analytics and report pages adopt a Qlik-style 'Selections bar' under the page header: chips for current selections (Period: Fall 2026-27, Wave: 2, Subject area: Students & applicants) with clear-all, and filter panes where excluded values render grey so a KHDA analyst learns what is impossible under the current filter. Cap each analytics page at nine KPI tiles. Status is always icon + colour + text (tick, pulse dot, exclamation, hollow circle) and the same icons are used in the matrix, chips and emails. Since data lives in the Qlik DQ layer, note in implementation that these pages can be Qlik Sense mashups / embedded objects styled with khda.css tokens."
+    },
+    {
+      "insight": "Comparison dashboards work best when the decision is binary or ranked ('pick a winner, spot the outlier, confirm a trend'): aligned columns with metrics in the same order, consistent colour per entity across every chart, arrows and % deltas, sticky labels for long tables, and a deliberate mobile strategy (stacked cards). Baymard found users struggle most with SELECTING items to compare, so selection must be effortless.",
+      "source": "https://www.hashbuilds.com/patterns/what-is-a-comparison-dashboard ; https://uxpatterns.dev/patterns/data-display/comparison-table ; https://baymard.com/ecommerce-design-examples/39-comparison-tool",
+      "applyToPortal": "Add 'Compare' (KHDA Data, and Institution for self vs wave median): select 2-4 institutions via checkboxes on the leaderboard, matrix rows or sector map, then a sticky floating 'Compare (3)' button opens a side-by-side table with rows Coverage / Data quality / Timeliness / Automation (API share) / Open corrections / Resubmissions, a 'Highlight differences' toggle and a period selector (Fall vs Spring, or this year vs last). Each compared institution keeps one fixed colour across the table and its trend chart. Institutions can only compare themselves against anonymised wave/sector medians, never against a named peer. On narrow screens and in the PDF export the table stacks into cards."
+    },
+    {
+      "insight": "Cohort dashboards use a heatmap with rows = cohorts and columns = time buckets, a funnel to show how many customers sit at each onboarding stage, and bar charts to compare segment performance; size-based cohorts reveal whether an onboarding that works for a small high-intent pilot survives a broader rollout.",
+      "source": "https://www.getgalaxy.io/learn/glossary/cohort-analysis-dashboard-a-complete-guide ; https://www.velaris.io/articles/include-on-customer-onboarding-dashboard",
+      "applyToPortal": "KHDA IT and KHDA Data share a 'Waves' page: a cohort grid with rows Pilot Wave 1 (7), Wave 2 (14), Wave 3 (13), Wave 4 (3) and columns = proposed onboarding touch points (Kick-off & contacts, Credentials issued, IP whitelisted, Sandbox test passed, First production submission, First dataset accepted — label these as our proposal, not a KHDA fact); each cell = 'n of N' with a fill bar. Under it a per-wave funnel and a 'weeks since kick-off' curve so KHDA can see whether Wave 2 is tracking Wave 1's pace. Clicking a cell lists the institutions stuck at that touch point with owner, commitment date and blocker — replacing the competitor's six empty 'Not available' touch points."
+    },
+    {
+      "insight": "What-if controls (sliders, steppers) that instantly re-render projected outcomes are described as the highest-value micro-interaction in enterprise dashboards; they turn a dashboard into a planning tool where users test outcomes in seconds, and all major BI tools (Tableau, Power BI, Qlik, Looker) support parameter sliders.",
+      "source": "https://www.inetsoft.com/company/dashboard_slider_properties/ ; https://fuselabcreative.com/top-dashboard-design-trends-2025/",
+      "applyToPortal": "Institution leaderboard/readiness page: a 'Plan your next move' what-if panel where the Institution Admin toggles 'submit dataset X by <date>' and 'switch dataset Y to API' and sees the projected readiness score and rank update live, with the formula visible (fix the competitor's flaw: divide Data quality, Timeliness and Automation by REQUIRED datasets, penalise lateness per day, exclude no-due-date datasets from the timeliness denominator). KHDA Data gets a 'Deadline simulator': drag a dataset's due date or grant a wave-wide extension and see projected sector completeness and how many institutions flip from late to on-time. All outputs are labelled 'Projection (example)' and never written back without a confirm step."
+    },
+    {
+      "insight": "Dark mode for data-heavy UIs needs a dedicated palette, not an inversion: soft near-black surfaces (#121212-class, not pure black), lightened rather than darkened accents for contrast, desaturated series colours because saturated red/blue/green 'vibrate' on dark, text at >= 4.5:1 and UI/graphic objects at >= 3:1, elevation expressed by lighter surfaces, and two token sets sharing one semantic name.",
+      "source": "https://www.colorcontrast.org/blog/dark-mode-contrast-accessibility-guide/ ; https://www.smashingmagazine.com/2025/04/inclusive-dark-mode-designing-accessible-dark-themes/ ; https://www.cleanchart.app/blog/dark-mode-charts",
+      "applyToPortal": "Extend css/khda.css with a [data-theme=dark] token set mirroring every light token by semantic name: surface #121212 / surface-dim #1A181C / surface-bright #242127 (illustrative values to be contrast-checked), a lightened primary tint for text and outlines (the maroon #A8305C must not be used as text on dark; keep it for filled buttons with white text), desaturated dark variants of the five status chips, heatmap fills re-tuned so 'non-submitted' is a hollow outline in both themes, chart gridlines at ~12% white. Persist as localStorage khda.theme beside khda.lang, honour prefers-color-scheme, and add the toggle to the existing accessibility panel (js/a11y.js) next to 'higher contrast'. Show one dark-mode mockup in the plan to match the competitor's dark mode."
+    },
+    {
+      "insight": "Progressive disclosure (Nielsen, 1995) applied to dashboards: 3-5 critical KPIs at the top, trend context in the middle, granular tables behind click-through; modals/drawers only for a discrete sub-task; studies report 30-50% faster initial task completion and ~40% fewer 'can't find feature' tickets when advanced features are deferred; NN/G-cited research: users abandon screens with more than 7 competing elements above the fold.",
+      "source": "https://www.uxpin.com/studio/blog/what-is-progressive-disclosure/ ; https://medium.com/@theuxarchitect/progressive-disclosure-in-enterprise-design-less-is-more-until-it-isnt-01c8c6b57da9 ; https://www.aufaitux.com/blog/dashboard-design-principles/",
+      "applyToPortal": "Each role home shows at most five first-level elements above the fold (Institution: due-now agenda, submission progress half-ring from the old wireframe, needs-correction queue, approvals waiting, notifications; KHDA Data: sector completeness, follow-up list, review queue, DQ hot-spots, recent activity; KHDA IT: integration health tiles, credential expiries, whitelisting requests, error-rate sparkline, environment status). Advanced filters live behind 'More filters', the leaderboard formula and matrix legend are collapsible panels, and the 46-dataset catalogue defaults to grouped-by-subject-area with collapsed groups (the flat list is one click away)."
+    },
+    {
+      "insight": "Audit-trail UX: separate the broad activity log from field-level revision history and let users correlate them; show diffs side-by-side with additions in green and removals in red; filter by date, user, change type and field; allow 'revert to this version'; and preserve the form/schema revision that was in force when a record was captured so history stays explainable after the schema changes.",
+      "source": "https://www.intelligentgraphicandcode.com/development/audit-trails ; https://form.io/audit-trail-software-enterprise-form-builders-with-native-sdlc/ ; https://uxpatterns.dev/patterns/data-display/timeline",
+      "applyToPortal": "Dataset detail > History tab: a version list (v1 submitted, v2 resubmitted after correction, v3 accepted) stamped with the dictionary version in force (HEDB 2026 vs a future 2027 — the metadata engine in js/datasets.js already makes this a data change), row-level diff between any two versions (added/removed/changed rows, green/red), and an activity timeline with actor, role and action (Data Steward prepared, Approver signed off, KHDA Data returned, waiver granted). KHDA IT gets the same timeline component for credential and whitelist changes. Timeline supports empty/partial/stale/failed states and is fully keyboard navigable."
+    },
+    {
+      "insight": "Digest email design: single column, clear sections separated by whitespace or colour bands, no more than 8-10 items with 'View all' links, a primary/secondary hierarchy, 1-2 typefaces, high-contrast text; digests are weekly or monthly and exist to package updates so readers stay informed without opening the app.",
+      "source": "https://emailmavlers.com/blog/design-email-digest-templates/ ; https://sendpulse.com/blog/email-digest-design",
+      "applyToPortal": "Ship three role digests that actually send (the competitor's email is preview-only): Institution weekly digest (due this week, overdue, returned for correction, approvals waiting, readiness delta), KHDA Data weekly digest (sector completeness delta, institutions that slipped, top 5 recurring DQ rules, review-queue ageing), KHDA IT digest (credential expiries in 30 days, whitelisting requests, error-rate spikes per institution). Single-column, branded with the Dubai Government crest + Dubai Knowledge lockup, max 8 items per section with 'View all' deep links, Arabic version with RTL alignment, sent in Asia/Dubai business hours and previewed in the same 'Send email' drawer the competitor has but with a real Send + Bulk send."
+    },
+    {
+      "insight": "Datadog's Check Status widget shows the count of groups in OK / Warn / Critical for a check scoped and grouped by tag (e.g. how many environments have the agent running), and its integration-dashboard guidance places an 'Overview' group at the top with the most important metrics, liveness/readiness service checks and a monitor summary.",
+      "source": "https://docs.datadoghq.com/dashboards/widgets/check_status/ ; https://docs.datadoghq.com/extend/integrations/create-an-integration-dashboard/",
+      "applyToPortal": "KHDA IT > Integration health page: top 'Overview' row of check-status tiles for each pipeline hop from the R1 diagram (iPaaS, API Hub / API Management, University adapter service, Qlik DQ layer, Qlik Portal, Snowflake/SaaS warehouse feed) plus a grouped tile 'Institution API checks' that reads e.g. '31 OK / 4 Warn / 2 Critical' grouped by wave. Below: a monitor list (auth failures, token expiries, IP-whitelist rejections, 4xx/5xx rate, payload validation failures) with status transitions, and a per-institution drill-down to the same credential objects (client ID, secret rotation, key pair, whitelisted IPs) exposed read-only to the Institution Admin as a self-service view."
+    },
+    {
+      "insight": "Regulatory reporting portals differentiate by tracking validation results, resubmission counts and correction ageing during the filing window, offering pre-submission analytics, and providing peer benchmarks so an institution can see where it stands against similar entities.",
+      "source": "https://www.argusinformation.com/solutions/business-intelligence-solutions/regulatory-reporting ; https://www.explo.co/blog/compliance-dashboards-compliance-management-reporting",
+      "applyToPortal": "Rebuild Compliance history from a real requirements table: for each reporting period (Fall / Winter / Spring) and institution, Required (count of the 46 in scope by frequency), Submitted, Accepted, Late (days past due), Missing, Resubmissions, mean correction age; render as a period-by-period table plus a stacked bar, and add 'Sector median' and 'Wave median' benchmark lines. Institutions get a 'Pre-submission check' (run the dictionary validators on an uploaded file without submitting — the wireframe's js/schema.js already does this client-side) so corrections drop before the deadline. This directly replaces the competitor's 'Required / Late / Missing: —' and 'On-time: Not available'."
+    },
+    {
+      "insight": "Command palettes shorten the path through the information architecture and double as feature discovery: fuzzy search, grouped results (navigation, actions, records), recent items, shortcuts shown inline, and a keyboard hint in the search box so users learn it.",
+      "source": "https://uxpatterns.dev/patterns/advanced/command-palette ; https://mobbin.com/glossary/command-palette",
+      "applyToPortal": "Global search field in the header shows 'Ctrl K' as a keycap hint; results grouped as Go to (pages), Institutions, Datasets, Submissions, Credentials, Code lists, Actions; recent items first; Arabic and English names both indexed; actions are role-filtered and destructive ones (rotate secret, bulk reminder) open a confirm-deletion-style modal from the Figma pattern library. This closes the competitor's 'no global search' gap."
+    }
+  ],
+  "exemplars": [
+    {
+      "name": "GitHub Actions workflow run view",
+      "url": "https://docs.github.com/en/actions/how-tos/monitor-workflows/use-the-visualization-graph",
+      "whatToBorrow": "Node graph of pipeline stages with status icons and dependency lines; left rail of jobs/runs; per-step duration; failing step auto-expanded; permalink to a log line; download logs; filter by status; re-run failed. Map one-to-one onto the R1 hops (iPaaS -> API Hub -> adapter -> DQ validation -> profiling -> processing -> Qlik Portal) for the Submission journey page."
+    },
+    {
+      "name": "Datadog Host Map",
+      "url": "https://docs.datadoghq.com/infrastructure/hostmap/",
+      "whatToBorrow": "One hexagon per entity, fill-by metric, size-by metric, nested group-by (wave), boolean filter query with suggested and saved queries, watching state change live during a rollout. Use for the 37-institution Sector map tab."
+    },
+    {
+      "name": "Datadog Check Status / Monitor Summary widgets",
+      "url": "https://docs.datadoghq.com/dashboards/widgets/check_status/",
+      "whatToBorrow": "Tiles that count groups in OK/Warn/Critical, an Overview group at the top with liveness checks. Use for KHDA IT Integration health tiles per pipeline hop and per wave."
+    },
+    {
+      "name": "Grafana dashboard best practices",
+      "url": "https://grafana.com/docs/grafana/latest/visualizations/dashboards/build-dashboards/best-practices/",
+      "whatToBorrow": "Hierarchical linked dashboards (overview -> wave -> institution -> dataset -> run), template variables so one page serves all 37 institutions, consistent row grammar, anti-sprawl rules for saved views."
+    },
+    {
+      "name": "Vercel dashboard (2020 redesign and deployment inspector)",
+      "url": "https://vercel.com/blog/dashboard-redesign",
+      "whatToBorrow": "Status in the browser tab icon while a submission is processing; logs embedded in the overview with filters and one-click copy; explicit performance budget."
+    },
+    {
+      "name": "Stripe Radar review queue",
+      "url": "https://docs.stripe.com/radar/reviews",
+      "whatToBorrow": "Prioritised queue fed by editable rules; list vs detail; 'Why flagged' insights and related items; J/K and Previous/Next; assign-to-me with mine/unassigned filters; action set with an audit timeline. Use for KHDA Data Review queue and maker-checker approvals."
+    },
+    {
+      "name": "Linear (command palette, custom views, inbox)",
+      "url": "https://linear.app/docs/custom-views",
+      "whatToBorrow": "Cmd+K with shortcuts shown inline, saved views with personal/team scope and sidebar favourites, subscribe-to-view notifications, snooze with natural language, a shareable URL for every object and drawer state."
+    },
+    {
+      "name": "Airtable Interfaces record sidesheet",
+      "url": "https://support.airtable.com/articles/5805061650-airtable-interface-layout-record-detail",
+      "whatToBorrow": "Resizable right drawer that keeps the list visible, Previous/Next through the filtered list, tabs and collapsible sections, 'open full page' escape hatch. Use as the single drawer component for institution/dataset/submission/credential detail."
+    },
+    {
+      "name": "Qlik Sense associative selections and visualisation guidance",
+      "url": "https://help.qlik.com/en-US/sense/May2024/Subsystems/Hub/Content/Sense_Hub/Visualizations/create-viz-best-practices.htm",
+      "whatToBorrow": "Selections bar with green/white/grey states, filters on the left, max nine KPIs, shape+colour status indicators, small multiples over crowded charts. Natural fit because the portal IS the Qlik layer."
+    },
+    {
+      "name": "NN/G status tracker guidelines",
+      "url": "https://www.nngroup.com/articles/status-tracker-progress-update/",
+      "whatToBorrow": "Latest update first, plain language over codes, dated history, specific errors, heartbeat updates during long stages, completion notifications with deep links, opt-in preferences."
+    },
+    {
+      "name": "Courier notification centre guidance (with Figma's inbox as the cited example)",
+      "url": "https://www.courier.com/blog/in-app-notification-center-design",
+      "whatToBorrow": "Bell + 9+ badge, All/Unread tabs, Today/Yesterday grouping, actor-action-object copy, batching by event kind, hover actions with optimistic updates, 'You're all caught up' empty state, per-type/per-channel preference centre with quiet hours."
+    },
+    {
+      "name": "Smashing Magazine real-time dashboard strategies",
+      "url": "https://www.smashingmagazine.com/2025/09/ux-strategies-real-time-dashboards/",
+      "whatToBorrow": "Data-freshness chip with last-updated and manual refresh, skeletons instead of spinners, 'Why this alert?' tooltips, sparklines with deltas beside KPIs, about five elements per view."
+    }
+  ],
+  "antiPatterns": [
+    "Rendering the full 1,702-cell matrix as a flat sheet of tiny squares with no grouping, sticky headers, drill-through or hover detail (the competitor's grid) — group by wave and subject area first, expand on demand.",
+    "Encoding status with colour alone (especially red/green) — always pair colour with an icon glyph and text; avoid 'rainbow salad' palettes across charts.",
+    "KPI tiles without a baseline, target or delta — a bare '1,099' means nothing; add sparkline, arrow, previous-period delta and target line.",
+    "Leaking backend codes as labels (STUDENT_LIFECYCLE_EVENT, SOD_TXN, EMPLOYEE_PROFILE) — plain display names first, code as muted caption.",
+    "Stub actions and 'Not available' placeholders presented as features (upload disabled, email preview-only, empty touch points) — every action in the plan must be real or explicitly marked 'phase 2'.",
+    "Hiding pipeline failures or delays from institutions — surface incidents as banners and heartbeat messages instead.",
+    "Notifying on every event with generic titles ('Update') at one urgency level — batch by kind, front-load actor/action/object, map severity to channel.",
+    "Building dark mode by inverting the light palette or using pure black and saturated status colours — define a second token set and contrast-check it.",
+    "Dashboard sprawl: hand-built dashboards per institution or per wave instead of one templated page driven by a URL parameter.",
+    "Over-refreshing 'real-time' widgets so numbers jitter and change without any record of what changed — use freshness chips, gentle cadence and an activity log.",
+    "Using a modal (or a full page) for every detail so users lose the matrix/list context — use a drawer with Previous/Next and a URL, keep modals for confirmations.",
+    "More than 5-7 competing elements above the fold, 3D or decorative charts, charts without axes or legends.",
+    "Readiness scores whose denominators are 'what was submitted' and whose timeliness ignores lateness — publish the formula and use required datasets as the denominator.",
+    "Comparison tools where selecting items to compare is the hard part — add checkboxes on the matrix/leaderboard and a floating Compare button; cap at four.",
+    "Desktop-only density with no stacked-card fallback and no RTL mirroring for drawers, timelines, matrices and email templates.",
+    "A command palette that only navigates and hides shortcuts — include actions, records and inline keycaps, and gate destructive actions behind a confirm modal.",
+    "Digest emails that dump every event — cap at 8-10 items per section with 'View all' deep links.",
+    "Search that only covers expanded log sections (GitHub's own limitation) — index all validation errors, expanded or not.",
+    "What-if simulators that silently write back — label outputs as projections and require an explicit confirm before any state change."
+  ]
+}

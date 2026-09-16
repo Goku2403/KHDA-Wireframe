@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOCKUP — page name</title>
+<!-- KHDA Design System (DDS v2.2) implementation from the existing wireframe, plus the mockup kit -->
+<link rel="stylesheet" href="../../css/khda.css">
+<link rel="stylesheet" href="_mock.css">
+<style>
+  /* page-specific tweaks only; prefer the kit classes */
+</style>
+</head>
+<body class="mock">
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- ===== Portal header (KHDA DS: crest + Dubai Knowledge lockup, nav, tools) ===== -->
+<header class="portal-header">
+  <div class="portal-header__inner">
+    <div class="portal-header__top">
+      <a class="brand-gov" href="#" aria-label="Government of Dubai"><img src="../../assets/gov-dubai.svg" width="129" height="51" alt="Government of Dubai"></a>
+      <a class="brand-khda" href="#" aria-label="Dubai Knowledge"><img src="../../assets/khda-logo.svg" width="85" height="44" alt="Dubai Knowledge"></a>
+    </div>
+    <div class="portal-header__sub">
+      <nav class="portal-nav" aria-label="Portal">
+        <!-- ROLE NAV: replace with the role's navigation. Mark the current page with aria-current="page". -->
+        <a href="#" aria-current="page">Home</a>
+        <a href="#">Datasets</a>
+        <a href="#">Submissions</a>
+        <a href="#">Quality</a>
+        <a href="#">Integration</a>
+        <a href="#">Reports</a>
+      </nav>
+      <div class="portal-tools">
+        <button class="tool-pill tool-pill--search" type="button" aria-label="Search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span>Search datasets, institutions…</span><kbd>Ctrl K</kbd>
+        </button>
+        <button class="tool-pill tool-pill--icon" type="button" aria-label="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21h4"/></svg>
+          <span class="tool-pill__badge">3</span>
+        </button>
+        <button class="tool-pill tool-pill--icon" type="button" aria-label="Accessibility">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M4 9h16M12 9v6m0 0-3 6m3-6 3 6"/></svg>
+        </button>
+        <button class="tool-pill tool-pill--lang" type="button">العربية</button>
+        <div class="tool-account">
+          <button class="tool-pill tool-user" type="button">
+            <span class="tool-user__avatar" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+            <span class="tool-user__text">
+              <span class="tool-user__role">Data Steward · BITS Pilani</span>
+              <span class="tool-user__name">Noura Al Khatib</span>
+            </span>
+            <svg class="tool-user__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="page page--dash" tabindex="-1">
+
+  <!-- ===== Page head ===== -->
+  <div class="page-head">
+    <div>
+      <div class="page-head__eyebrow">Eyebrow · context</div>
+      <h1 class="page-head__title">Page title</h1>
+      <p class="page-head__sub">One sentence that says what this page is for.</p>
+    </div>
+    <div class="page-head__actions">
+      <div class="period"><span class="period__label">Reporting period</span><span class="period__value">Fall · 2026–2027</span></div>
+      <button class="btn btn--primary btn--md" type="button">Primary action</button>
+    </div>
+  </div>
+
+  <!-- ===== Content: build with .kpi-grid / .panel / .dash-card / .data-table / .journey / .matrix … ===== -->
+  <div class="kpi-grid">
+    <div class="kpi kpi--primary has-mark"><span class="mark mark--new">New</span><span class="kpi__label">Label</span><span class="kpi__value">46</span><span class="kpi__note">note</span></div>
+    <div class="kpi kpi--success"><span class="kpi__label">Label</span><span class="kpi__value">21</span><span class="kpi__note">note</span></div>
+    <div class="kpi kpi--warning"><span class="kpi__label">Label</span><span class="kpi__value">5</span><span class="kpi__note">note</span></div>
+    <div class="kpi kpi--error"><span class="kpi__label">Label</span><span class="kpi__value">2</span><span class="kpi__note">note</span></div>
+  </div>
+
+  <div class="grid grid--main">
+    <section class="panel">
+      <div class="panel__head"><h2 class="panel__title">Panel</h2><button class="btn btn--outline btn--md" type="button">Action</button></div>
+      <p class="muted">Content…</p>
+    </section>
+    <section class="panel">
+      <div class="panel__head"><h2 class="panel__title">Side panel</h2></div>
+      <p class="muted">Content…</p>
+    </section>
+  </div>
+
+  <div class="mock-foot"><span>© 2026 Knowledge and Human Development Authority</span><span>Higher education · Data readiness</span></div>
+</main>
+</body>
+</html>

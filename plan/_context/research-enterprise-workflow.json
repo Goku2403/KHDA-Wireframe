@@ -1,0 +1,237 @@
+{
+  "topic": "enterprise-workflow",
+  "findings": [
+    {
+      "insight": "Four-eyes approval is a UI architecture, not a database flag. The checker needs a separate read path that forces an independent judgement: decision context (what changed, what rules fired, what the maker said) on the same screen, and no one-click 'agree' that collapses the two reviews into a formality.",
+      "source": "DigiWagon, Compliance Analyst Workflow UX Patterns (https://digiwagon.com/blogs/compliance-analyst-workflow-ux-patterns/); ChequeDB, Four-Eyes Principle foundations (https://chequedb.com/resources/blog/four-eyes-principle-foundations)",
+      "applyToPortal": "Give the Institution Approver a dedicated 'Review & sign off' page per submission version (not the Data Steward's Review step). Layout: left column = validation summary (errors 0 / warnings N acknowledged / info), record-count deltas vs the previous accepted version, DQ score, and the Steward's submission note; right column = attestation panel. Keep 'Sign off & submit' disabled until the Approver has opened both the 'Validation report' and 'Changes vs previous version' tabs, and require an attestation checkbox ('I confirm this data is accurate, true and complete for <period>') plus an optional comment. Rejection requires a reason category + free text and returns the version to the Steward as Draft with the reason pinned at the top of the form."
+    },
+    {
+      "insight": "Self-approval must be structurally impossible, and every approval record must capture the user ID, an accurate synchronized timestamp, the action type (CREATE/UPDATE/DELETE/APPROVE/REJECT), before-and-after values, the RBAC configuration in effect and the workflow definition that routed it.",
+      "source": "ChequeDB, Four-Eyes Principle foundations (https://chequedb.com/resources/blog/four-eyes-principle-foundations)",
+      "applyToPortal": "Enforce Steward != Approver on the same submission version at the server and in the UI: if the signed-in Approver also prepared the version, hide the sign-off button and show an inline notice 'You prepared v3; another Approver must sign it off.' For institutions with only one eligible person, require the Institution Admin to nominate a second Approver before the first submission (onboarding checklist item). Store on each approval: approver id/name/role, UTC timestamp, version id + content hash, dictionary version and validation rule-set version used, and the role matrix version, and render these in the version's audit tab."
+    },
+    {
+      "insight": "Rubber-stamping, fatigue-driven approvals and informal (email/verbal) reviews are the classic failure modes of maker-checker in resource-constrained organisations; the system should make the checker do active work proportional to risk and should never accept an approval that happened outside it.",
+      "source": "ChequeDB, Four-Eyes Principle foundations (https://chequedb.com/resources/blog/four-eyes-principle-foundations); ASPIA Infotech, Exception Management Process (https://aspiainfotech.com/2026/09/14/exception-management-process/)",
+      "applyToPortal": "Make approval effort risk-proportional: datasets with zero warnings can be signed off from a compact 'Ready for sign-off' list with multi-select (bulk sign-off shows a summary modal listing each dataset code, record count and rule-set version); any dataset with acknowledged warnings, a variance explanation, or an active waiver must be opened individually and the Approver must scroll the warnings table before the button enables. Never offer 'approve by email' - notification emails deep-link to the Review & sign off page. Put a 'Sign-off pace' micro-stat (example: 'median 2m 40s per dataset') in KHDA Data's institution detail so suspiciously fast bulk sign-offs are visible."
+    },
+    {
+      "insight": "IPEDS uses an explicit 'lock' as the act of attestation: locking means the keyholder declares the data 'accurate, true, and complete' and the data is considered submitted regardless of coordinator review. A state/system coordinator may apply a second lock, an email goes out when the first lock is applied, corrections after locking are only possible through the last locking entity or the help desk, and prior-period fixes go through a separate Prior Year Revision System.",
+      "source": "NCES, IPEDS Survey Methodology (https://nces.ed.gov/ipeds/survey-components/ipeds-survey-methodology); IPEDS keyholder tutorials (https://www.airweb.org/docs/default-source/ipeds-tutorials/nk-keyholder_responsibilities_script.pdf)",
+      "applyToPortal": "Model submission states as: Draft -> Pending approval -> Submitted (locked by institution) -> Processing (validation/profiling/processing in Qlik DQ layer) -> Needs correction | Accepted (locked by KHDA). The brief's four statuses (non-submitted, processing, needs correction, accepted) stay as the roll-up; the extra states are sub-states shown in the journey tracker. Once Submitted, the institution can no longer edit; the Approver gets a 'Request unlock' action (reason + which records) routed to KHDA Data, who unlock with a note. Provide a separate 'Prior-period revision' entry point (from Compliance history) whose versions are labelled 'Revision of Fall 2026-27 v2' and never overwrite the accepted snapshot."
+    },
+    {
+      "insight": "HESA Data Futures splits sign-off into regulator clearance then provider attestation: quality rules are raised automatically into an Issue Management System, tolerances can be applied to let data in, the provider does 'Submit for Approval', HESA and statutory customers review before allowing the provider to 'approve the submission', which generates a sign-off form that is emailed to the Accountable Officer/Head of Provider and completes the collection.",
+      "source": "HESA news, Student 22056 Sign Off deadline and in-year update (https://www.hesa.ac.uk/news/13-11-2023/student-22056-sign-off-deadline-in-year-update); HESA, Student data: actions to ensure data quality (https://www.hesa.ac.uk/news/30-04-2024/student-data-actions-ensure-data-quality-statutory-funding-bodies) (from search summaries; pages returned 403 on fetch)",
+      "applyToPortal": "Add a period-level close-out in addition to per-dataset acceptance: when all 46 datasets (or all non-waived ones) are Accepted, KHDA Data clicks 'Clear for period sign-off', which generates a 'Period attestation' page for the Institution Admin/Approver listing every dataset, its accepted version, applied tolerances and active waivers, and the recurring-correction count. Signing it produces a downloadable signed PDF/JSON and flips the institution to 'Period closed' on the KHDA matrix. Every validation failure becomes an Issue object (rule id, records affected, severity, owner, status) rather than the competitor's opaque '13 open issues' count."
+    },
+    {
+      "insight": "SAP GRC Process Control's sign-off works as a cascade: individual control owners give digital confirmation, those certifications roll up to departmental and then enterprise dashboards, and every sign-off is logged with user ID, timestamp and status so leadership sees consolidated health while accountability stays granular.",
+      "source": "Pathlock, SAP GRC Process Control overview (https://pathlock.com/blog/grc/sap-grc-process-control/)",
+      "applyToPortal": "Render sign-offs as a roll-up: dataset-level Approver sign-offs aggregate into an institution 'Attestation progress' card (example: 41/46 signed, 3 waived, 2 pending), which aggregates into KHDA Data's sector view (example: 29/37 institutions closed for Fall 2026-27). Each level is clickable down to the individual sign-off record. Use DDS status chips: Completed for signed, Action Required for pending, Delayed for overdue."
+    },
+    {
+      "insight": "Minimum viable audit event schema: user identity (id, name, role), UTC timestamp with millisecond precision (ordering matters in approval workflows), action type from a controlled vocabulary, resource identifier, before/after state, and IP/session context. Schema discipline is what separates a usable trail from noise.",
+      "source": "Velt, How to add an audit trail to a SaaS product (https://velt.dev/blog/how-to-add-audit-trail-to-saas-product)",
+      "applyToPortal": "Define one audit event model for the whole portal: {event_id, occurred_at_utc, actor {id, name, role, institution}, action (submission.created, submission.signed_off, submission.unlocked, waiver.approved, credential.rotated, ip.whitelisted, role.assigned, codelist.changed, view.exported ...), resource {type, id, version}, before, after, channel (portal | API | system), ip, session_id, request_id}. Every object page (dataset submission, waiver, institution, API client, user, code list) gets an 'Audit' tab that lists its own events; the global 'Audit log' page (KHDA IT and KHDA Data) queries across objects."
+    },
+    {
+      "insight": "Immutability comes in three strengths - append-only tables (a DBA can still alter rows), cryptographic hash chains (each record hashes the previous one, so tampering breaks the chain), and WORM storage such as Azure Immutable Blob Storage that blocks modification at the storage layer. Auditors now ask for tamper-evident logs rather than plain logging.",
+      "source": "Velt (https://velt.dev/blog/how-to-add-audit-trail-to-saas-product); AesirX, Immutable audit trails (https://aesirx.io/blog/compliance-one/immutable-audit-trails-when-your-audit-log-becomes-cryptographic-proof)",
+      "applyToPortal": "Implementation note for the plan: audit events are append-only and hash-chained; accepted submission packages (the exact file/API payload plus validation results) are written to Azure Immutable Blob Storage with a legal-hold/retention policy aligned to KHDA's records rules. In the UI, show a small 'Tamper-evident' badge with the truncated chain hash on the Audit log page and on each submission receipt, with a 'Verify integrity' action for KHDA IT that recomputes the chain and reports OK/broken."
+    },
+    {
+      "insight": "Audit trail UI should offer a chronological timeline, diff visualisation of before/after, filters by object, user and time range, compliance-ready export, and for approval workflows the trail should show who approved which version, what objections were raised before sign-off and whether escalation steps were followed.",
+      "source": "Velt (https://velt.dev/blog/how-to-add-audit-trail-to-saas-product); AI UX Playground, Audit Trail pattern (https://aiuxplayground.com/pattern/audit-trail/)",
+      "applyToPortal": "Audit tab pattern: vertical timeline (reuse the wireframe's 'recent activity' list styling) with actor avatar, role chip, action verb, relative + absolute time; rows for edits expand to a two-column before/after diff (field, old, new), rows for record uploads show counts (added/changed/removed). Filter bar: actor, action type, date range, channel, institution (KHDA views). Export to CSV and a 'Regulator bundle' (PDF timeline + JSON events + referenced receipts) that KHDA Data can generate without IT. Ensure the diff renders correctly in RTL."
+    },
+    {
+      "insight": "A regulator's data-collection platform should issue a proof-of-filing acknowledgement with hash totals and timestamps, optionally digitally signed, so the filer can prove what was submitted and verify it has not been modified; it must also publish the full list of validation rules applied and keep received filings immutable.",
+      "source": "XBRL International, Features of an XBRL data collection / processing platform (https://www.xbrl.org/guidance/data-collection-platform/)",
+      "applyToPortal": "After every submission (API or portal upload) generate a 'Submission receipt' with receipt id, institution, dataset code and display name, period, version, channel, UTC timestamp, row count, SHA-256 of the payload and the rule-set version; downloadable as PDF and returned as JSON on the API. Show the receipt id in the journey tracker's 'Received' stage. Add a public 'Validation rules' page per dataset (rule id, field, severity, plain-English and Arabic message, dictionary reference) generated from js/schema.js metadata, beating the competitor's rule-less spec drawer."
+    },
+    {
+      "insight": "Synchronous, inline audit logging on the request path adds latency and can overwhelm the primary database; decouple logging via a queue/message broker, batch writes, and keep audit storage separate from production workload.",
+      "source": "Velt (https://velt.dev/blog/how-to-add-audit-trail-to-saas-product)",
+      "applyToPortal": "Implementation note: the portal emits audit events to an Azure Service Bus/Event Hub topic consumed by an audit writer into a separate store; UI shows events as 'eventually consistent' (a subtle 'Updating...' state on the Audit tab for up to a few seconds after an action)."
+    },
+    {
+      "insight": "For resubmissions, keep every historical version (original plus each resubmission), clearly flag the latest version for filers, internal supervisors and external users via labels/timestamps, keep a secure audit trail of all resubmissions, and publish a clear resubmission policy that states the acceptable reasons.",
+      "source": "XBRL International, data collection platform guidance (https://www.xbrl.org/guidance/data-collection-platform/)",
+      "applyToPortal": "Each dataset submission page has a 'Versions' panel: v1, v2, v3 with chips 'Current' / 'Superseded' / 'Rejected', submitter, channel (API / portal upload), timestamp, receipt id, outcome. Resubmitting requires a reason code from a controlled list (Correction after KHDA feedback, Institution-initiated correction, Late/additional records, Dictionary change, Other + text). Reason codes feed Compliance history's 'recurring corrections' metric so it is measurable rather than the competitor's '-'. Publish the resubmission policy as a help panel next to the button."
+    },
+    {
+      "insight": "AxiomSL ControllerView is the reference for 'audit defence': it versions and preserves data, metadata, business logic and the entire workflow process, supports sign-off and attestation across multiple lines of business, and preserves all intermediary and submitted data so a firm can reconstruct exactly what was filed and why.",
+      "source": "AxiomSL/Adenza ControllerView product pages (https://www.axiomsl.com/platform/controllerview/, https://adenza.com/solutions/risk-financial-regulatory-reporting/controllerview/) via search summaries (sites unreachable on fetch); Nasdaq AxiomSL regulatory reporting (https://www.nasdaq.com/solutions/fintech/nasdaq-axiomsl/regulatory-reporting)",
+      "applyToPortal": "Every version snapshot stores not only the records but the dictionary version (HEDB 2026 vs 2027), the code-list versions, the validation rule-set version and the workflow definition version used - shown as a 'Validated against' line in the version header. Add a 'Compare versions' view (v2 vs v3): summary tiles added/changed/removed records, then a grid limited to changed rows with cell-level highlighting, keyed by the dataset primary key from metadata (26 datasets declare one; for the rest compare by row hash). KHDA Data can open the same view from the matrix cell."
+    },
+    {
+      "insight": "Tax filing distinguishes a 'superseding' return (filed again within the filing window, replaces the original) from an 'amended' return (filed after the window closed); the distinction changes how lateness and corrections are judged.",
+      "source": "IRS, Amended and superseding corporate returns (https://www.irs.gov/businesses/corporations/amended-and-superseding-corporate-returns)",
+      "applyToPortal": "Label a resubmission before the due date and before acceptance as 'Superseding' (no timeliness penalty; earlier version simply superseded) and a resubmission after the due date or after acceptance as 'Amendment' (counted in recurring corrections, and if after due date, counted as late). Show the label on the version chip and use it in the readiness/compliance scoring so the portal fixes the competitor's flawed Timeliness (which ignored lateness entirely)."
+    },
+    {
+      "insight": "IPEDS edit checks compare current responses with the prior-year submission and cross-validate across survey components; respondents must resolve all edit failures before locking, but where accurate data trips a check they can confirm or explain the deviation, and only insufficient explanations go to the help desk for override. Many components include discretionary context boxes.",
+      "source": "NCES, IPEDS Survey Methodology (https://nces.ed.gov/ipeds/survey-components/ipeds-survey-methodology)",
+      "applyToPortal": "Extend the wireframe's dictionary-driven validation with three severities: Error (blocks submission), Warning - explanation required (submission blocked until the Steward types a justification or confirms the value), Info. Add period-over-period variance checks (example: total enrolled students changed by more than +/-25% vs Spring 2025-26) and cross-dataset checks (graduates cannot exceed enrolled). Each warning row has 'Confirm value' and 'Explain' controls; explanations are stored on the version and shown to the Approver and to KHDA Data, who can 'Accept explanation' or 'Reject - needs correction'. Only KHDA Data can override an Error via a waiver."
+    },
+    {
+      "insight": "A well-formed exception (waiver) record has: id, type, affected requirement, business justification, owner, risk rating, impact analysis, compensating controls, approvers, effective and expiry dates, review date, status, remediation plan and supporting evidence; its lifecycle is Requested -> Under review -> Approved -> Active -> Expired -> Closed, and approval authority should be set by risk thresholds rather than uniformly.",
+      "source": "ASPIA Infotech, Exception Management Process: Steps, Workflow & Best Practices (https://aspiainfotech.com/2026/09/14/exception-management-process/)",
+      "applyToPortal": "Build a 'Waiver / exception request' object with types: Channel exception (portal upload instead of API), Deadline extension, Rule tolerance (specific validation rule on a dataset), Dataset not applicable this period, Onboarding-wave deferral. Form (institution side, Service Task Template: stepper Details -> Justification & evidence -> Compensating actions -> Review): dataset(s), period(s), type, justification, evidence upload, requested effective/expiry dates, remediation plan. KHDA Data side: risk rating, impact, compensating controls, approver, decision note. Route by risk: rule tolerance and short extensions (example: <= 14 days) approvable by a KHDA Data analyst; channel exceptions and longer extensions require KHDA Data lead approval (second approver) - maker-checker again."
+    },
+    {
+      "insight": "Exceptions without an expiry and review date become permanent control gaps; every exception needs an expiry, a review date, automated expiry/renewal notifications, and renewals must be treated as fresh governance decisions rather than automatic extensions.",
+      "source": "ASPIA Infotech, Exception Management Process (https://aspiainfotech.com/2026/09/14/exception-management-process/)",
+      "applyToPortal": "Make expiry mandatory on every waiver (default = end of the current reporting period; hard maximum = one academic year, illustrative). The evaluator sends reminders at T-14 and T-3 days before expiry (example cadence) to the institution owner and the KHDA approver; 'Renew' opens a new pre-filled request that must be re-approved and shows the renewal count (example: '3rd renewal' flagged Action Required). Expired waivers automatically revert the dataset to normal rules and, for channel exceptions, disable the portal-upload bridge for that institution."
+    },
+    {
+      "insight": "A central exception register with executive metrics (active count, new this period, by risk, by business unit, overdue, average age, renewal vs closure rates, evidence completeness) is a best practice; email-based approvals and tracking spreadsheets are explicit anti-patterns because they lose the audit trail.",
+      "source": "ASPIA Infotech, Exception Management Process (https://aspiainfotech.com/2026/09/14/exception-management-process/)",
+      "applyToPortal": "KHDA Data gets a 'Waivers & exceptions' page: KPI band (Active, Pending decision, Expiring in 30 days, Expired-not-renewed, Average age) then a table with filters (institution, wave, type, risk, status, expiry). Institutions see 'Active waivers' chips on affected dataset cards and a 'My requests' list with status timeline. The 37x46 compliance matrix cell shows a small waiver glyph (and Arabic tooltip) so accepted-with-tolerance is distinguishable from accepted-clean."
+    },
+    {
+      "insight": "SAP GRC remediation: when monitoring detects a violation the system creates an issue, lets teams categorise it, assign responsibility, capture root cause and corrective action, with predefined escalation routes and dashboards of open / overdue / resolved issues by owner.",
+      "source": "Pathlock, SAP GRC Process Control (https://pathlock.com/blog/grc/sap-grc-process-control/)",
+      "applyToPortal": "Turn the wireframe's 'remediation queue' dashboard card into a real Remediation item model: each 'Needs correction' outcome creates items grouped by rule id with records affected, owner (default: Data Steward), due date (example: 10 working days), root-cause category, status (Open / In progress / Resubmitted / Verified / Closed). KHDA Data's institution detail shows open/overdue/resolved counts and a 'Recurring' flag when the same rule fails across periods (feeds Compliance history's recurring corrections)."
+    },
+    {
+      "insight": "Maintainable SLA logic uses Events -> a single Evaluator -> Actions: events record facts, one scheduled evaluator computes deadlines and writes explicit SLA states (On track / Warning / Breached / Paused / Completed), and actions fire only on state transitions, with cooldowns, thresholds stored as data, pause rules that do not reset the clock, and an immutable breached_at timestamp.",
+      "source": "AppMaster, SLA timers and escalations: maintainable workflow modeling (https://appmaster.io/blog/sla-timers-escalations-workflow-apps)",
+      "applyToPortal": "Specify a 'Deadline engine' in the implementation notes: one evaluator job (every 15 minutes, example) over the 1,702 institution x dataset x period rows computes state: Not due / Due soon (T-14d) / Due this week (T-7d) / Due today / Overdue / Escalated L1 / Escalated L2 / Complete, plus Paused when a deadline-extension waiver is active (resume without resetting). Notifications and emails fire only on transitions, with a 24h cooldown per row (example). Thresholds and recipients live in a KHDA Data-editable 'Escalation rules' settings page rather than code. Store breached_at immutably and show it in Compliance history as 'days late' (fixing the competitor's '1 days late' defect with proper pluralisation in EN/AR)."
+    },
+    {
+      "insight": "Escalation ladders should be small (owner -> lead -> manager), with example timings of 1 / 3 / 5 days overdue; every notification must carry the item id, title, due date, owner, time overdue and why it matters, plus one clear next action (Acknowledge, Reassign, Mark in progress, Add blocker). Reminders before the deadline reduce the chance that busy queues hide urgent work.",
+      "source": "AppMaster (https://appmaster.io/blog/sla-timers-escalations-workflow-apps); Snohai, SLA-based workflow escalation (https://snohai.com/sla-escalation-workflows/); Beefed.ai, Escalate overdue action items (https://beefed.ai/en/escalation-strategies-overdue-action-items)",
+      "applyToPortal": "Ladder (illustrative): L0 reminders to the Data Steward at T-14, T-7, T-1; L1 at T+1 day overdue to Institution Admin + Approver; L2 at T+3 to the KHDA Data follow-up owner (creates a follow-up task with the competitor-style 'Send email' but actually sending, with a pre-filled bilingual template); L3 at T+10 to the institution head/KHDA management as a formal notice. Each in-portal notification card shows dataset name (display name, never the raw code), period, due date, days overdue, owner and exactly one primary action ('Open dataset', 'Request extension', 'Mark blocked'). Notifications feed lives in the header bell and a 'Notifications' page with filters and mark-as-read."
+    },
+    {
+      "insight": "Hand-offs are where SLAs die: the receiving team should explicitly claim transferred items within a window, unclaimed items escalate up the management chain, items missing information go back to 'blocked - need information' and alert the sender, and queue time / handoff time should be reported as distinct metrics; the anti-pattern is moving tickets out of your queue to hit the SLA while they fall between systems.",
+      "source": "Unito, How to design SLA-aware escalation workflows (https://unito.io/blog/sla-aware-ticket-escalation-workflows/)",
+      "applyToPortal": "Run two clocks per submission: the institution clock (Draft, Needs correction) and the KHDA clock (Processing, Under KHDA review, Waiver pending, Unlock requested). Show both on the journey tracker and in Compliance history ('Institution time 6d / KHDA time 2d', example). KHDA Data follow-up items must be claimed by a named analyst ('Claim' button in the KHDA queue); unclaimed items for more than 2 working days (example) escalate to the KHDA Data lead. Institutions can set 'Blocked - waiting for KHDA' with a reason, which pauses their clock and alerts KHDA."
+    },
+    {
+      "insight": "RBAC should be defined as a Role-Resource-Action matrix (rows = roles/subjects, columns = resources, cells = allowed actions) that doubles as the configuration and the audit artefact; apply least privilege, segregation of duties, keep the role count small, allow field-level or conditional permissions where needed, and run regular access reviews.",
+      "source": "Frontegg, Access Control Matrix: Key Components & 5 Best Practices (https://frontegg.com/blog/access-control-matrix); Oso, 10 RBAC Best Practices (https://www.osohq.com/learn/rbac-best-practices)",
+      "applyToPortal": "Roles: Institution Admin, Data Steward, Approver, Read-only (institution); KHDA Data Analyst, KHDA Data Lead; KHDA IT Admin; optional KHDA Read-only (management). Add an 'Access & roles' page (KHDA IT, and a reduced institution version) that renders the matrix: rows roles, columns resources (datasets & submissions, waivers, credentials & IP whitelist, users, code lists / dictionary, reports & views, audit log, escalation rules), cells with view / prepare / submit / approve / manage icons using DDS chips. Encode SoD rules explicitly (Steward cannot approve own version; KHDA Analyst cannot approve own waiver rating; KHDA IT cannot see record-level data). Add a quarterly 'Access review' task in which each Institution Admin attests their user list (creates audit events)."
+    },
+    {
+      "insight": "IPEDS keyholders can create up to 16 additional respondent accounts themselves - delegated user administration at the institution, with the central body only managing the keyholder and the coordinator layer.",
+      "source": "NCES, IPEDS Survey Methodology (https://nces.ed.gov/ipeds/survey-components/ipeds-survey-methodology)",
+      "applyToPortal": "Institution Admin self-service 'Users' page: invite by email (UAE PASS or institutional SSO), assign role, set dataset-scope (example: Steward for the 14 Students & applicants datasets only), deactivate, view last sign-in; KHDA IT only provisions the first Institution Admin per institution during wave onboarding and manages API credentials/IP whitelists. Every change is an audit event visible to KHDA IT."
+    },
+    {
+      "insight": "A saved view captures more than a filter: applied filters, visible columns, grouping/hierarchy, sort and display preferences. Admins manage shared team views and can set a default and order them (rename, duplicate, delete), while members can tweak a view personally and reset to the shared baseline.",
+      "source": "Atlassian, Save and share views in Jira (https://support.atlassian.com/jira-software-cloud/docs/save-and-share-views-from-your-list/)",
+      "applyToPortal": "Add a 'Views' control (left of the filter bar) to every list surface: dataset catalogue, KHDA monitor / compliance matrix, entity submissions table, waivers, audit log, notifications. A view stores filters, columns, grouping (subject area / frequency / wave), sort, density and chart-vs-table mode, and has a shareable URL. Two tabs: 'My views' and 'Shared by KHDA'; KHDA Data leads publish defaults such as 'Wave 2 - overdue semester datasets' or 'Real-time datasets not received in 7 days'; a modified shared view shows an 'Edited - Reset' chip. Views are language-agnostic (labels re-render in AR)."
+    },
+    {
+      "insight": "Applied filters must always be visible as removable chips with a 'Clear all', result counts should be shown (ideally on the Apply button), and layout shifts while filtering long tables are an anti-pattern; do not conflate filtering with sorting.",
+      "source": "Eleken, 19+ Filter UI examples for SaaS (https://www.eleken.co/blog-posts/filter-ux-and-ui-for-saas)",
+      "applyToPortal": "Under each filter bar render a chips row (DDS chip 14/20, x to remove, 'Clear all' link) and a count 'Showing 128 of 1,702 rows'. Filters apply live for client-side tables (catalogue, 37x46 matrix) and via an 'Apply (312)' button for server-side ones (audit log). Reserve fixed height for the chips row so the table does not jump; mirror chip order in RTL."
+    },
+    {
+      "insight": "ServiceNow's scheduled-report form is a good field checklist: name, report, active toggle, run frequency (daily, weekly, monthly, week-in-month, yearly, periodically, once, on demand, business-calendar entry), time and time zone, recipients as users / groups / comma-separated emails, subject, introductory message, output type (PDF, PDF-landscape, PNG, Excel, CSV), zip, include other reports, page size, conditional run script, 'omit if no records', priority and run-as user.",
+      "source": "ServiceNow docs, Schedule emails of reports (https://www.servicenow.com/docs/r/now-intelligence/reporting/t_ScheduleAReport.html)",
+      "applyToPortal": "Add 'Schedule' to the overflow menu of every report, dashboard and saved view. Right-side drawer (DDS form sections): Name; Frequency (Daily / Weekly / Monthly / Once / Relative to reporting calendar, e.g. '3 days before period due date' and 'day after due date'); Time + time zone default Asia/Dubai; Recipients (portal users, roles such as 'all Institution Admins in Wave 2', external emails for board members); Subject and message (EN/AR); Format (PDF, PDF-landscape, Excel, CSV); 'Skip if no rows' (default on for exception reports); Active toggle; 'Run now'. A 'Schedules' page lists schedules with last run, next run, status and a run history. This is the basis for the 'board pack' export the competitor lacks."
+    },
+    {
+      "insight": "Reporting surfaces must let findings travel: CSV/PDF export, scheduled email reports, shareable links and saved views; users must be able to drill from a chart to the rows behind it; a KPI band with deltas/sparklines sets hierarchy; date range and filters must be visible; anti-patterns include raw numbers without comparison, uniform grids where nothing stands out, hidden filters, no path to detail, and missing loading/partial/empty states.",
+      "source": "SaaSUI.design, SaaS analytics & reporting dashboard UX patterns (https://www.saasui.design/blog/saas-analytics-reporting-dashboard-ux-patterns)",
+      "applyToPortal": "Every KPI tile (Total 46 / Submitted / Needs correction / Accepted; KHDA: Compliant / Needs follow-up) shows a period-over-period delta and drills to the pre-filtered table. All charts have labelled axes and units (competitor defect). Every dashboard has a visible period picker (Fall / Winter / Spring, academic year) and 'Compare with previous period'. Each surface offers Export, Schedule, Share link and Save view in one consistent toolbar. Design loading skeletons, partial-data ('12 of 37 institutions reported') and honest empty states in EN and AR."
+    },
+    {
+      "insight": "Regnology's Reporting Hub is built around exception-based processing: a centralised Exception Monitor, task assignment, a pre-built KRI dashboard, integrated schedulers tied to reporting obligations and submission deadlines, thousands of pre-configured validation rules that proactively flag variances, and automated regulator feedback delivered through API connectivity.",
+      "source": "Regnology Reporting Hub (https://www.regnology.net/en/solutions/for-the-regulated/regnology-reporting-hub/); Regnology Abacus360 brochure (https://www.regnology.net/ecomaXL/files/Abacus360-Banking-brochure.pdf)",
+      "applyToPortal": "Give KHDA Data an 'Exception monitor' home: a single work queue of everything that needs a human decision - validation failures awaiting review, explanations to accept, waiver requests, unlock requests, escalations, integration failures from KHDA IT - grouped by type with SLA state badges, claim/assign, bulk actions and 'my items'. Return regulator feedback machine-readably: the API responds with the validation result JSON (rule ids, severities, record pointers) and webhooks notify status changes, so API-integrated institutions do not have to poll the portal. Add a 'Reporting calendar' object (period, dataset frequency, due dates, KHDA public holidays) that drives both the schedulers and the deadline engine."
+    },
+    {
+      "insight": "A collection platform needs a test collection environment that replicates live (as a separate system or a 'test flag'), with separate credentials, accepting real-shaped data for dry runs, with test filings purged and vendor sandboxes kept apart from preparer access, plus published documentation of all supported taxonomy (dictionary) versions and validation rules.",
+      "source": "XBRL International, data collection platform guidance (https://www.xbrl.org/guidance/data-collection-platform/)",
+      "applyToPortal": "KHDA IT 'Environments' page: Sandbox and Production per institution, each with its own client id / secret / key pair / IP whitelist and an environment switcher in the institution's 'API & integration' view. Sandbox submissions carry test=true, run the full validation -> profiling -> processing journey, show up in a 'Sandbox runs' tab with the same receipts and are auto-purged after 30 days (example). Publish dictionary versions (HEDB 2026, 2027 draft) with effective dates and a per-dataset diff so institutions can test against the next version before it goes live."
+    },
+    {
+      "insight": "Compliance triage UIs should surface reason codes with the alert in one view (matched fields, rule that fired, confidence) using progressive disclosure, capture structured false-positive feedback at the decision moment as calibration data, and let analysts assemble regulator export bundles (versions, lineage, evidence) without engineers.",
+      "source": "DigiWagon, Compliance Analyst Workflow UX Patterns (https://digiwagon.com/blogs/compliance-analyst-workflow-ux-patterns/)",
+      "applyToPortal": "In KHDA Data's issue review drawer show the rule id, plain-language rule text, the dictionary row, affected record sample and the institution's explanation on one screen; deeper detail (full record list, prior periods for the same rule) one click away. Add 'Rule feedback' (rule too strict / threshold wrong / data-quality issue at source) captured on the decision so KHDA Data can tune rules in the dictionary manager, with a 'Rule health' report (fire rate, override rate per rule). 'Export evidence bundle' on any institution/period assembles versions, receipts, audit timeline and waivers into one zip."
+    }
+  ],
+  "exemplars": [
+    {
+      "name": "Nasdaq AxiomSL ControllerView (formerly Adenza)",
+      "url": "https://www.axiomsl.com/platform/controllerview/",
+      "whatToBorrow": "Versioning and preservation of data, metadata, business logic and the whole workflow per filing; sign-off and attestation across multiple business lines; preservation of every intermediary and submitted dataset for 'audit defence'. Borrow: version header 'Validated against dictionary vX / rule-set vY', Compare-versions view, and the attestation roll-up."
+    },
+    {
+      "name": "Regnology Reporting Hub / Abacus360",
+      "url": "https://www.regnology.net/en/solutions/for-the-regulated/regnology-reporting-hub/",
+      "whatToBorrow": "Exception-based processing with a centralised Exception Monitor and task assignment; integrated schedulers tied to submission deadlines; KRI dashboard; proactive variance detection; regulator feedback returned over API. Borrow: KHDA Data 'Exception monitor' queue, reporting-calendar-driven schedules, machine-readable validation feedback."
+    },
+    {
+      "name": "SAP GRC Process Control",
+      "url": "https://pathlock.com/blog/grc/sap-grc-process-control/",
+      "whatToBorrow": "Sign-off cascade (owner certifications roll up to department and enterprise dashboards, each logged with user id and timestamp); issue -> remediation plan workflow with owner, root cause, corrective action and predefined escalation routes; dashboards of open / overdue / resolved by owner. Borrow: period attestation roll-up and the remediation item model."
+    },
+    {
+      "name": "IPEDS Data Collection System (NCES)",
+      "url": "https://nces.ed.gov/ipeds/survey-components/ipeds-survey-methodology",
+      "whatToBorrow": "Higher-education specific: keyholder 'lock' as attestation, coordinator second lock with email on first lock, edit checks that compare with prior year and require explanations (confirm / explain / help-desk override), no edits after lock except via the last locking entity, separate Prior Year Revision System, keyholder self-service for extra accounts. Borrow: lock semantics, warning-with-explanation severity, unlock request flow, prior-period revision flow, delegated user admin."
+    },
+    {
+      "name": "HESA Data Futures (UK)",
+      "url": "https://www.hesa.ac.uk/news/13-11-2023/student-22056-sign-off-deadline-in-year-update",
+      "whatToBorrow": "Higher-education specific: quality rules auto-raised into an Issue Management System; tolerances applied to admit data; 'Submit for Approval' reviewed by the regulator before the provider may 'approve the submission'; auto-generated sign-off form to the Accountable Officer completes the collection. Borrow: issue objects per rule, tolerance/waiver linkage, two-stage regulator-clear-then-institution-attest close-out, period sign-off document."
+    },
+    {
+      "name": "XBRL International - Features of a data collection platform",
+      "url": "https://www.xbrl.org/guidance/data-collection-platform/",
+      "whatToBorrow": "Regulator-side checklist: portal + API as complementary channels, submission receipt with hash and timestamp, immutability of received filings, versioning policy with 'latest' flag and documented acceptable resubmission reasons, published validation-rule list and taxonomy versions, test collection platform with test flag and purge, vendor sandbox with separate credentials. Borrow almost verbatim for the Submission receipt, Versions panel, Validation rules page and Sandbox environment."
+    },
+    {
+      "name": "Atlassian Jira - Saved views",
+      "url": "https://support.atlassian.com/jira-software-cloud/docs/save-and-share-views-from-your-list/",
+      "whatToBorrow": "View = filters + columns + grouping + sort + display; admin-managed shared views with a default and ordering; personal tweaks with reset to baseline; rename/duplicate/delete. Borrow the 'My views / Shared by KHDA' model and the 'Edited - Reset' chip."
+    },
+    {
+      "name": "ServiceNow - Scheduled reports",
+      "url": "https://www.servicenow.com/docs/r/now-intelligence/reporting/t_ScheduleAReport.html",
+      "whatToBorrow": "The complete schedule form: frequency incl. business-calendar-relative runs, time zone, recipients as users/groups/emails, subject and message, output format incl. PDF-landscape, 'omit if no records', conditional run, run-as, active toggle, plus a Schedules list. Borrow as the field list for the Schedule drawer and Schedules page."
+    },
+    {
+      "name": "AppMaster - SLA timers and escalations pattern",
+      "url": "https://appmaster.io/blog/sla-timers-escalations-workflow-apps",
+      "whatToBorrow": "Events -> Evaluator -> Actions architecture; explicit SLA states (On track / Warning / Breached / Paused / Completed); notify on transitions only with cooldowns; thresholds as data; pause without reset; immutable breached_at. Borrow as the specification of the deadline/escalation engine and the SLA badge vocabulary."
+    },
+    {
+      "name": "ASPIA Infotech - Exception management process",
+      "url": "https://aspiainfotech.com/2026/09/14/exception-management-process/",
+      "whatToBorrow": "The exception record schema (affected requirement, justification, owner, risk, impact, compensating controls, approvers, effective/expiry/review dates, remediation plan, evidence), the Requested -> Under review -> Approved -> Active -> Expired -> Closed lifecycle, risk-threshold routing, and register KPIs. Borrow as the Waiver object and the Waivers page."
+    },
+    {
+      "name": "DigiWagon - Compliance analyst workflow UX patterns",
+      "url": "https://digiwagon.com/blogs/compliance-analyst-workflow-ux-patterns/",
+      "whatToBorrow": "Reason codes surfaced with the alert, progressive disclosure, four-eyes as separate read paths with no one-click agree, structured false-positive feedback captured at decision time, analyst-operable regulator export bundles. Borrow for the KHDA issue-review drawer, the Approver's review page and 'Export evidence bundle'."
+    }
+  ],
+  "antiPatterns": [
+    "Treating four-eyes as an 'approved_by' column plus a second button on the same screen the maker used - the checker must get a separate review view with the decision context and cannot approve their own version.",
+    "One-click bulk 'Approve all' regardless of warnings, explanations or waivers - approval effort must scale with risk.",
+    "Approvals or waiver decisions taken by email or verbally and recorded later - every decision must happen inside the portal so the audit trail is the source of truth.",
+    "Mutable activity logs stored as ordinary editable rows in the production database, or audit events written synchronously on the request path.",
+    "Showing only an issue count ('13 open issues') instead of issue objects with rule id, severity, records affected, owner and status (the competitor's weakness).",
+    "Overwriting a submission on resubmission (latest-only) with no version list, no 'Current/Superseded' labels and no reason code - this makes recurring corrections and lateness unmeasurable.",
+    "Validating a version without recording which dictionary, code-list and rule-set versions were used, so historical results cannot be reproduced when the 2027 dictionary lands.",
+    "Waivers or exceptions without expiry and review dates, silently auto-renewed, or tracked in a spreadsheet outside the portal.",
+    "Uniform approval routing for every exception irrespective of risk (either everything needs the lead, or nothing does).",
+    "Reminders that fire on every scheduler run while an item is 'still overdue' instead of on state transitions - this trains recipients to ignore notifications.",
+    "Escalation timings and recipients hard-coded rather than editable configuration, and SLA clocks that reset on reassignment or status toggles.",
+    "A single clock for the whole submission that penalises institutions for time the submission spent in KHDA's own queue.",
+    "Notifications without context or with several competing actions; emails that require the recipient to find the item themselves rather than deep-linking to it.",
+    "Roles as a hidden list of checkboxes with no matrix view, no segregation-of-duties rules and no periodic access review.",
+    "Hiding active filters, offering no saved views, and forcing users to rebuild the same 'Wave 2 overdue' query every day.",
+    "Reports that can only be viewed on screen - no export, no schedule, no shareable link - and KPI tiles that do not drill down or show a comparison.",
+    "Charts without axes or units and raw dataset codes (STUDENT_LIFECYCLE_EVENT) leaking into user-facing screens and notifications.",
+    "Deploying English-only workflow screens (approval modals, diff views, audit timelines) and retrofitting Arabic/RTL later."
+  ]
+}

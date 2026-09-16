@@ -1,0 +1,195 @@
+{
+  "topic": "data-quality-ux",
+  "findings": [
+    {
+      "insight": "Column quality bar: profiling tools (Power Query, Talend Data Preparation) put a tri-segment bar under every column header - Valid (green), Error (red), Empty (grey) - plus dashed 'Unknown' when errors make the rest un-assessable. Hover reveals counts and percentages; the ellipsis opens quick actions on those values. Power Query also discloses the sample size ('Column profiling based on top 1000 rows') with a one-click switch to 'entire data set'.",
+      "source": "https://learn.microsoft.com/en-us/power-query/data-profiling-tools",
+      "applyToPortal": "On the per-submission Validation Results page (Institution: Data Steward/Approver; KHDA Data) render a quality bar under every field header of the received dataset using DDS tokens: valid #0D6D2D, error #C0000A, empty #5E5E62, hatched outline #C0C6CF for 'not evaluated' (e.g., code list unavailable). Hover = counts and %. Always caption 'Profiled on all N rows of submission #id (channel: API/portal upload)'; never show a sample-based bar without stating it. Which rules feed each bar comes from js/schema.js field metadata, not per-dataset code."
+    },
+    {
+      "insight": "Soda's dataset page groups check results by column with column-level checks nested under their column; columns with failed checks are auto-expanded so the eye lands on the problem. Filters: last result, column name, check name, check attribute; free-text search.",
+      "source": "https://docs.soda.io/manage-issues/dataset-page",
+      "applyToPortal": "Validation Results = accordion grouped by field (1,226 fields across 46 datasets), with one nested row per rule type the wireframe already derives from the dictionary (mandatory, coded list, numeric limit, text length, cross-field 'cannot exceed', date, primary-key duplicate). Auto-expand fields with failures, collapse passing ones. Filter chips: Result (Fail/Warn/Pass/Not run), Field, Rule type, Severity (Blocking/Warning), plus search. This is the 'validation detail' the competitor lacks (it only shows '13 open issues')."
+    },
+    {
+      "insight": "Soda's health score panel recalculates for the currently filtered subset and shows a 'Results for this filter only' label; checks that have never been evaluated are excluded from the calculation rather than counted as passes.",
+      "source": "https://docs.soda.io/manage-issues/dataset-page",
+      "applyToPortal": "The DQ score tile at the top of Validation Results and Dataset detail recomputes to the active filter and prints 'for this filter only'. Rules that did not run are excluded from the denominator and surfaced as a separate 'n rules not evaluated' chip. At institution level the denominator is always the REQUIRED datasets (46 minus approved waivers), never 'what was submitted' - this directly fixes the competitor's flaw where 9/46 accepted yields a perfect Automation 150/150."
+    },
+    {
+      "insight": "Qlik Trust Score aggregates seven dimensions (Validity, Completeness, Discoverability, Usage, Timeliness, Accuracy, Diversity); admins toggle dimensions on/off and adjust weights with +/- until they total 100%, but Validity and Completeness cannot be deactivated. Display is a shield icon, switchable between 'score out of 5' and 'percentage'. A delta vs the previous score sits next to the overall score AND next to each dimension, and a history panel lists timestamped events with the dimensions they impacted.",
+      "source": "https://help.qlik.com/en-US/cloud-services/Subsystems/Hub/Content/Sense_Hub/DataIntegration/DataProducts/Qlik-Trust-score.htm",
+      "applyToPortal": "Add a KHDA Data 'Quality model' settings page: dimensions Validity (rule pass rate), Completeness (mandatory fields filled), Conformity (code-list matches across the 44 lists), Uniqueness (primary-key duplicates for the 26 PK datasets), Consistency (cross-field rules), Timeliness (vs due date). Weight sliders with +/- that must total 100%; Validity and Completeness locked on. Every score tile in the portal shows a delta vs the previous reporting period; a 'Why did this change?' drawer lists timestamped events (rule added, Dictionary 2027 published, resubmission v2 accepted, waiver approved). Publish the formula on the leaderboard page as the competitor does, but with honest denominators."
+    },
+    {
+      "insight": "Collibra computes score = passing monitors / total active monitors x 100 (suppressed rules excluded from the denominator; rules in exception status count as failures) and classifies with out-of-the-box bands: Passing 90-100, Warning 76-89, Failing 0-75, with notifications firing only on Failing by default. Scores roll up along 'aggregation paths' (column -> table -> schema -> database) and appear on the Monitoring Overview, Job Details run-history charts, a Quality tab with dimension ring charts, asset tables and search results.",
+      "source": "https://productresources.collibra.com/docs/collibra/latest/Content/UnifiedDataQuality/co_about-data-quality-scores.htm",
+      "applyToPortal": "Define KHDA score bands mapped to DDS status chips (example thresholds, editable by KHDA Data): Good >=90 = Completed chip #C6FFC7/#00531F; Warning 76-89 = Action Required chip #FFEEDD/#643F00; Failing <=75 = Delayed chip #FFEDEA/#930005. Roll-up path: field -> dataset -> subject area -> institution -> sector, so the same number is consistent on Validation Results, Dataset detail, Institution detail, Compliance matrix and Sector home. Approved waivers drop out of the denominator but show as a 'waived' chip; pending waiver requests count as failures until approved. Notifications default to Failing only, configurable."
+    },
+    {
+      "insight": "Qualytics' scorecard guidance treats Coverage as a meta-metric: 'A high quality score on 10% of your fields is misleading'. It recommends three tiers (enterprise overview, data-source/owner accountability, table-field engineering), tag-based weighting so critical fields are not masked by many unimportant passing fields, and trend over snapshot ('60 to 82 over 90 days tells a story').",
+      "source": "https://qualytics.ai/data-governance-and-quality/data-quality-scorecard",
+      "applyToPortal": "Every score tile must carry its coverage beside it, e.g. 'DQ 92 - 38/46 datasets received - 1,100/1,226 fields covered by rules' (illustrative). Implement the three tiers: Sector (KHDA Data home), Institution (Institution detail / Institution home), Dataset-Field (Validation Results). Add a 'critical' flag and weight to dictionary fields (primary-key fields and identifier fields as examples) so failures there dominate the dataset score. Put a 3-period sparkline (Fall/Winter/Spring) on every score tile instead of a bare number."
+    },
+    {
+      "insight": "Monte Carlo's Table Health Dashboard ranks tables by an importance score derived from how often they are referenced in queries and BI dashboards, shows health across freshness, volume, schema and SQL rules per table, summarises incidents per table by incident type and monitor category, and lets users spin up a new monitor inline (field, schedule, documentation).",
+      "source": "https://montecarlo.ai/blog-introducing-table-health-dashboard-a-better-way-to-track-data-quality-coverage-at-scale/",
+      "applyToPortal": "KHDA Data 'Dataset health' page: 46 rows ranked by importance (number of Qlik Portal dashboards/KPIs consuming the dataset + real-time flag), columns Freshness / Volume vs last period / Schema vs dictionary version / Rule failures / Open issues by type / Coverage. Row action 'Add rule' opens the metadata-driven rule builder pre-filled with the dataset's fields. This replaces the competitor's flat catalogue with a triage-ordered list."
+    },
+    {
+      "insight": "Ataccama's Data Observability dashboard is structured as: an Issues banner (count of open issues), a Data Quality overview (dimension scores, configurable per source), a Freshness section, a Structure section (catalog items/attributes added, removed, data type changed, with recommended actions), and an Issues table with tabs (All, Data Quality, Anomaly Detection, Record Volume, Schema Changes, Terms, Structure, Freshness) filterable by open/closed and severity. Users can close, bulk-close by date and type, reopen, create tasks from issues, and trigger a manual run.",
+      "source": "https://docs.ataccama.com/one/latest/data-observability/data-observability-dashboards.html",
+      "applyToPortal": "Structure the KHDA Data home as: top band 'Open issues: n' -> four sections Quality / Freshness / Volume / Structure -> Issues table with tabs All - Validation - Anomaly - Volume - Schema - Freshness and filters status/severity/institution/wave. Structure section compares each received payload against the active Data Dictionary version (fields added, missing, type changed) and offers 'Request dictionary change' or 'Raise issue'. Include bulk close with mandatory reason, reopen, and 'Run checks now' (KHDA Data) - all real actions, unlike the competitor's stubs."
+    },
+    {
+      "insight": "Ataccama distinguishes AI-detected from manually configured checks (a 'detection type' column) and lets users confirm or dismiss detected anomalies; that feedback trains the model. Freshness rows show status (Updated / Missing updates), number of missing updates, last update timestamp, threshold timeframe and detection type.",
+      "source": "https://docs.ataccama.com/one/latest/data-observability/data-observability-dashboards.html",
+      "applyToPortal": "Label every check as 'Dictionary rule' (blocking, from HEDB Data Dictionary 2026) or 'Statistical check' (advisory, e.g. headcount -40% vs last period - example). Statistical checks show a 'Confirm anomaly / Dismiss as expected (reason)' pair for KHDA Data; the decision is written to the audit trail and shown to the institution. Freshness rows for the 15 real-time datasets show: status, missing updates count, last event timestamp, threshold, detection type."
+    },
+    {
+      "insight": "Soda incidents: created from a failed/warning check by users with 'Manage Incidents' permission; fields = name, description, lead (person responsible), status, severity, linked check results (more can be attached later as new failures arrive); a resolution note is mandatory to resolve; incidents appear in the dataset's Incidents tab and in an org-wide Incidents page filterable by lead, reporter, status, severity; Slack/MS Teams via webhooks and an Incidents API.",
+      "source": "https://docs.soda.io/manage-issues/incidents",
+      "applyToPortal": "Introduce an 'Issue' object shared by all roles: id, institution, dataset, reporting period, linked rule failures (can grow across resubmissions), severity (Blocking/Warning), status lifecycle Open -> Acknowledged -> In correction -> Resubmitted -> Verified/Closed (+ Waived branch), institution owner (Data Steward), KHDA owner, due date, mandatory resolution note. Show an Issues tab on Dataset detail and Institution detail, and a global Issues page for KHDA Data. Only KHDA Data and Institution Admin can create/edit; Read-only can view. Notification feed + real email sending (competitor's email is preview-only)."
+    },
+    {
+      "insight": "Monte Carlo's incident feed is organised by severity, status, owner and schema, and proactively notifies data consumers whose datasets are affected; its positioning is moving data quality 'from reactive fire drill to proactive service'.",
+      "source": "https://info.montecarlo.ai/product-tour/triage-incidents",
+      "applyToPortal": "KHDA Data Issues page = feed with group-by Severity / Status / Owner / Institution / Subject area, saved views ('My open blocking issues', 'Wave 2 overdue'), and an SLA column (days open vs target - example target 10 working days). When an issue is verified, auto-notify downstream consumers: the Qlik Portal dashboards that use the dataset get a 'data corrected on <date>' banner."
+    },
+    {
+      "insight": "IBM Cloud Pak for Data's default remediation workflow for SLA-rule violations is three steps - Review (asset owner reviews and assigns), Fix (assignee fixes), Approve (reviewer approves the fix) - launched automatically when a rule is violated. HESA's Issue Management System likewise auto-raises one issue per triggered quality rule and manages tolerance approvals in the same place.",
+      "source": "https://dataplatform.cloud.ibm.com/docs/content/wsj/governance/workflow-dq.html ; https://www.hesa.ac.uk/collection/24056/furtherguidance.html?section=validationoverview",
+      "applyToPortal": "Institution-side remediation loop built on the Figma Service Task Template: Review (Data Steward opens the issue drawer, sees rule text and the failing rows in the grid), Fix (edit rows inline or re-upload only affected rows via the existing Excel bridge; duplicate-key skipping retained), Approve (Approver signs off - maker-checker), then Resubmit -> journey tracker -> KHDA verifies. Render as a 4-step milestone tracker at the top of the issue drawer with the DDS stepper cards (374x68, r8). Auto-create one issue per failing rule group per submission."
+    },
+    {
+      "insight": "HESA Data Futures separates schema validation from quality rules: if a file fails the schema, no further checks run and a separate schema-error report is produced. The quality rules report lists every triggered rule, both outside and inside tolerance, with a toggle to show in-tolerance rules; to pass, all rules must be within tolerance or resolved by amending the file. Tolerance requests are handled through the Issue Management System.",
+      "source": "https://www.hesa.ac.uk/collection/24056/furtherguidance.html?section=validationoverview ; https://www.hesa.ac.uk/support/user-guides/quality-rules-faq",
+      "applyToPortal": "Make the submission journey tracker show two validation stages explicitly: Stage A 'Structure' (payload/file vs dictionary: required fields present, types, primary key present) - on failure show the structure report and mark Stage B 'Not run'; Stage B 'Quality rules' with a 'Show in-tolerance rules' toggle. Each rule row: rule id, plain-language description, rows affected, tolerance (e.g. <=0.5% of rows - example), In/Out of tolerance, action. Add a 'Request waiver / tolerance' action that opens a waiver workflow with KHDA Data approval and an expiry period - the competitor has no waiver/exception workflow."
+    },
+    {
+      "insight": "Bank of England BEEDS distinguishes portal errors from data errors, uses return statuses such as 'Complete (with errors)' and 'Pending approval' (plausibility checks), and lets firms click 'Request Resubmission' with a reason, which is auto-approved or queued for internal approval. APRA Connect auto-submits a clean upload but, after user feedback, added an optional pre-submission approval step implemented as a warning rule entities can switch on.",
+      "source": "https://www.bankofengland.co.uk/statistics/data-collection/beeds ; https://www.apra.gov.au/apra-connect-support-material",
+      "applyToPortal": "Keep the four KHDA statuses (non-submitted, processing, needs correction, accepted) as the primary chip set, and add secondary sub-states on the journey tracker: 'Accepted with warnings' and 'Pending KHDA review'. Add a 'Request resubmission' action (reason required; auto-approve inside the submission window, KHDA Data approval after it). Keep every version (v1, v2...) with a changed-rows diff and who approved. Give Institution Admin a setting 'Require Approver sign-off before API submissions are accepted' so API-channel institutions can opt into maker-checker."
+    },
+    {
+      "insight": "Great Expectations Data Docs turn each expectation into a human-readable sentence and each validation run into a page with an overall pass/fail status and statistics (expectations evaluated, successful, unsuccessful, success percent); each expectation row shows pass/fail, the observed value and a sample of unexpected values, and the Validation Results tab lists runs by suite and batch.",
+      "source": "https://docs.greatexpectations.io/docs/0.18/reference/learn/terms/validation_result/ ; https://docs.greatexpectations.io/docs/0.18/oss/guides/validation/validate_data_overview/",
+      "applyToPortal": "Generate rule sentences from field metadata, e.g. 'NATIONALITY must be a code from list Country - 12 of 4,310 rows (0.3%) are not: UAE, U.A.E, Emirati (example)'. Header of Validation Results: status pill, 'Rules evaluated / passed / failed / not run', success %. Each rule row: status icon, sentence, observed vs expected, 'View rows' (opens the existing data grid filtered to failing rows), 'Download error workbook' (extend js/export.js). Runs listed per submission version with timestamp and channel."
+    },
+    {
+      "insight": "Trend charts in DQ tools plot the score per run on a labelled axis with the dimension line and a dotted threshold line (Qlik shows the Trust Score line, the selected axis line and its threshold; Informatica's score trend chart plots metric scores against scorecard runs).",
+      "source": "https://help.qlik.com/talend/en-US/data-inventory-user-guide/Cloud/talend-trust-score ; https://docs.informatica.com/data-quality-and-governance/informatica-data-quality/10-5/profile-guide/part-2--profiling-with-informatica-analyst/scorecards-in-informatica-analyst/trend-charts/score-trend-chart.html",
+      "applyToPortal": "Compliance history page (the competitor's is empty): line chart of DQ score per reporting period (Fall/Winter/Spring per academic year) with a dotted threshold line at the Warning band, labelled axes, dimension toggles, hover listing rules whose pass rate changed. Below it the period-by-period table the competitor could not fill: Required / Received / Late / Missing / Needs correction / On-time %, derived from the due-date table. Sector version for KHDA Data."
+    },
+    {
+      "insight": "DataHub lineage: graph shows latest lineage by default with a time picker to filter edges by last-updated; upstream/downstream expand progressively; column-level lineage by expanding a table's columns and clicking breadcrumbs to isolate one column; a separate Impact Analysis list view and a sidebar quick impact summary complement the graph. Collibra and Monte Carlo use lineage to trace root cause upstream and show every affected product/owner downstream.",
+      "source": "https://docs.datahub.com/docs/features/feature-guides/lineage ; https://productresources.collibra.com/docs/collibra/latest/Content/UnifiedDataQuality/co_about-data-quality-scores.htm",
+      "applyToPortal": "Replace a generic lineage graph with a 'Submission journey + impact' view: left-to-right nodes iPaaS -> API Hub (auth/token/IP checks) -> University Adapter -> Qlik DQ (validation, profiling, processing) -> Qlik Portal dashboards, each node showing status, timestamp and payload id, with a time picker to replay a specific submission. Dataset node -> 'Used by' impact list (dashboards/KPIs). Field-level: on the spec drawer, clicking a field shows which rules, code lists and reports depend on it (impact analysis for Dictionary 2027 changes). Always pair the graph with a list view for accessibility and RTL."
+    },
+    {
+      "insight": "Qlik lets users set a freshness threshold per dataset in minutes/hours/days/months and reports Timeliness against it; Ataccama shows per-item freshness status, missing-update count, last update, threshold and detection type.",
+      "source": "https://help.qlik.com/en-US/cloud-services/Subsystems/Hub/Content/Sense_Hub/DataIntegration/DataProducts/Qlik-Trust-score.htm ; https://docs.ataccama.com/one/latest/data-observability/data-observability-dashboards.html",
+      "applyToPortal": "Give each of the 46 datasets a freshness rule in the dictionary metadata: Semester/Annual = due date per reporting period; Real-time (15) = maximum event age (example: 24h). Catalogue rows show a Freshness chip (Fresh / Due in n days / Overdue n days / Missing updates x n) and last accepted timestamp - the competitor's Freshness column has no threshold. Also give the 15 real-time datasets proper English and Arabic display names so raw codes such as STUDENT_LIFECYCLE_EVENT never leak."
+    },
+    {
+      "insight": "Dashboard anti-pattern research: metric overload, vanity totals that only ever climb, missing context, poor hierarchy and charts without axes are the common failures; fixes are one primary question per dashboard, pairing every total with a rate or delta, and a 'Decision Test' (what action changes because of this number?).",
+      "source": "https://adhdecode.com/observability/dashboarding-and-visualization/dashboard-anti-patterns-vanity-metrics-overload/ ; https://montecarlo.ai/blog-building-data-quality-dashboard",
+      "applyToPortal": "Each role home answers one question: Institution 'What must I do before the next due date?'; KHDA Data 'Which institutions and datasets need follow-up now?'; KHDA IT 'Is the pipeline healthy and who is not yet onboarded?'. Cap at four KPI tiles, each with a rate and delta ('Submitted 31/46 - 67% - +5 vs Winter' - example). Everything else lives in drill-downs. Every chart has labelled axes and a threshold line."
+    },
+    {
+      "insight": "Soda's dataset page has a Requests tab where consumers propose contract (schema/check) changes with messages and comments, and a Scans tab listing every run with logs; Ataccama's Structure section recommends import/update/delete actions when the source schema drifts.",
+      "source": "https://docs.soda.io/manage-issues/dataset-page ; https://docs.ataccama.com/one/latest/data-observability/data-observability-dashboards.html",
+      "applyToPortal": "Dictionary management (KHDA Data) gets a 'Change requests' tab: institutions propose field/code-list changes from the spec drawer, threaded comments, KHDA decision, and the change lands in a versioned dictionary (2026 -> 2027) with an effective reporting period. Dataset spec drawer shows the schema version the institution last submitted against and a diff to the current one. Dataset detail gets a 'Runs' tab listing every validation run with logs (visible to KHDA IT for pipeline debugging)."
+    },
+    {
+      "insight": "Power Query's Column profile pane pairs a statistics list (count, error, empty, distinct, unique, min, max, average, std dev, min/max length) with a value-distribution chart; bars are clickable to filter, right-click offers transforms, 'Group by' re-bins text by length, and both panes are copyable.",
+      "source": "https://learn.microsoft.com/en-us/power-query/data-profiling-tools",
+      "applyToPortal": "Field profile drawer (opened from any field on Validation Results or the Report page): stats list + distribution bars; code-list fields plot the distribution against allowed codes and highlight values outside the list in #C0000A; numeric fields show min/max against the dictionary's limits; clicking a bar filters the data grid; 'Copy' and 'Export' actions. All derived from js/schema.js and js/lists.js metadata."
+    },
+    {
+      "insight": "Soda shows a calendar-like grid of days on which checks failed, passed or warned, and Monte Carlo's Data Product Dashboard groups assets into internal/external data products with incidents and lineage per product.",
+      "source": "https://docs.soda.io/soda-v3/learning-resources/product-overview ; https://montecarlo.ai/blog-introducing-monte-carlos-data-product-dashboard-to-help-organizations-build-trustworthy-data-products",
+      "applyToPortal": "Dataset detail: for the 15 real-time datasets a day-level calendar heatmap (pass/warn/fail/no data); for Semester and Annual datasets a period strip (Fall / Winter / Spring per year) of status squares - the same visual language as the 37x46 compliance matrix, extended over time. KHDA Data home groups the 46 datasets into the six subject areas (Employees 4, Graduates 3, Institution 7, Programs & courses 11, Research & innovation 7, Students & applicants 14) as health cards with score, coverage, open issues and trend."
+    }
+  ],
+  "exemplars": [
+    {
+      "name": "Qlik Trust Score (Qlik Talend Cloud)",
+      "url": "https://help.qlik.com/en-US/cloud-services/Subsystems/Hub/Content/Sense_Hub/DataIntegration/DataProducts/Qlik-Trust-score.htm",
+      "whatToBorrow": "Weighted, admin-configurable dimensions that must sum to 100% with Validity and Completeness locked on; delta-vs-previous next to the overall score and each dimension; 'View history' panel of timestamped events explaining score changes; per-dataset freshness thresholds. Since KHDA's R1 architecture is a Qlik Data Quality layer, mirroring this model keeps the portal honest about what Qlik can compute."
+    },
+    {
+      "name": "Soda Cloud dataset page + incidents",
+      "url": "https://docs.soda.io/manage-issues/dataset-page",
+      "whatToBorrow": "Tab set per dataset (Checks / Metric monitors / Columns / Scans / Incidents / Requests); checks grouped by column with failed columns auto-expanded; filter-aware health score with 'Results for this filter only'; incident object with lead, status, severity, linked results and mandatory resolution note; contract change requests with comments."
+    },
+    {
+      "name": "Ataccama ONE Data Observability dashboard",
+      "url": "https://docs.ataccama.com/one/latest/data-observability/data-observability-dashboards.html",
+      "whatToBorrow": "Page skeleton: open-issues banner, Quality / Freshness / Structure sections, issues table with category tabs and severity filters; bulk close and reopen; confirm/dismiss anomaly feedback; 'detection type' column separating rule-based from statistical checks; schema-drift section with recommended actions."
+    },
+    {
+      "name": "Monte Carlo Table Health Dashboard and incident feed",
+      "url": "https://montecarlo.ai/blog-introducing-table-health-dashboard-a-better-way-to-track-data-quality-coverage-at-scale/",
+      "whatToBorrow": "Importance-ranked asset list (usage in downstream dashboards) with health across freshness/volume/schema/rules and incidents summarised by type; inline 'create monitor' from the row; incident feed grouped by severity, status, owner; proactive notification of downstream consumers."
+    },
+    {
+      "name": "Collibra Data Quality scores",
+      "url": "https://productresources.collibra.com/docs/collibra/latest/Content/UnifiedDataQuality/co_about-data-quality-scores.htm",
+      "whatToBorrow": "Transparent formula (passing / active x 100) with suppressed rules excluded and exceptions counted as failures; three score bands (90-100 / 76-89 / 0-75) driving notifications; roll-up 'aggregation paths' so field, dataset, institution and sector scores reconcile; dimension ring charts on a Quality tab; score visible in tables and search results."
+    },
+    {
+      "name": "Great Expectations Data Docs",
+      "url": "https://docs.greatexpectations.io/docs/0.18/reference/learn/terms/data_docs/",
+      "whatToBorrow": "Rules rendered as natural-language sentences generated from metadata; per-run page with pass/fail status and evaluated/successful/unsuccessful/success % statistics; each rule row shows observed value and a sample of unexpected values; run index by suite and batch (maps to dataset x submission version)."
+    },
+    {
+      "name": "Power Query data profiling tools",
+      "url": "https://learn.microsoft.com/en-us/power-query/data-profiling-tools",
+      "whatToBorrow": "Tri-segment column quality bar (valid/error/empty + dashed unknown) under each column header with hover percentages; column distribution mini-chart; column profile pane with statistics and clickable distribution bars that filter the grid; explicit sample-size disclosure."
+    },
+    {
+      "name": "DataHub lineage and impact analysis",
+      "url": "https://docs.datahub.com/docs/features/feature-guides/lineage",
+      "whatToBorrow": "Progressive upstream/downstream expansion, time picker to view lineage as of a date, column-level breadcrumb isolation, and a list-based Impact Analysis view alongside the graph. Apply to the submission journey (iPaaS -> API Hub -> Adapter -> Qlik DQ -> Qlik Portal) and to dictionary-field impact."
+    },
+    {
+      "name": "HESA Data Futures quality assurance (regulator exemplar)",
+      "url": "https://www.hesa.ac.uk/collection/24056/furtherguidance.html?section=validationoverview",
+      "whatToBorrow": "Schema validation gate before quality rules with a separate schema-error report; quality rules report listing triggered rules in and out of tolerance with a toggle; tolerance/waiver approvals inside an Issue Management System; an online validation tool to test data before the live window (maps to an API sandbox / dry-run validation in the KHDA portal)."
+    },
+    {
+      "name": "Bank of England BEEDS and APRA Connect (regulator exemplars)",
+      "url": "https://www.bankofengland.co.uk/statistics/data-collection/beeds",
+      "whatToBorrow": "'Request resubmission' with reason and approval routing; statuses 'Complete (with errors)' and 'Pending approval' for plausibility review; separating portal errors from data errors in error copy; APRA's optional pre-submission approval switch for auto-submitting channels (maker-checker for API institutions)."
+    },
+    {
+      "name": "Qualytics data quality scorecard guidance",
+      "url": "https://qualytics.ai/data-governance-and-quality/data-quality-scorecard",
+      "whatToBorrow": "Coverage shown next to every score; three scorecard tiers (sector / owner / field); weighting critical fields; trend over snapshot; assigning scorecard sections to named stewards with a review cadence."
+    },
+    {
+      "name": "IBM Cloud Pak for Data remediation workflow",
+      "url": "https://dataplatform.cloud.ibm.com/docs/content/wsj/governance/workflow-dq.html",
+      "whatToBorrow": "Auto-launched Review -> Fix -> Approve task chain when an SLA rule is violated, with the asset owner routing the task; use as the institution-side remediation loop with the Data Steward / Approver sub-roles."
+    }
+  ],
+  "antiPatterns": [
+    "Single aggregate score without coverage: a 95 computed on the few datasets that were submitted (the competitor's Automation 150/150 for 9/46 accepted) - always show 'x of 46 datasets, y of 1,226 fields covered' beside any score and use required datasets as the denominator.",
+    "Issue counts without rule-level detail ('13 open issues') - every count must open to rule id, plain-language rule, affected rows, tolerance and a fix action.",
+    "Hand-coded rules per dataset - keep rules, sentences, profiles and error workbooks derived from dictionary metadata so Dictionary 2027 is a data change, not a code change.",
+    "Scores or thresholds without bands: a number with no Passing/Warning/Failing meaning; no dotted threshold line on trend charts; charts without axes (a verified competitor defect).",
+    "Vanity totals with no rate or delta (Total 46 / Submitted 31) - pair every total with % and change vs last period.",
+    "Metric overload on the home page - one primary question per role home, max four KPI tiles, the rest in drill-downs.",
+    "Treating every failed rule as blocking - no tolerance/waiver concept forces perfect data or nothing; expose Blocking vs Warning, in-tolerance toggle and a waiver workflow with approval and expiry.",
+    "Silent score changes - recalculating a score with no history or explanation; keep a timestamped 'why did this change' event log and show deltas.",
+    "Issues without ownership or lifecycle - no owner, status, due date or mandatory resolution note means nothing closes; never let an issue be closed without a note and a verifying resubmission.",
+    "Notification spam - one alert per failed rule per row; aggregate to one notification per submission/issue, default to Failing band only, and let users tune thresholds.",
+    "Lineage graph as the only navigation - graphs are hard to read in RTL and with screen readers; always pair with a list/impact view and make nodes focusable.",
+    "Profiling on an undisclosed sample - if any bar or stat is computed on a subset, say so and offer 'entire dataset'.",
+    "Leaking pipeline internals to institutions - Azure/iPaaS/adapter jargon and raw dataset codes (STUDENT_LIFECYCLE_EVENT) in institution-facing screens; use display names in EN/AR and translate pipeline stages into plain steps.",
+    "Anomaly detection without a feedback loop - flags that cannot be confirmed or dismissed generate distrust; record the decision and use it.",
+    "Status stubs and disabled primary actions ('Upload - Not available', 'Preview only') - every triage action shown must be executable, or hidden until it is.",
+    "Freshness or timeliness measured without a per-dataset threshold (competitor's 'Freshness' column and its >=30-days-early-only Timeliness) - define due dates / maximum age per dataset and score lateness symmetrically."
+  ]
+}

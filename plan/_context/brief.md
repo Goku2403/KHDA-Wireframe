@@ -8,11 +8,26 @@ We (the team that built the static wireframe in `D:\KHDA wireframe`) are proposi
 
 Deliverable of the overall effort: an HTML plan (`plan/index.html`) with one rendered mockup image per page, covering: every page, per role; the workflow/user journey; UX and interaction design; implementation notes; what is **old** (kept from our wireframe), **new**, or **changed**; competitor comparison; suggestions.
 
-## 2. Roles (from KHDA)
+## 2. Roles (from KHDA, updated 2026-09-16)
 
 - **Institution** — a licensed higher-education institution (HEI) in Dubai (37 in scope). Submits 46 datasets to KHDA each cycle. Sub-roles we should propose: Institution Admin, Data Steward (prepares), Approver (signs off), Read-only.
-- **KHDA Data** — KHDA's data/quality team. Monitors submissions, data quality, compliance, follow-up, analytics, dictionary management.
-- **KHDA IT** — KHDA's integration/IT team. Onboards institutions to the API, manages credentials/whitelisting, watches pipeline health, security, environments.
+- **KHDA Data** — KHDA's data/quality team. Monitors submissions, data quality, compliance, follow-up, dictionary management. **Required capabilities: Chatbot, Remediation report, Analytics.**
+- **KHDA IT** — KHDA's integration/IT team. Onboards institutions to the API, manages credentials/whitelisting, watches pipeline health, security, environments. **Required capabilities: Chatbot, Remediation report, Rule engine for all forms.**
+
+**KHDA staff permission tiers** (apply to both KHDA Data and KHDA IT; a user is one team × one tier):
+
+| Tier | Can do | Cannot do |
+|---|---|---|
+| **Analyst** | Work the queues: view all dashboards/reports, open institutions and submissions, run remediation reports, use the chatbot, draft follow-ups, annotate, propose rule changes / draft rules | Send bulk communications, accept/return submissions, publish rules, change credentials or configuration |
+| **Supervisor** | Everything Analyst can, plus: approve/return submissions, approve waivers, send and bulk-send communications, assign owners and escalate, approve rule changes and dictionary versions for publishing, sign off onboarding gates | Manage users/roles, environments, scoring weights, system configuration |
+| **Administrator** | Everything Supervisor can, plus: manage KHDA users and tiers, publish rules and dictionary versions, configure scoring weights (with effective date), credentials/IP allowlists/environments, chatbot knowledge sources, audit-log access, system settings | — |
+
+**Cross-cutting KHDA capabilities (both teams):**
+
+- **Chatbot** — an in-portal assistant grounded in the data dictionary, validation rules, submission history and API docs. Answers "why was row 41 rejected?", "which institutions are overdue for Graduates?", "what changed in Dictionary 2027?", drafts follow-up emails, and deep-links to the page that answers the question. The same assistant is offered to institutions with an institution-scoped view. Administrator manages knowledge sources; every answer cites its source.
+- **Remediation report** — a generated report per institution × dataset × period (and roll-ups per institution, per dataset, sector): every failing rule with severity, affected rows/fields, sample values, suggested fix, recurrence across periods, owner and SLA age. Exportable (XLSX/PDF), attachable to follow-up emails, and the source of the institution's remediation workbench. KHDA IT uses the same report filtered to pipeline/technical failures (auth, schema, format).
+- **Rule engine for all forms** (owned by KHDA IT, rules authored jointly with KHDA Data) — a single rule library that drives every form, upload, API validation and template: rule types = mandatory, type/length, code list, range, cross-field, cross-dataset, primary key/uniqueness, date logic, custom expression. Rules are versioned with effective periods, tested against sample data in a sandbox, published by an Administrator, and applied identically in the portal form, Excel template validation, API validation in the Qlik DQ layer, and the remediation report. Our metadata-driven engine (`js/schema.js`) is the seed of this.
+- **Analytics** (KHDA Data) — sector and institution dashboards, DQ analytics (rule hit-rates, top failing rules, profiling anomalies), compliance trends, leaderboard, self-service report builder, scheduled exports/board packs.
 
 ## 3. Release-1 architecture (from KHDA's "NEW APPROACH – R1: University → KHDA" diagram)
 

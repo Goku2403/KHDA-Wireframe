@@ -51,17 +51,21 @@
     if (roleEl) { roleEl.removeAttribute('data-i18n'); roleEl.textContent = r.label; }
     if (nameEl) { nameEl.removeAttribute('data-i18n'); nameEl.textContent = r.name; }
 
-    // reporting-period selector + assistant button sit before the accessibility control
+    // assistant button sits before the accessibility control
     const tools = $('.portal-tools');
     const anchor = tools && tools.querySelector('.tool-pill--icon');
     if (tools && anchor && window.KHDA_SECTOR) {
-      const per = document.createElement('label');
-      per.className = 'tool-pill tool-pill--period';
-      per.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+      // KHDA-staff pages (v2) pick the reporting period here; institution pages have it in their title bars
+      const team = document.body.dataset.team;
+      if (team && team !== 'inst') {
+        const per = document.createElement('label');
+        per.className = 'tool-pill tool-pill--period';
+        per.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
         <span class="sr-only">Reporting period</span>
         <select id="periodSelect" aria-label="Reporting period">${window.KHDA_SECTOR.PERIODS.map(p => `<option value="${p.id}"${p.id === window.KHDA_SECTOR.currentPeriod() ? ' selected' : ''}>${p.label}</option>`).join('')}</select>`;
-      per.querySelector('select').addEventListener('change', e => { window.KHDA_SECTOR.setPeriod(e.target.value); location.reload(); });
-      tools.insertBefore(per, anchor);
+        per.querySelector('select').addEventListener('change', e => { window.KHDA_SECTOR.setPeriod(e.target.value); location.reload(); });
+        tools.insertBefore(per, anchor);
+      }
       const bot = document.createElement('button');
       bot.type = 'button'; bot.className = 'tool-pill tool-pill--icon'; bot.id = 'chatbotToggle';
       bot.setAttribute('aria-label', 'Assistant'); bot.title = 'Assistant';

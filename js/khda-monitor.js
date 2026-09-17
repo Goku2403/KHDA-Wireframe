@@ -46,7 +46,7 @@
     const l = listInst();
     $('#main').innerHTML = `
       <div class="page-head"><div><div class="page-head__eyebrow">KHDA Data · Monitor</div><h1 class="page-head__title">Institution monitor</h1><p class="page-head__sub">Every institution against every dataset · ${esc(per.label)}</p></div>
-        <div class="page-head__actions"><a class="btn btn--outline" href="sector.html">← Sector home</a><a class="btn btn--outline" href="khda-compliance.html">Compliance history</a></div></div>
+        </div>
       <div class="kpi-grid">
         <div class="kpi kpi--success"><div class="kpi__label">Accepted datasets</div><div class="kpi__value">${Math.round(sec.accepted / Math.max(1, sec.required) * 100)}%</div><div class="kpi__note">${sec.accepted.toLocaleString()} of ${sec.required.toLocaleString()} required across the sector</div></div>
         <div class="kpi kpi--primary"><div class="kpi__label">Needs correction</div><div class="kpi__value">${sec.needsCorrection}</div><div class="kpi__note">dataset submissions</div></div>

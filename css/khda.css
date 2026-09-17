@@ -1837,8 +1837,7 @@ a.kpi:hover { text-decoration: none; border-color: var(--outline-variant); box-s
 .sheet .field-list .data-table--compact td { padding: 12px 16px; }
 .sheet .field-list .receipt, .sheet .field-list .issue { margin: 0; }
 .sheet .field-list { display: flex; flex-direction: column; gap: 12px; }
-/* ===================================================================
-/* ==========================================================================
+/* ============================================================/* ==========================================================================
    Configuration — rule engine
    Built from the dashboard card vocabulary: .dash-card surfaces, .dash-card__head
    headers, .control fields, .search wrappers, .chip status and .btn-actions row menus.
@@ -2365,3 +2364,7 @@ html.has-drawer, html.has-drawer body { overflow: hidden; }
 .cfg-picker--inline { flex: 1 1 auto; gap: 0; min-width: 0; }
 .cfg-picker--inline .cfg-picker__panel { min-width: 260px; }
 .cfg-picker--inline .cfg-picker__list { max-height: 280px; }
+=======
+/* ===================================================================/* dashboard: the Quick actions list is long, so the other cards in its row keep their own height and the gauge sits under its legend */
+.dash-card--progress, .dash-card--calendar, .dash-card--analytics { align-self: start; }
+.dash-card--progress .gauge { margin-top: 8px; }

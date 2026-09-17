@@ -102,10 +102,16 @@
   // A placeholder ("use 999999999999999 if not available") is not a rule: no record can fail
   // it. It stays on the field, shown in the UI and the review, and never reaches Rule_Value.
   const ORDER = {
-    REQUIRED: 10, CONDITIONAL_REQUIRED: 20, DATA_TYPE: 30, MIN_VALUE: 35, MIN_LENGTH: 40, MAX_LENGTH: 50,
-    EMAIL_FORMAT: 60, PHONE_FORMAT: 60, DATE_FORMAT: 60, ALLOWED_VALUE: 70,
-    REFERENCE_EXISTS: 80, REFERENCE_MATCH: 90, UNIQUE_KEY: 95, CUSTOM_BUSINESS_RULE: 100,
+    REQUIRED: 1, CONDITIONAL_REQUIRED: 2, DATA_TYPE: 3, MIN_VALUE: 4, MIN_LENGTH: 5, MAX_LENGTH: 6,
+    EMAIL_FORMAT: 7, PHONE_FORMAT: 7, DATE_FORMAT: 7, ALLOWED_VALUE: 8,
+    REFERENCE_EXISTS: 9, REFERENCE_MATCH: 10, UNIQUE_KEY: 11, CUSTOM_BUSINESS_RULE: 12,
   };
+
+  // Ranks are dense (1..12), not spaced, so Execution_Order reads as the step number an
+  // operator sees in the flow. Ties are deliberate: the three format checks are one tier.
+  // An unranked type sorts last rather than taking the table's DEFAULT 100 — the exporter
+  // always writes Execution_Order explicitly, so the column default never applies.
+  const LAST_ORDER = Math.max(...Object.values(ORDER));
 
   const MESSAGE = {
     REQUIRED: f => f.label + ' is required.',
@@ -145,7 +151,7 @@
       type, value,
       errorCode: clip(prefix + label + suffix, MAX_ERROR_CODE),
       errorMessage: clip(msg || (msgFn ? msgFn(f, value) : f.label + ' failed validation.'), MAX_ERROR_MSG),
-      order: ORDER[type] || 100,
+      order: ORDER[type] || LAST_ORDER,
       origin, enabled: true,
     };
   }
@@ -324,7 +330,7 @@
     return Object.assign({}, r, {
       errorCode: r.errorCode || fb.errorCode,
       errorMessage: r.errorMessage || fb.errorMessage,
-      order: Number.isFinite(n) ? n : 100,
+      order: Number.isFinite(n) ? n : LAST_ORDER,
     });
   }
 
@@ -477,7 +483,7 @@
     const lines = rows(sheet).map(r =>
       'INSERT INTO API_Validation_Rules (' + SQL_COLUMNS.join(', ') + ') VALUES (' +
       [q(r.API_Code), q(r.Field_Name), q(r.Rule_Type), q(r.Rule_Value), q(r.Error_Code),
-       q(r.Error_Message), qi(r.Execution_Order, 100), qi(r.Is_Active, 1), q(r.API_Name)].join(', ') + ');');
+       q(r.Error_Message), qi(r.Execution_Order, LAST_ORDER), qi(r.Is_Active, 1), q(r.API_Name)].join(', ') + ');');
     return '-- ' + sheet + '\n-- generated ' + new Date().toISOString() + '\n' + lines.join('\n') + '\n';
   }
 
@@ -494,5 +500,5 @@
 
   window.KHDA_RULES = { TYPES, type, derive, serialize, apiCode, storageKey, load, setApiCode,
     addCustom, updateCustom, removeCustom, setEnabled, setOtherwise, rows, exportJson, exportSql, exportCsv,
-    COLUMNS, ORDER, MAX_RULE_VALUE, MAX_ERROR_CODE, MAX_ERROR_MSG };
+    COLUMNS, ORDER, LAST_ORDER, MAX_RULE_VALUE, MAX_ERROR_CODE, MAX_ERROR_MSG };
 })();

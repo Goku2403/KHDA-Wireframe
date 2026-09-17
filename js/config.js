@@ -1502,7 +1502,7 @@
       const prefix = sample ? sample.errorCode.slice(0, -(sample.type.length + 1)) : 'ERR';
       if (!codeTouched) codeIn.value = (prefix + '_' + typeSel.value).slice(0, R.MAX_ERROR_CODE);
       if (!msgTouched) msgIn.value = (field.label + ' failed ' + typeSel.value + '.').slice(0, R.MAX_ERROR_MSG);
-      orderIn.value = String((R.ORDER && R.ORDER[typeSel.value]) || 100);
+      orderIn.value = String((R.ORDER && R.ORDER[typeSel.value]) || R.LAST_ORDER);
     }
     typeSel.addEventListener('change', refreshMeta);
 
@@ -1527,7 +1527,7 @@
         type: typeSel.value, value,
         errorCode: codeIn.value.trim(),
         errorMessage: msgIn.value.trim(),
-        order: Number(orderIn.value) || 100,
+        order: Number(orderIn.value) || R.LAST_ORDER,
       };
       if (overriding) {
         // the fork replaces the derived rule: add the custom one, switch the original off

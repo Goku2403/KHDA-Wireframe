@@ -58,9 +58,9 @@
     try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* private mode */ }
   }
 
-  // A key written before the rating column was dropped can still name it, which would
-  // leave the table sorted by something no header shows and no indicator explains.
-  const SORTABLE = ['name', 'channel', 'accepted', 'errors', 'last'];
+  // A stored key is validated against the columns the header actually shows, so a key
+  // written by an older build cannot leave the table sorted by something nothing explains.
+  const SORTABLE = ['name', 'channel', 'accepted', 'errors', 'last', 'score'];
   if (!SORTABLE.includes(store.sort)) { store.sort = 'accepted'; store.dir = 'desc'; }
 
   // ---------- small formatters ----------
@@ -107,7 +107,9 @@
     silent: '<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>',
     accepted: '<circle cx="12" cy="12" r="9"/><path d="m8.2 12.2 2.6 2.6 5-5.6"/>',
     errors: '<path d="M10.3 3.3 1.8 18A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-3L13.7 3.3a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4.5m0 3.5h.01"/>',
-    rating: '<path d="m12 3.5 2.7 5.5 6 .9-4.35 4.25 1 6-5.35-2.8-5.35 2.8 1-6L3.3 9.9l6-.9Z"/>',
+    // a gauge, not a star: the rating is a score out of 100, and nothing on this page
+    // asks an institution to be rated out of five
+    rating: '<path d="M4 18a8 8 0 1 1 16 0"/><path d="m12 18 4-4.6"/>',
   };
 
   function renderStats() {
@@ -125,7 +127,9 @@
         note: t('api.statAcceptedNote', { n: fmt(sum.rows) }), tone: 'var(--success)', soft: 'var(--chip-done)' },
       { k: 'errors', label: 'api.statErrors', value: fmt(sum.errorRows), share: sum.errorRows / rows46,
         note: t('api.statErrorsNote'), tone: 'var(--warning)', soft: 'var(--chip-todo)' },
-      { k: 'rating', label: 'api.statRating', value: sum.avgScore + ' / 100', share: sum.avgScore / 100,
+      // the score is out of 100 already, so the average reads as a percentage rather than
+      // a fraction the reader has to divide out
+      { k: 'rating', label: 'api.statRating', value: esc(t('api.pctOnly', { p: sum.avgScore })), share: sum.avgScore / 100,
         note: t('api.statRatingNote'), tone: 'var(--primary)', soft: 'var(--primary-container)' },
     ];
 
@@ -325,6 +329,7 @@
       else if (key === 'accepted') d = a.accepted - b.accepted;
       else if (key === 'errors') d = a.errors - b.errors;
       else if (key === 'last') d = a.last - b.last;
+      else if (key === 'score') d = a.score.total - b.score.total;
       else d = 0;
       // a stable tie-break on name, so two institutions on the same score never swap places
       return d !== 0 ? d * dir : a.inst.name.localeCompare(b.inst.name);
@@ -335,6 +340,18 @@
     const cls = inst.channel === 'api' ? 'chip--complete'
       : inst.channel === 'portal' ? 'chip--warning' : 'chip--error';
     return `<span class="chip ${cls}">${esc(t('api.chan.' + inst.channel))}</span>`;
+  }
+
+  // The rating the ledger drawer breaks down, read here as a percentage: the score is out
+  // of 100 to begin with, so a percentage is the score itself rather than a scale laid over
+  // it. Tone follows the three-step band the chips already use.
+  function ratingCell(s) {
+    const tone = s.total >= 70 ? 'var(--success)' : s.total >= 40 ? 'var(--warning)' : 'var(--error)';
+    return `
+      <span class="api-rating" style="--rate:${tone}">
+        <span class="api-rating__value">${esc(t('api.pctOnly', { p: s.total }))}</span>
+        <span class="api-rating__meter"><span class="api-rating__fill" style="width:${s.total}%"></span></span>
+      </span>`;
   }
 
   let page = 1, pageSize = 10;
@@ -367,6 +384,7 @@
         </td>
         <td class="num">${r.errors ? `<span class="chip chip--error">${r.errors}</span>` : '0'}</td>
         <td>${esc(sinceLabel(inst.lastCallDays))}</td>
+        <td>${ratingCell(r.score)}</td>
         <td class="actions">
           <span class="api-actions">
             <button class="btn btn--outline btn--sm" type="button" data-view="${inst.code}">

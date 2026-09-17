@@ -133,11 +133,11 @@ the segmented filter), then the table, then a `.pagination` footer with
 Sort indicators are the same `⇅` / `↑` / `↓` glyphs the entry grid uses, and the
 default sort is Datasets accepted, descending.
 
-The grid carries no rating column. The score still drives the ledger drawer, where its
-three components are shown and can be checked; in the table it was a second reading of
-the accepted count sitting right beside it. A sort key left in `khda.api.v1` by an
-earlier visit is validated against the columns that exist, so a stored `score` falls
-back rather than sorting the table by something no header shows.
+The grid carries the rating as its own sortable column, placed after Last API call so
+it reads as the conclusion drawn from the columns before it rather than a second
+reading of the accepted count beside it. A sort key left in `khda.api.v1` by an earlier
+visit is validated against the columns that exist, so a key no header shows falls back
+to the default sort.
 
 The segmented filter is All · Consuming · Not consuming · Has errors. Changing the
 filter, the search or the page size returns to page one.
@@ -149,6 +149,7 @@ filter, the search or the page size returns to page one.
 | Accepted | `34 / 46` with a progress bar |
 | Errors | count, `chip--error` when non-zero |
 | Last API call | relative time, or "Never" |
+| Rating | `score.total` as a percentage over a meter filled to it, banded green ≥ 70, amber ≥ 40, red below |
 | Actions | **View datasets** and **Send email**, as outlined buttons carrying an arrow and an envelope |
 
 A row that is not consuming carries a `chip--error` "Not consuming" and a red edge.

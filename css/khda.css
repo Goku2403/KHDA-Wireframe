@@ -1548,6 +1548,14 @@ button.link-icon { border: 0; background: none; padding: 0; cursor: pointer; fon
 .api-cover__track { display: block; height: 8px; border-radius: 999px; background: var(--surface-dim); overflow: hidden; }
 .api-cover__fill { display: block; height: 100%; border-radius: 999px; background: var(--chip-done); }
 
+/* The rating reads as a percentage — the score is out of 100 already, so the figure is
+   the score itself. The bar under it is banded by `--rate`, set per row, which is what
+   separates this column from the accepted coverage bar beside it. */
+.api-rating { display: flex; flex-direction: column; gap: 6px; min-width: 92px; }
+.api-rating__value { color: var(--rate); font: 400 14px/20px var(--font); font-variant-numeric: tabular-nums; }
+.api-rating__meter { display: block; height: 8px; border-radius: 999px; background: var(--surface-dim); overflow: hidden; }
+.api-rating__fill { display: block; height: 100%; border-radius: 999px; background: var(--rate); }
+
 .api-actions { display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; }
 /* .btn carries a 160px floor meant for page-level actions; a pair of them inside a row has
    to stay narrow, or two buttons take a third of the table width */
@@ -1631,6 +1639,7 @@ html.has-drawer, html.has-drawer body { overflow: hidden; }
 [dir="rtl"] .api-stat__share,
 [dir="rtl"] .api-cover__value,
 [dir="rtl"] .api-wave__value,
+[dir="rtl"] .api-rating__value,
 [dir="rtl"] .score-break__value { direction: ltr; unicode-bidi: isolate; }
 
 /* the plot is drawn in its own coordinate space, and its text anchors are computed against

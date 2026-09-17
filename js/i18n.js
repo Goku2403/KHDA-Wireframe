@@ -155,7 +155,7 @@
       'demo.clearedText': 'Every dataset is back to empty.',
       'tool.lang': 'العربية',
       'tool.langAria': 'Switch to Arabic',
-      'user.role': 'Institution Admin',
+      'user.role': 'Institution',
       'user.name': 'Noura Al Khatib',
       'user.menu': 'Account menu',
       'user.logout': 'Log out',

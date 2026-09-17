@@ -25,7 +25,7 @@
       <div class="login__divider">For KHDA employees</div>
       <button class="login__btn" type="button" id="btnAd">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
-        <span>Sign in with Active Directory<small>KHDA Data · KHDA IT — Analyst, Supervisor or Administrator</small></span>
+        <span>Sign in with Active Directory<small>KHDA · KHDA Data · KHDA IT</small></span>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
       <div class="cell-muted" style="text-align:center">Knowledge and Human Development Authority · Government of Dubai</div>
     </section>
@@ -40,6 +40,6 @@
 
   const sel = $('#instSelect'), pass = $('#btnPass');
   sel.addEventListener('change', () => { pass.disabled = !sel.value; $('#passHint').textContent = sel.value ? 'UAE PASS opens in a new window; you return signed in as Institution Admin.' : 'Choose your institution above to continue.'; });
-  pass.addEventListener('click', () => { K.setOwn(sel.value); window.KHDA_ROLES.set('inst_admin'); location.href = 'dashboard.html'; });
-  $('#btnAd').addEventListener('click', () => { window.KHDA_ROLES.set('data_analyst'); location.href = 'sector.html'; });
+  pass.addEventListener('click', () => { K.setOwn(sel.value); window.KHDA_ROLES.set('inst'); location.href = 'dashboard.html'; });
+  $('#btnAd').addEventListener('click', () => { window.KHDA_ROLES.set('khda'); location.href = 'sector.html'; });
 })();

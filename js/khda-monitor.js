@@ -117,7 +117,7 @@
     $('#agendaTabs').addEventListener('click', e => { const b = e.target.closest('[data-agenda]'); if (b) { agendaTab = b.dataset.agenda; renderInst(); } });
     $('#main').querySelectorAll('[data-journey]').forEach(b => b.addEventListener('click', () => { openSheet = openSheet === b.dataset.journey ? null : b.dataset.journey; renderInst(); }));
     $('#main').querySelectorAll('[data-accept],[data-return],[data-waive]').forEach(b => b.addEventListener('click', () => {
-      if (!R.can('supervisor')) { window.khdaToast('error', 'Supervisor tier required', 'Acceptance decisions and waivers are made by a Supervisor or Administrator.'); return; }
+      if (!R.can('supervisor')) { window.khdaToast('error', 'KHDA staff only', 'Acceptance decisions and waivers are made by a Supervisor or Administrator.'); return; }
       window.khdaToast('success', b.dataset.accept ? 'Accepted with note' : b.dataset.return ? 'Returned to institution' : 'Requirement waived', 'Recorded in the audit log · ' + R.role().name);
     }));
     $('#openEmail').addEventListener('click', openEmail);
@@ -154,7 +154,7 @@
     $('#emMode').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (!b) return; $('#emMode').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); $('#emPreview').hidden = b.dataset.mode === 'edit'; $('#emEdit').hidden = b.dataset.mode !== 'edit'; });
     $('#emDraft').addEventListener('click', () => { window.khdaToast('info', 'Draft saved', subject); close(); });
     $('#emSend').addEventListener('click', () => {
-      if (!R.can('supervisor')) { window.khdaToast('error', 'Supervisor tier required', 'Ask a Supervisor to send, or save as draft.'); return; }
+      if (!R.can('supervisor')) { window.khdaToast('error', 'KHDA staff only', 'Ask a Supervisor to send, or save as draft.'); return; }
       const entry = { inst: inst.id, to: $('#emTo').value, subject: $('#emSub').value, by: R.role().name, attach: $('#emAttach').checked, at: K.fmtDate(K.TODAY) };
       const l = log(); if (bulk) { K.INSTITUTIONS.slice(0, bulk).forEach(i => l.push({ ...entry, inst: i.id })); } else l.push(entry);
       try { localStorage.setItem(LOG_KEY, JSON.stringify(l)); } catch { /* ignore */ }

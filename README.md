@@ -76,7 +76,7 @@ A card's **Start submission** button goes to `index.html?sheet=<sheet>`; its rep
 
 ## Two page families after the merge
 
-The repository carries both builds. **Institution pages** (dashboard, submissions, `status`, `monitor`, `reconciliation`, `compliance`, `leaderboard`, `api`, `login`) are the institution-role portal driven by `js/model.js`. **KHDA-staff pages** from Wireframe v2 (`sector`, `khda-monitor`, `khda-compliance`, `khda-leaderboard`, `remediation`, `rules`, `onboarding`, `credentials`, `khda-login`) are driven by `js/sector.js`; the role switch in the account menu (`js/roles.js`) moves between the two navigations. `js/dashboard-v2.js` is v2's dashboard renderer, kept for reference and not loaded.
+The repository carries both builds. **Institution pages** (dashboard, submissions, `status`, `monitor`, `reconciliation`, `compliance`, `leaderboard`, `api`, `login`) are the institution-role portal driven by `js/model.js`. **KHDA-staff pages** from Wireframe v2 (`sector`, `khda-monitor`, `khda-compliance`, `khda-leaderboard`, `remediation`, `rules`, `onboarding`, `credentials`, `khda-login`) are driven by `js/sector.js`; the role switch in the account menu (`js/roles.js`) moves between the navigations. Roles are exactly four — **Institution · KHDA · KHDA Data · KHDA IT** — with no sub-roles or tiers; KHDA sees the union of the Data and IT navigations. `js/dashboard-v2.js` is v2's dashboard renderer, kept for reference and not loaded.
 
 ## Run
 

@@ -1,5 +1,5 @@
 /* KHDA Data · Sector home (plan D-1) — KPI tiles, sector gauge, follow-up queue with reason codes and SLA age,
-   onboarding overview by wave. Supervisor-tier actions (bulk send) are gated, not hidden. */
+   onboarding overview by wave. KHDA-only actions (bulk send) are gated for institutions, not hidden. */
 (function () {
   'use strict';
   const K = window.KHDA_SECTOR, R = window.KHDA_ROLES;
@@ -70,7 +70,7 @@
     $('#q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); render(); const el = $('#q'); el.focus(); el.setSelectionRange(q.length, q.length); });
     $('#selAll').addEventListener('change', e => { selected = new Set(e.target.checked ? list.map(s => s.inst.id) : []); render(); });
     $('#main').querySelectorAll('[data-sel]').forEach(c => c.addEventListener('change', () => { if (c.checked) selected.add(c.dataset.sel); else selected.delete(c.dataset.sel); render(); }));
-    $('#bulkSend').addEventListener('click', () => { if (!R.can('supervisor')) { window.khdaToast('error', 'Supervisor tier required', 'Bulk communications are sent by a Supervisor or Administrator.'); return; } location.href = 'khda-monitor.html?inst=' + [...selected][0] + '&email=1&bulk=' + selected.size; });
+    $('#bulkSend').addEventListener('click', () => { if (!R.can('supervisor')) { window.khdaToast('error', 'KHDA staff only', 'Bulk communications are sent by a Supervisor or Administrator.'); return; } location.href = 'khda-monitor.html?inst=' + [...selected][0] + '&email=1&bulk=' + selected.size; });
     $('#exportQueue').addEventListener('click', () => window.khdaToast('success', 'Queue exported', list.length + ' institutions written to follow-up-queue.xlsx'));
     R.gate();
   }

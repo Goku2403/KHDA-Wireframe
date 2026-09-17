@@ -1,6 +1,6 @@
 /* Rule library (plan T-6) — one rule library, derived from the dictionary through the same schema the form,
    the Excel template and the validator use. Rules are typed, versioned with effective periods, sandbox-tested,
-   approved by a Supervisor and published by an Administrator. KHDA IT owns it; KHDA Data authors. */
+   approved by KHDA Data and published by KHDA IT. KHDA IT owns it; KHDA Data authors. */
 (function () {
   'use strict';
   const K = window.KHDA_SECTOR, R = window.KHDA_ROLES, S = window.KHDA_SCHEMA;
@@ -45,7 +45,7 @@
     $('#main').innerHTML = `
       <div class="page-head"><div><div class="page-head__eyebrow">${R.role().team === 'it' ? 'KHDA IT · Rule engine' : 'KHDA Data · Rule library'}</div><h1 class="page-head__title">Rule library</h1><p class="page-head__sub">${all.toLocaleString()} rules across ${DATA.length} datasets — applied identically in the portal form, the Excel template, API validation in the Qlik DQ layer and the remediation report.</p></div>
         <div class="page-head__actions"><button class="btn btn--outline" type="button" id="testAll">▶ Test against sample data</button><button class="btn btn--outline" type="button" id="draftRule">＋ Draft a rule</button><button class="btn btn--primary" type="button" id="publish" data-tier="administrator">Publish 2026.2</button></div></div>
-      <section class="panel"><div class="panel__head"><div><h2 class="panel__title">Versions</h2><p class="panel__sub">Every version carries an effective period. Draft → Supervisor approves → Administrator publishes.</p></div></div>
+      <section class="panel"><div class="panel__head"><div><h2 class="panel__title">Versions</h2><p class="panel__sub">Every version carries an effective period. Draft → KHDA Data approves → KHDA IT publishes.</p></div></div>
         <div class="table-wrap" style="border-radius:12px"><table class="data-table data-table--compact"><thead><tr><th>Version</th><th>Status</th><th>Effective from</th><th>By</th><th>Change</th><th></th></tr></thead><tbody>${VERSIONS.map(v => `<tr><td><span class="version-pill${v.status === 'live' ? ' is-live' : ''}">${esc(v.v)}</span></td><td>${v.status === 'live' ? '<span class="chip chip--complete">Live</span>' : v.status === 'approved' ? '<span class="chip chip--current">Approved · awaiting publish</span>' : '<span class="chip chip--pending">Draft</span>'}</td><td>${esc(v.from)}</td><td>${esc(v.by)}</td><td>${esc(v.note)}</td><td class="actions">${v.status === 'draft' ? '<button class="btn btn--outline btn--sm" type="button" data-tier="supervisor" data-approve="1">Approve</button>' : v.status === 'approved' ? '<button class="btn btn--outline btn--sm" type="button" data-tier="administrator" data-publish="1">Publish</button>' : '<a class="btn btn--text btn--sm" href="#">Diff →</a>'}</td></tr>`).join('')}</tbody></table></div></section>
       <div class="grid-main-side">
         <section class="panel"><div class="panel__head"><div><h2 class="panel__title">${esc(K.titleOf(d))}</h2><p class="panel__sub">${esc(K.codeOf(d))} · ${esc(K.frequencyOf(d))} · ${d.fields.length} fields · ${rulesFor(d).length} rules</p></div>
@@ -70,8 +70,8 @@
     $('#main').querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => openEditor(rulesFor(d).find(r => r.id === b.dataset.edit))));
     $('#draftRule').addEventListener('click', () => openEditor(null));
     $('#runTest').addEventListener('click', runTest); $('#testAll').addEventListener('click', () => { document.getElementById('sandbox').scrollIntoView({ behavior: 'smooth' }); runTest(); });
-    $('#main').querySelectorAll('[data-approve]').forEach(b => b.addEventListener('click', () => { if (!R.can('supervisor')) return window.khdaToast('error', 'Supervisor tier required', 'Rule changes are approved by a Supervisor.'); window.khdaToast('success', 'Approved', 'Awaiting an Administrator to publish'); }));
-    $('#main').querySelectorAll('[data-publish],#publish').forEach(b => b.addEventListener('click', () => { if (!R.can('administrator')) return window.khdaToast('error', 'Administrator tier required', 'Publishing a rule version is an Administrator action.'); window.khdaToast('success', 'Published 2026.2', 'Effective Fall · 2026–2027 · form, template, API validation and report updated'); }));
+    $('#main').querySelectorAll('[data-approve]').forEach(b => b.addEventListener('click', () => { if (!R.can('supervisor')) return window.khdaToast('error', 'KHDA staff only', 'Rule changes are approved by KHDA Data.'); window.khdaToast('success', 'Approved', 'Awaiting KHDA IT to publish'); }));
+    $('#main').querySelectorAll('[data-publish],#publish').forEach(b => b.addEventListener('click', () => { if (!R.can('administrator')) return window.khdaToast('error', 'KHDA staff only', 'Publishing a rule version is a KHDA IT action.'); window.khdaToast('success', 'Published 2026.2', 'Effective Fall · 2026–2027 · form, template, API validation and report updated'); }));
     if (highlight) { const el = document.getElementById(highlight); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     R.gate();
 
@@ -99,7 +99,7 @@
       const close = () => { m.hidden = true; };
       $('#rmCancel').addEventListener('click', close); m.addEventListener('mousedown', e => { if (e.target === m) close(); });
       $('#rmTest').addEventListener('click', () => window.khdaToast('info', 'Sandbox', 'Rule evaluated against 12 sample rows · 2 would fail'));
-      $('#rmSave').addEventListener('click', () => { const l = drafts(); l.push({ sheet: d.sheet, id: rule ? rule.id + '·d' : 'R-D' + (l.length + 1), type: $('#rmType').value, field: $('#rmField').value || 'dataset', text: $('#rmText').value || 'Untitled rule', expr: $('#rmExpr').value || '—' }); try { localStorage.setItem(DRAFT_KEY, JSON.stringify(l)); } catch { /* ignore */ } close(); window.khdaToast('success', 'Draft saved', 'Added to version 2027.0-draft · awaiting Supervisor approval'); render(); });
+      $('#rmSave').addEventListener('click', () => { const l = drafts(); l.push({ sheet: d.sheet, id: rule ? rule.id + '·d' : 'R-D' + (l.length + 1), type: $('#rmType').value, field: $('#rmField').value || 'dataset', text: $('#rmText').value || 'Untitled rule', expr: $('#rmExpr').value || '—' }); try { localStorage.setItem(DRAFT_KEY, JSON.stringify(l)); } catch { /* ignore */ } close(); window.khdaToast('success', 'Draft saved', 'Added to version 2027.0-draft · awaiting KHDA Data approval'); render(); });
     }
   }
   render();

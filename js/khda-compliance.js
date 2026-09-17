@@ -21,7 +21,7 @@
     const onTimePct = Math.round(hist.reduce((n, h) => n + h.onTime, 0) / Math.max(1, totalReceived) * 100);
     $('#main').innerHTML = `
       <div class="page-head"><div><div class="page-head__eyebrow">KHDA · Performance over time</div><h1 class="page-head__title">Compliance history</h1><p class="page-head__sub">${inst ? 'See how ' + esc(inst.short) + ' is progressing and where follow-up keeps recurring.' : 'Sector-wide compliance per reporting period, computed from the requirement table.'}</p></div>
-        <div class="page-head__actions">${R.role().team === 'inst' ? '' : `<select class="control control--sm" id="instPick" aria-label="Institution"><option value="">Whole sector</option>${K.INSTITUTIONS.map(i => `<option value="${i.id}"${inst && inst.id === i.id ? ' selected' : ''}>${esc(i.name)}</option>`).join('')}</select>`}${inst ? `<a class="btn btn--outline" href="${R.role().team === 'inst' ? 'dashboard.html' : 'khda-monitor.html?inst=' + inst.id}">Open current monitor →</a>` : ''}<button class="btn btn--primary" type="button" id="boardPack">Export board pack</button></div></div>
+        <div class="page-head__actions">${R.role().team === 'inst' ? '' : `<select class="control control--sm" id="instPick" aria-label="Institution"><option value="">Whole sector</option>${K.INSTITUTIONS.map(i => `<option value="${i.id}"${inst && inst.id === i.id ? ' selected' : ''}>${esc(i.name)}</option>`).join('')}</select>`}</div></div>
       <div class="kpi-grid">
         <div class="kpi kpi--info"><div class="kpi__label">Reporting periods</div><div class="kpi__value">${hist.length}</div><div class="kpi__note">Receipts available from ${K.fmtDate(K.PERIODS[0].start)}</div></div>
         <div class="kpi kpi--primary"><div class="kpi__label">Datasets received</div><div class="kpi__value">${totalReceived.toLocaleString()}</div><div class="kpi__note">Counted once within each period</div></div>
@@ -50,7 +50,6 @@
     $('#main').removeAttribute('aria-busy');
     const pick = $('#instPick'); if (pick) pick.addEventListener('change', e => { inst = K.INSTITUTIONS.find(i => i.id === e.target.value) || null; openPeriod = null; history.replaceState(null, '', 'khda-compliance.html' + (inst ? '?inst=' + inst.id : '')); render(); });
     $('#main').querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => { openPeriod = openPeriod === b.dataset.period ? null : b.dataset.period; render(); }));
-    $('#boardPack').addEventListener('click', () => window.khdaToast('success', 'Board pack exported', 'compliance-' + (inst ? inst.short : 'sector') + '.xlsx · summary, trend, period table, recurring datasets'));
     $('#exportTrend').addEventListener('click', () => window.khdaToast('success', 'Chart data exported', hist.length + ' periods written to submission-trend.csv'));
   }
   render();

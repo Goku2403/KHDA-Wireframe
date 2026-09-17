@@ -15,8 +15,7 @@
     it: { team: 'it', label: 'KHDA IT', name: 'Yousef Karim', home: 'onboarding.html' },
   };
   const NAV = {
-    inst: [['dashboard.html', 'nav.dashboard', 'Dashboard'], ['submissions.html', 'nav.submissions', 'Submissions'], ['status.html', 'nav.status', 'Submission status'], ['monitor.html', 'nav.monitor', 'Data monitor'], ['reconciliation.html', 'nav.reconciliation', 'Remediation'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['api.html', 'nav.api', 'REST API'], ['credentials.html', 'nav.integration', 'Integration']],
-    data: [['sector.html', 'nav.sector', 'Sector home'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['rules.html', 'nav.rules', 'Rule library']],
+    inst: [['dashboard.html', 'nav.dashboard', 'Dashboard'], ['submissions.html', 'nav.submissions', 'Submissions']],
     khda: [['sector.html', 'nav.sector', 'Sector home'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['rules.html', 'nav.rules', 'Rule library'], ['onboarding.html', 'nav.onboarding', 'Onboarding'], ['credentials.html', 'nav.credentials', 'Credentials']],
     it: [['onboarding.html', 'nav.onboarding', 'Onboarding'], ['credentials.html', 'nav.credentials', 'Credentials'], ['rules.html', 'nav.rules', 'Rule library'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['governance.html', 'nav.governance', 'Data Governance Policies'], ['api-integration.html', 'nav.apiIntegration', 'API Integration']],
   };

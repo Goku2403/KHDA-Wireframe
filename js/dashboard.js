@@ -326,10 +326,14 @@
     const items = [
       { icon: '<path d="M12 5v14m-7-7h14"/>', label: t('dash.quick.start'), href: 'submissions.html' },
       { icon: '<path d="M14 3v5h5M7 3h7l5 5v13H7z"/><path d="M12 11v6m-2.5-2.5L12 17l2.5-2.5"/>', label: t('dash.quick.continue'), href: entryHref(firstOpen.sheet) },
-      { icon: '<path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>', label: sm && sm.returnedRows ? t('dash.quick.reconcileN', { n: fmt(sm.returnedRows) }) : t('dash.quick.reconcile'), href: 'reconciliation.html' },
-      { icon: '<path d="M4 7h16M4 12h16M4 17h10"/>', label: t('dash.quick.status'), href: 'status.html' },
-      { icon: '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/>', label: t('dash.quick.api'), href: 'api.html' },
-      { icon: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', label: t('dash.quick.report'), href: 'report.html?sheet=' + encodeURIComponent(firstWithData.sheet) },
+      { icon: '<path d="M4 7h16M4 12h16M4 17h10"/>', label: t('nav.status'), href: 'status.html' },
+      { icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', label: t('nav.monitor'), href: 'monitor.html' },
+      { icon: '<path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>', label: sm && sm.returnedRows ? t('dash.quick.reconcileN', { n: fmt(sm.returnedRows) }) : t('nav.reconciliation'), href: 'reconciliation.html' },
+      { icon: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', label: t('nav.compliance'), href: 'compliance.html' },
+      { icon: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>', label: t('nav.leaderboard'), href: 'leaderboard.html' },
+      { icon: '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/>', label: t('nav.api'), href: 'api.html' },
+      { icon: '<path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>', label: t('nav.integration'), href: 'credentials.html' },
+      { icon: '<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>', label: t('dash.quick.report'), href: 'report.html?sheet=' + encodeURIComponent(firstWithData.sheet) },
     ];
     $('#quickList').innerHTML = items.map(i => `
       <li><a class="quick" href="${i.href}">

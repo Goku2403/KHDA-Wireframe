@@ -35,7 +35,7 @@ Roles live in `js/roles.js` and are switched from the account menu (demo) or set
 | `sector.html` | Sector overview: KPI tiles, follow-up queue with reason codes and SLA age, entity table with bulk select, sector gauge, onboarding overview by wave. |
 | `monitor.html` | Cards or 37 x 46 compliance matrix; `?inst=` opens the institution monitor with touch points, dataset agenda, per-row submission journey, acceptance actions and a working email composer with a delivery log. |
 | `compliance.html` | Computed compliance history per institution or sector: Required / Received / Accepted / Late / Missing / On-time per period, trend, recurring corrections. |
-| `remediation.html` | Remediation report per institution x dataset x period: failing rule, severity, rows, sample, fix, recurrence, owner, SLA age; `?view=technical` is the KHDA IT view of pipeline failures. |
+| `remediation.html` | Reconciliation report per institution x dataset x period: failing rule, severity, rows, sample, fix, recurrence, owner, SLA age; `?view=technical` is the KHDA IT view of pipeline failures. |
 
 ### KHDA IT
 
@@ -58,13 +58,13 @@ The wireframe's reference date is 20 October 2026 (seven weeks into Fall 2026-20
 
 | Page | Purpose |
 |---|---|
-| `dashboard.html` | Landing page: highlights carousel, remediation queue, institution card, quick actions, submission progress gauge, submission calendar and analytics meters. Follows the Figma Portal Delivery dashboard (`24570:127550`). |
+| `dashboard.html` | Landing page: highlights carousel, reconciliation queue, institution card, quick actions, submission progress gauge, submission calendar and analytics meters. Follows the Figma Portal Delivery dashboard (`24570:127550`). |
 | `choose.html` | Step screen asking whether to bulk upload or use the form, then opening the dataset in that mode. Follows the Figma step page (`11058:260635`). |
 | `submissions.html` | Catalogue of the 46 datasets as cards, with search, favourites, sort, paging and the whole-submission export. Follows the Figma Services page (`3578:78576`). Each card opens its own form or report. |
 | `index.html` | Data entry for one dataset, chosen with `?sheet=<sheet name>`. Two-step flow: enter records, then review and submit. |
 | `report.html` | Data report for one dataset: statistics, analytics bars and the full data grid with paging and an edit link back to the form. |
 | `status.html` | Submission status — the institution's submission dashboard for a reporting period: overview tiles, the submission register (channel, receipt, status, records) and a side sheet that tracks one submission through KHDA (submitted → received → validation → quality review → accepted). `?track=<sheet>` opens the sheet. |
-| `reconciliation.html` | Remediation workbench — every dataset with records to fix (returned by KHDA validation or quality review, or failing checks in a draft). Three views: **Workbench** (records grouped by failing rule, fix in place, bulk-fix a coded field, mark fixed, download error report, resubmit as next version), **Remediation report** (dataset × rule with severity, records, fields, sample, fix, recurrence, age, progress; roll-ups; CSV), **Analytics** (interactive SVG charts: records by dataset, failures by rule type, severity/progress, trend by period, recurring rules — hover for detail, click to drill in). `?sheet=<sheet>`, `?view=report|analytics`. |
+| `reconciliation.html` | Reconciliation workbench — every dataset with records to fix (returned by KHDA validation or quality review, or failing checks in a draft). Three views: **Workbench** (records grouped by failing rule, fix in place, bulk-fix a coded field, mark fixed, download error report, resubmit as next version), **Reconciliation report** (dataset × rule with severity, records, fields, sample, fix, recurrence, age, progress; roll-ups; CSV), **Analytics** (interactive SVG charts: records by dataset, failures by rule type, severity/progress, trend by period, recurring rules — hover for detail, click to drill in). `?sheet=<sheet>`, `?view=report|analytics`. |
 | `monitor.html` | Data monitor — the institution's own monitor for a reporting period: onboarding journey with six named touch points (dates, owner, evidence) and a risk chip, next in the agenda (overdue / returned / due soon with date badges and next action), current and upcoming reporting periods, latest receipts. |
 | `compliance.html` | Compliance history — performance across reporting periods: datasets received, recurring corrections, **computed** on-time compliance, submission trend (stacked columns with on-time rate), what to follow up on, and the period-by-period table with Required / Received / Accepted / Corrections / Late / Missing / via API. |
 | `login.html` | Sign-in — UAE PASS, floating icon tiles, footer. Sign-out from any page returns here. |
@@ -75,7 +75,7 @@ A card's **Start submission** button goes to `index.html?sheet=<sheet>`; its rep
 
 ## Two page families after the merge
 
-The repository carries both builds. **Institution pages** (dashboard, submissions, `status`, `monitor`, `reconciliation`, `compliance`, `leaderboard`, `api`, `login`) are the institution-role portal driven by `js/model.js`. **KHDA-staff pages** from Wireframe v2 (`sector`, `khda-monitor`, `khda-compliance`, `khda-leaderboard`, `remediation`, `onboarding`, `credentials`, `khda-login`) are driven by `js/sector.js`; the role switch in the account menu (`js/roles.js`) moves between the navigations. Roles are exactly four — **Institution · KHDA · KHDA Data · KHDA IT** — with no sub-roles or tiers; KHDA sees the union of the Data and IT navigations. `js/dashboard-v2.js` is v2's dashboard renderer, kept for reference and not loaded.
+The repository carries both builds. **Institution pages** (dashboard, submissions, `status`, `monitor`, `reconciliation`, `compliance`, `leaderboard`, `api`, `login`) are the institution-role portal driven by `js/model.js`. **KHDA-staff pages** from Wireframe v2 (`sector`, `khda-monitor`, `khda-compliance`, `khda-leaderboard`, `reconciliation`, `onboarding`, `credentials`, `khda-login`) are driven by `js/sector.js`; the role switch in the account menu (`js/roles.js`) moves between the navigations. Roles are exactly four — **Institution · KHDA · KHDA Data · KHDA IT** — with no sub-roles or tiers; KHDA sees the union of the Data and IT navigations. `js/dashboard-v2.js` is v2's dashboard renderer, kept for reference and not loaded.
 
 ## Run
 
@@ -111,7 +111,7 @@ Then browse to <http://localhost:8765/submissions.html>.
 | `js/model.js` | Institution submission model: where each dataset stands for a reporting period, receipts, the journey, returned records and rules; demo state generated from the dictionary, overridden by drafts and resubmissions made in this browser |
 | `js/portal.js` | Shared helpers for the three institution pages: status chips, the journey on the vertical stepper, period selector, downloads, and the ticker that moves a resubmitted dataset on |
 | `js/status.js` | Submission status page |
-| `js/reconciliation.js` | Remediation workbench: item model (returned + draft issues, rule groups, recurrence), the three views and the SVG chart helpers |
+| `js/reconciliation.js` | Reconciliation workbench: item model (returned + draft issues, rule groups, recurrence), the three views and the SVG chart helpers |
 | `js/monitor.js` | Data monitor page |
 | `js/compliance.js` | Compliance history page, including the dataset × period compliance matrix |
 | `js/leaderboard.js` | Leaderboard: scoring model and ranking (37 institutions, ours from the model) |
@@ -170,7 +170,7 @@ Two choices:
 | Choice | What opens |
 |---|---|
 | Bulk upload | `index.html?sheet=<sheet>&mode=bulk` — a drop zone for the filled template, the template download, and the records grid with search, filter, paging and export. The form stays out of the way and appears only when a row is edited. |
-| Form submission | `index.html?sheet=<sheet>&mode=form` — the guided form on its own. The records grid, the template and the upload controls are all hidden, since the route is about the form and what has been entered is reviewed on step two. |
+| Form submission | `index.html?sheet=<sheet>&mode=form` — the guided form on its own, one record per submission. There is no **Add record** button: the footer's **Next** validates the form, keeps it as the submission's record and opens the review; **Back** returns to the same record for editing, and **Clear** discards it. The records grid, the template and the upload controls are all hidden, since the route is about the form and what has been entered is reviewed on step two. |
 
 The drop zone accepts a file dropped onto it or a click to browse, highlights while a file is over it, and runs the same reader as the upload button, so validation, duplicate skipping and error flagging behave identically.
 
@@ -218,12 +218,12 @@ Nothing on it is hard-coded. Each card reads the drafts saved in this browser an
 | Card | Where the numbers come from |
 |---|---|
 | Highlights | Three rotating notices about the cycle, the templates and the real-time feeds. Auto-advances, pauses on hover, dots jump between them. The artwork and the mint-to-teal gradient come from the Figma card itself: `assets/hero-artwork.png` is the exact crop Figma applies to the source image. |
-| Remediation queue | Every dataset ranked by how badly it needs work: failing validation first, then started, then untouched. Filter by needs remediation, in progress, not started or all, and expand past the first five. The expanded list scrolls inside its own card, so a long list never stretches the row and pushes the neighbouring cards out of view. Each row opens that dataset's form. |
-| Institution | Laid out as in the Figma card: an inset cover photo taken from the Figma file, a crest centred over its lower edge, then the name, award chip and facts centred beneath. Every fact on it is read from the submission rather than invented: the institution code and name most often entered across the drafts, datasets submitted out of 46, records entered, records needing remediation, and how long ago the last dataset was submitted. Falls back to a placeholder name and "Not set" when nothing has been entered. |
+| Reconciliation queue | Every dataset ranked by how badly it needs work: failing validation first, then started, then untouched. Filter by needs reconciliation, in progress, not started or all, and expand past the first five. The expanded list scrolls inside its own card, so a long list never stretches the row and pushes the neighbouring cards out of view. Each row opens that dataset's form. |
+| Institution | Laid out as in the Figma card: an inset cover photo taken from the Figma file, a crest centred over its lower edge, then the name, award chip and facts centred beneath. Every fact on it is read from the submission rather than invented: the institution code and name most often entered across the drafts, datasets submitted out of 46, records entered, records needing reconciliation, and how long ago the last dataset was submitted. Falls back to a placeholder name and "Not set" when nothing has been entered. |
 | Quick actions | Start a submission, continue the first unfinished dataset, open a report for the first dataset holding data. |
 | Submission progress | A half-ring split into submitted, in progress and not started, switchable between semester/annual and real-time. |
 | Submission calendar | Which cadences fall in each collection window. Illustrative: the dictionary does not publish dates. |
-| Analytics updates | Datasets started, records entered, and records needing remediation. |
+| Analytics updates | Datasets started, records entered, and records needing reconciliation. |
 | Recent activity | What actually happened, newest first: records added, edited, deleted, uploaded and submitted, with the dataset and how long ago. Each entry opens that dataset. |
 
 Activity is recorded by the data entry page as the user works and kept in `localStorage` under `khda.activity.v1`, capped at 60 entries. Runs of the same action on the same dataset within ten minutes fold into one line, so adding six records reads as one entry rather than six.
@@ -256,8 +256,8 @@ The **Export everything** button beside the sort control downloads one Excel wor
 
 | Sheet | Contents |
 |---|---|
-| Summary | Institution, cycle, generation time, then the headline counts: datasets in the dictionary, started, submitted, in progress, not started, records, records needing remediation, fields, and the same broken down by cadence |
-| Datasets | A register of all 46: reference, title, sheet, cadence, field count, records, records needing remediation, status and the date it was submitted |
+| Summary | Institution, cycle, generation time, then the headline counts: datasets in the dictionary, started, submitted, in progress, not started, records, records needing reconciliation, fields, and the same broken down by cadence |
+| Datasets | A register of all 46: reference, title, sheet, cadence, field count, records, records needing reconciliation, status and the date it was submitted |
 | Analytics | The figures behind the charts: progress by status for each cadence, the submission calendar, the indicator meters with their shares, and the ten largest datasets |
 | One per dataset | The actual records of every dataset holding data, under their database column names, numbers stored as numbers |
 

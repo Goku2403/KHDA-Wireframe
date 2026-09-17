@@ -107,7 +107,7 @@
     restart();
   }
 
-  // ---------- remediation queue ----------
+  // ---------- reconciliation queue ----------
   const RANK = { errors: 0, progress: 1, new: 2, submitted: 3 };
   const CHIP = { errors: 'error', progress: 'current', new: 'neutral', submitted: 'complete' };
 
@@ -436,7 +436,7 @@
     host.innerHTML = `
       <a class="kpi kpi--primary" href="submissions.html"><div class="kpi__label">Total datasets</div><div class="kpi__value">${totals.datasets}</div><div class="kpi__note">in the catalogue · ${sm.required} required this period</div><span class="kpi__link">View all datasets →</span></a>
       <a class="kpi kpi--success" href="submissions.html?view=table&status=accepted"><div class="kpi__label">Accepted</div><div class="kpi__value">${accepted}</div><div class="kpi__note">${Math.round(accepted / Math.max(1, sm.required) * 100)}% of required · ${Math.min(submitted, sm.required)} received</div><span class="kpi__link">${esc(PER.label)} →</span></a>
-      <a class="kpi kpi--error" href="remediation.html"><div class="kpi__label">Needs correction</div><div class="kpi__value">${needs + rows.filter(r => r.status === 'errors').length}</div><div class="kpi__note">${sm.rowsRejected.toLocaleString()} rows rejected · ${sm.openIssues} open rules</div><span class="kpi__link">Remediation report →</span></a>
+      <a class="kpi kpi--error" href="remediation.html"><div class="kpi__label">Needs correction</div><div class="kpi__value">${needs + rows.filter(r => r.status === 'errors').length}</div><div class="kpi__note">${sm.rowsRejected.toLocaleString()} rows rejected · ${sm.openIssues} open rules</div><span class="kpi__link">Reconciliation report →</span></a>
       <button class="kpi kpi--warning" type="button" id="kpiOverdue" style="text-align:left;cursor:pointer"><div class="kpi__label">Overdue</div><div class="kpi__value">${overdue}</div><div class="kpi__note">past their due date with no receipt</div><span class="kpi__link">Show overdue →</span></button>
       <a class="kpi kpi--info" href="khda-leaderboard.html"><div class="kpi__label">Readiness rank</div><div class="kpi__value">#${K.ranking(PER.id).find(x => x.inst.id === OWN.id).rank}<small style="font:400 16px/24px var(--font);color:var(--on-surface-muted)"> of ${K.INSTITUTIONS.length}</small></div><div class="kpi__note">${K.ranking(PER.id).find(x => x.inst.id === OWN.id).total} / 1,000 points</div><span class="kpi__link">Leaderboard →</span></a>`;
     $('#kpiOverdue').addEventListener('click', () => { document.querySelector('#taskFilter [data-filter="overdue"]').click(); document.querySelector('.dash-card--tasks').scrollIntoView({ behavior: 'smooth', block: 'start' }); });

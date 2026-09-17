@@ -88,7 +88,8 @@
   }
 
   function build() {
-    const pill = document.querySelector('.tool-pill--icon');
+    // target the accessibility pill by its label: roles.js inserts the Assistant button (also .tool-pill--icon) in front of it
+    const pill = document.querySelector('.tool-pill--icon[data-i18n-aria="tool.accessibility"]') || document.querySelector('.tool-pill--icon:not(#chatbotToggle)');
     if (!pill) return;
 
     pill.setAttribute('aria-haspopup', 'dialog');

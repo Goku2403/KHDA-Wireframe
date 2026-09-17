@@ -15,10 +15,10 @@
     it: { team: 'it', label: 'KHDA IT', name: 'Yousef Karim', home: 'onboarding.html' },
   };
   const NAV = {
-    inst: [['dashboard.html', 'nav.dashboard', 'Dashboard'], ['submissions.html', 'nav.submissions', 'Submissions']],
-    khda: [['sector.html', 'nav.sector', 'Sector home'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['configuration.html', 'nav.configuration', 'Rule configuration'], ['onboarding.html', 'nav.onboarding', 'Onboarding'], ['credentials.html', 'nav.credentials', 'Credentials'], ['governance.html', 'nav.governance', 'Data Governance Policies'], ['api-integration.html', 'nav.apiIntegration', 'API Integration']],
-    data: [['sector.html', 'nav.sector', 'Sector home'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['configuration.html', 'nav.configuration', 'Rule configuration']],
-    it: [['onboarding.html', 'nav.onboarding', 'Onboarding'], ['credentials.html', 'nav.credentials', 'Credentials'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['governance.html', 'nav.governance', 'Data Governance Policies'], ['api-integration.html', 'nav.apiIntegration', 'API Integration']],
+    inst: [['dashboard.html', 'nav.dashboard', 'Dashboard'], ['submissions.html', 'nav.submissions', 'Submissions'], ['reconciliation.html', 'nav.reconciliation', 'Reconciliation']],
+    khda: [['sector.html', 'nav.sector', 'Sector home'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Reconciliation report'], ['khda-leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['onboarding.html', 'nav.onboarding', 'Onboarding']],
+    data: [['sector.html', 'nav.sector', 'Sector home'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Reconciliation report'], ['khda-leaderboard.html', 'nav.leaderboard', 'Leaderboard']],
+    it: [['onboarding.html', 'nav.onboarding', 'Onboarding'], ['credentials.html', 'nav.credentials', 'Credentials'], ['remediation.html', 'nav.remediation', 'Reconciliation report'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['governance.html', 'nav.governance', 'Data Governance Policies'], ['api-integration.html', 'nav.apiIntegration', 'API Integration']],
   };
   const TEAM_LABEL = { inst: 'Institution', khda: 'KHDA', data: 'KHDA Data', it: 'KHDA IT' };
 
@@ -55,17 +55,7 @@
     const tools = $('.portal-tools');
     const anchor = tools && tools.querySelector('.tool-pill--icon');
     if (tools && anchor && window.KHDA_SECTOR) {
-      // KHDA-staff pages (v2) pick the reporting period here; institution pages have it in their title bars
-      const team = document.body.dataset.team;
-      if (team && team !== 'inst') {
-        const per = document.createElement('label');
-        per.className = 'tool-pill tool-pill--period';
-        per.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
-        <span class="sr-only">Reporting period</span>
-        <select id="periodSelect" aria-label="Reporting period">${window.KHDA_SECTOR.PERIODS.map(p => `<option value="${p.id}"${p.id === window.KHDA_SECTOR.currentPeriod() ? ' selected' : ''}>${p.label}</option>`).join('')}</select>`;
-        per.querySelector('select').addEventListener('change', e => { window.KHDA_SECTOR.setPeriod(e.target.value); location.reload(); });
-        tools.insertBefore(per, anchor);
-      }
+      // header period picker removed: KHDA-staff pages read the current period from KHDA_SECTOR.currentPeriod()
       const bot = document.createElement('button');
       bot.type = 'button'; bot.className = 'tool-pill tool-pill--icon'; bot.id = 'chatbotToggle';
       bot.setAttribute('aria-label', 'Assistant'); bot.title = 'Assistant';

@@ -48,7 +48,7 @@
     const sm = s.summary;
     const items = [];
     if (sm.notSubmitted) items.push([`${sm.notSubmitted} required dataset${sm.notSubmitted === 1 ? '' : 's'} have no submission`, 'Start with the overdue ones in your agenda — coverage is worth 400 points.']);
-    if (sm.rowsRejected) items.push([`${sm.rowsRejected.toLocaleString()} rows need correction`, 'Open the remediation report, fix in place and resubmit as a new version.']);
+    if (sm.rowsRejected) items.push([`${sm.rowsRejected.toLocaleString()} rows need correction`, 'Open the reconciliation report, fix in place and resubmit as a new version.']);
     if (sm.processing) items.push([`${sm.processing} submitted dataset${sm.processing === 1 ? '' : 's'} still in the pipeline`, 'Track them on the journey; no action until validation completes.']);
     if (sm.late) items.push([`${sm.late} dataset${sm.late === 1 ? '' : 's'} arrived late`, 'Each late day deducts a timeliness point — dispatch before the due date next period.']);
     if (sm.required - sm.apiCount > 0) items.push([`${sm.required - sm.apiCount} dataset${sm.required - sm.apiCount === 1 ? '' : 's'} not received via API`, 'Automation counts API receipts against required datasets — switch the remaining feeds.']);

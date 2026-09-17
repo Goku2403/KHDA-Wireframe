@@ -22,6 +22,10 @@
   const saved = load();
   records = saved.records || [];
   let submittedAt = saved.submittedAt || null;
+  // form route: one record per submission — the review, the counts and the submission cover only the
+  // record typed into the form; the dataset's other records stay in the data report
+  let formIds = new Set(saved.formIds || []);
+  function scoped() { return mode === 'form' ? records.filter(r => formIds.has(r.id)) : records; }
   step = Math.min(saved.step || 1, 2);
 
   document.title = 'KHDA';
@@ -34,11 +38,18 @@
   applyMode();
 
   buildForm();
+  if (window.khdaCombobox) window.khdaCombobox.enhanceAll($('#recordForm'));   // long code lists become searchable
   bindForm();
   bindGrid();
   bindFooter();
   bindDropzone();
   bindStepper();
+  // a form-mode draft reopens on the record it was working on, before anything renders
+  if (mode === 'form' && !params.get('edit')) {
+    const cur = records.find(r => r.id === saved.current);
+    if (cur) { editingId = cur.id; fillForm(cur); }
+    else if (!scoped().length) step = 1;   // nothing entered yet, so there is nothing to review
+  }
   goTo(step, { silent: true });
 
   (function openFromLink() {
@@ -54,18 +65,26 @@
     const formOnly = mode === 'form';
 
     $('#dropzone').hidden = !bulk;
+    $('#btnTemplate2').hidden = !bulk;   // the template link sits in the title bar beside the report link
     // in bulk the form is only needed to correct a row, so it stays out of the way
     $('#recordForm').hidden = bulk;
 
     // The spreadsheet tools belong to the bulk route: bulk has its own template button beside
     // the drop zone, and a submission typed into the form has no spreadsheet step at all.
     $('#btnTemplate').hidden = true;
-    $('#btnImport').hidden = true;
+    $('#btnImport').hidden = !bulk;
+    if (bulk) $('#btnImport span').textContent = t('entry.reupload');
     $('#btnExport').hidden = !bulk;
 
     // A form-only submission is about the form. What has been entered is reviewed on
     // step two, so the records grid does not belong on step one.
-    $('.records').hidden = formOnly;
+    // Every submission is reviewed as the records grid (error filter, row editing, export): the bulk
+    // upload's rows and the form's records both move to the review step, replacing the read-only table.
+    if (bulk || formOnly) { $('[data-panel="2"]').insertBefore($('.records'), $('#reviewBlock')); $('#reviewBlock').hidden = true; }
+
+    // A form submission is one record at a time: there is no "Add record" — the footer's
+    // Next validates the form, keeps it as the submission's record and opens the review.
+    $('#btnSave').hidden = formOnly;
   }
 
   function revealFormForEdit() {
@@ -139,7 +158,6 @@
     $$('#formGrid input[data-datepicker]').forEach(i => window.KHDADatePicker && window.KHDADatePicker.build(i));
     formPart = 0;
     renderFormNav();
-    renderFormSteps();
   }
 
   // ---------- moving between form sections ----------
@@ -147,7 +165,7 @@
     formPart = Math.max(0, Math.min(i, formSections.length - 1));
     $$('#formGrid .form-section').forEach(el => { el.hidden = Number(el.dataset.section) !== formPart; });
     renderFormNav();
-    renderStepper();
+    renderStepper(); renderFooter();
     if (!opts.silent) $('#recordForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -179,12 +197,9 @@
   }
 
   function renderFormNav() {
-    const last = formPart >= formSections.length - 1;
-    const prev = $('#btnFormPrev'), next = $('#btnFormNext'), save = $('#btnSave');
-    if (!prev) return;
-    prev.hidden = formSections.length < 2 || formPart === 0;
-    next.hidden = formSections.length < 2 || last;
-    save.hidden = !last && formSections.length > 1;
+    const save = $('#btnSave');
+    if (!save) return;
+    save.hidden = mode === 'form';
     $('#formStepNote').hidden = formSections.length < 2;
     $('#formStepNote').textContent = formSections.length < 2 ? ''
       : t('entry.sectionOf', { a: formPart + 1, b: formSections.length, x: sectionTitle(formSections[formPart]) });
@@ -206,18 +221,9 @@
     }
     recordForm.addEventListener('submit', e => {
       e.preventDefault();
-      const rec = readForm();
-      const errors = S.validate({ ...rec, id: editingId }, records, schema);
-      showErrors(errors);
-      const n = Object.keys(errors).length;
-      if (n) {
-        toast('error', t('entry.notSaved'), t('entry.fieldsNeedAttention', { n }));
-        const first = Object.keys(errors)[0];
-        showSection(sectionOfField(first), { silent: true });
-        const el = $('#' + first);
-        if (el) { el.focus(); el.closest('.field').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-        return;
-      }
+      if (mode === 'form') { next(); return; }   // Enter in the single-record form behaves like the footer's Next
+      const rec = validForm();
+      if (!rec) return;
       if (editingId) {
         const i = records.findIndex(r => r.id === editingId);
         records[i] = { ...records[i], ...rec };
@@ -230,16 +236,37 @@
         page = Math.ceil(records.length / pageSize) || 1;
       }
       markChanged(); persist(); resetForm(); showSection(0, { silent: true }); hideFormAfterEdit(); render();
-    });
-    $('#btnCancel').addEventListener('click', () => { resetForm(); showSection(0, { silent: true }); hideFormAfterEdit(); render(); });
-    $('#btnFormNext').addEventListener('click', nextSection);
-    $('#btnFormPrev').addEventListener('click', () => showSection(formPart - 1));
-    $('#formSteps').addEventListener('click', e => {
-      const b = e.target.closest('button[data-part]');
-      if (b) showSection(Number(b.dataset.part));
+      if (mode === 'bulk') goTo(2);
     });
   }
 
+  // Reads the form and validates it against the other records. Returns the record, or null after
+  // marking the fields and jumping to the first section that has a problem.
+  function validForm() {
+    const rec = readForm();
+    const errors = S.validate({ ...rec, id: editingId }, records, schema);
+    showErrors(errors);
+    const n = Object.keys(errors).length;
+    if (!n) return rec;
+    toast('error', t('entry.notSaved'), t('entry.fieldsNeedAttention', { n }));
+    const first = Object.keys(errors)[0];
+    showSection(sectionOfField(first), { silent: true });
+    const el = $('#' + first);
+    if (el) { el.focus(); el.closest('.field').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    return null;
+  }
+  // Form mode: the form *is* the record. Commit it in place (or create it the first time) and keep
+  // the form bound to it, so Back from the review edits the same record rather than adding another.
+  function commitForm() {
+    const rec = validForm();
+    if (!rec) return false;
+    const i = records.findIndex(r => r.id === editingId);
+    if (i >= 0) { records[i] = { ...records[i], ...rec }; note('updated'); }
+    else { editingId = uid(); records.push({ id: editingId, ...rec }); note('added'); }
+    if (mode === 'form') formIds = new Set([editingId]);   // the form route submits one record at a time
+    markChanged(); persist();
+    return true;
+  }
   // function declaration, not a const: it is called from handlers that can run before this point
   function labelOf(o) { return o.l.includes(' — ') ? o.l.split(' — ').slice(1).join(' — ') : o.l; }
   function readForm() {
@@ -247,10 +274,11 @@
     for (const f of schema.fields) rec[f.key] = ($('#' + f.key)?.value ?? '').trim();
     return rec;
   }
-  function fillForm(r) { for (const f of schema.fields) { const el = $('#' + f.key); if (el) el.value = r[f.key] ?? ''; } }
+  function fillForm(r) { for (const f of schema.fields) { const el = $('#' + f.key); if (el) el.value = r[f.key] ?? ''; } if (window.khdaCombobox) window.khdaCombobox.syncAll(recordForm); }
   function resetForm() {
     recordForm.reset();
     schema.fields.forEach(f => { const el = $('#' + f.key); if (el) el.value = ''; });
+    if (window.khdaCombobox) window.khdaCombobox.syncAll(recordForm);
     editingId = null;
     $('#btnSaveLabel').textContent = t('entry.addRecord');
     clearAllErrors();
@@ -286,31 +314,42 @@
     const span = f.querySelector('.field__error span');
     if (span) span.textContent = '';
   }
-  function errorCount() { return records.filter(r => Object.keys(S.validate(r, records, schema)).length).length; }
+  function errorCount() { return scoped().filter(r => Object.keys(S.validate(r, records, schema)).length).length; }
 
   // ---------- steps ----------
-  function reachable() { return (!records.length || errorCount()) ? 1 : 2; }
+  function reachable() { return (!scoped().length || errorCount()) ? 1 : 2; }
   function bindStepper() {
-    $$('#stepper .stepper__btn').forEach(btn => btn.addEventListener('click', () => {
-      const s = Number(btn.closest('.stepper__item').dataset.step);
+    $('#stepper').addEventListener('click', e => {
+      const btn = e.target.closest('.stepper__btn'); if (!btn || btn.disabled) return;
+      const li = btn.closest('.stepper__item'), s = Number(li.dataset.step);
+      if (li.dataset.part != null) {                 // a form section: open it (leaving the review if need be)
+        if (step !== 1) goTo(1, { silent: true });
+        showSection(Number(li.dataset.part));
+        return;
+      }
+      if (mode === 'form' && s === 2 && step === 1) { next(); return; }
       if (s <= reachable()) goTo(s);
-      else toast('info', t('entry.stepLocked'), records.length ? t('entry.fixErrorsFirst') : t('entry.addOneFirst'));
-    }));
+      else toast('info', t('entry.stepLocked'), scoped().length ? t('entry.fixErrorsFirst') : t('entry.addOneFirst'));
+    });
   }
   function goTo(s, opts = {}) {
     step = s;
     $$('.step-panel').forEach(p => p.hidden = Number(p.dataset.panel) !== s);
-    if (s === 1) render(); else renderReview();
+    if (s === 1 || mode !== 'full') render();
+    if (s === 2) renderReview();
     renderStepper(); renderFooter(); persist();
     if (!opts.silent) window.scrollTo({ top: $('.main').offsetTop - 16, behavior: 'smooth' });
   }
   function next() {
     if (step === 1) {
-      if (!records.length) { toast('error', t('entry.noRecords'), t('entry.addOneFirst')); return; }
+      if (mode === 'form' && formSections.length > 1 && formPart < formSections.length - 1) { nextSection(); return; }
+      if (mode === 'form' && !commitForm()) return;   // the record stays bound to the form, so Back reopens it for edits
+      if (!scoped().length) { toast('error', t('entry.noRecords'), t('entry.addOneFirst')); return; }
+      if (mode === 'bulk') { goTo(2); return; }
       const errs = errorCount();
       if (errs) {
         filter = 'error';
-        $$('.segmented button').forEach(x => x.setAttribute('aria-pressed', x.dataset.filter === 'error' ? 'true' : 'false'));
+        $$('#gridFilter button').forEach(x => x.setAttribute('aria-pressed', x.dataset.filter === 'error' ? 'true' : 'false'));
         page = 1; render();
         toast('error', t('entry.recordsNeedAttention'), t('entry.fixNBeforeContinuing', { n: errs }));
         $('.records').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -320,51 +359,75 @@
     }
     submit();
   }
+  // The rail lists every step of the journey as a main item: one per section of the record form
+  // (when the form is in play), then Review and submit. Bulk mode keeps a single "Upload template" step.
+  function stepItems() {
+    const sections = !$('#recordForm').hidden && formSections.length > 1;
+    const items = sections
+      ? formSections.map((sec, i) => ({ step: 1, part: i, title: sectionTitle(sec) }))
+      : [{ step: 1, title: t(mode === 'bulk' ? 'entry.stepUpload' : 'entry.stepEnter') }];
+    items.push({ step: 2, title: t('entry.stepReview') });
+    return items;
+  }
+  // [chip label, kind] for one item; 'current' is the open step
+  function stepStatus(it, errs) {
+    if (it.step === 2) return step === 2 ? [t('entry.inProgress'), 'current'] : [t('entry.required'), 'neutral'];
+    if (it.part == null) {
+      return scoped().length ? [errs ? t('entry.nRecordsNErrors', { n: scoped().length, e: errs }) : t('entry.nRecords', { n: scoped().length }), errs ? 'warning' : 'complete']
+                            : (step === 1 ? [t('entry.inProgress'), 'current'] : [t('entry.required'), 'neutral']);
+    }
+    if (step === 2) return [t('entry.complete'), 'complete'];   // on the review every section has been walked
+    if (step === 1 && it.part === formPart) return [t('entry.inProgress'), 'current'];
+    // a section counts once it has been passed, or once the record exists (back from the review)
+    const committed = editingId && records.some(r => r.id === editingId);
+    if (step === 1 && it.part > formPart && !committed) return [t('entry.required'), 'neutral'];
+    const bad = Object.keys(sectionErrors(it.part)).length;
+    return bad ? [t('entry.nFields', { n: bad }), 'warning'] : [t('entry.complete'), 'complete'];
+  }
   function renderStepper() {
     const maxStep = reachable(), errs = errorCount();
-    const status = {
-      1: records.length ? [errs ? t('entry.nRecordsNErrors', { n: records.length, e: errs }) : t('entry.nRecords', { n: records.length }), errs ? 'warning' : 'complete']
-                        : (step === 1 ? [t('entry.inProgress'), 'current'] : [t('entry.required'), 'neutral']),
-      2: step === 2 ? [t('entry.inProgress'), 'current'] : [t('entry.required'), 'neutral'],
-    };
-    $$('#stepper .stepper__item').forEach(li => {
-      const s = Number(li.dataset.step), [label, kind] = status[s];
-      li.classList.toggle('stepper__item--current', s === step);
-      li.classList.toggle('stepper__item--done', kind === 'complete' && s !== step);
+    const items = stepItems();
+    const host = $('#stepper');
+    if (host.children.length !== items.length) {
+      host.innerHTML = items.map(it => `
+        <li class="stepper__item" data-step="${it.step}"${it.part != null ? ` data-part="${it.part}"` : ''}>
+          <button type="button" class="stepper__btn">
+            <span class="stepper__rail"><span class="stepper__icon"></span></span>
+            <span class="stepper__body"><span class="chip chip--neutral stepper__status"></span><span class="stepper__title"></span></span>
+            <svg class="stepper__chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+        </li>`).join('');
+    }
+    $$('#stepper .stepper__item').forEach((li, i) => {
+      const it = items[i], [label, kind] = stepStatus(it, errs);
+      const current = it.step === step && (it.part == null || it.part === formPart);
+      const locked = it.step === 2 && step === 1 && maxStep < 2 && mode !== 'form';
+      li.dataset.step = it.step; if (it.part != null) li.dataset.part = it.part; else delete li.dataset.part;
+      li.querySelector('.stepper__title').textContent = it.title;
+      li.classList.toggle('stepper__item--current', current);
+      li.classList.toggle('stepper__item--done', kind === 'complete' && !current);
       li.classList.toggle('stepper__item--warning', kind === 'warning');
-      li.classList.toggle('stepper__item--locked', s > maxStep && s !== step);
-      li.querySelector('.stepper__btn').disabled = s > maxStep && s !== step;
-      const cur = s === step && kind !== 'warning';
+      li.classList.toggle('stepper__item--locked', locked);
+      li.querySelector('.stepper__btn').disabled = locked;
+      const cur = current && kind !== 'warning';
       setChip(li.querySelector('.stepper__status'), cur ? t('entry.inProgress') : label, cur ? 'current' : kind);
       li.querySelector('.stepper__icon').innerHTML =
-        (kind === 'complete' && s !== step) ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>'
+        (kind === 'complete' && !current) ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>'
         : (kind === 'warning') ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v5m0 3h.01"/></svg>' : '';
     });
-    $('#stepLabel').textContent = t('entry.stepOf', { a: step, b: 2 });
-    $('#stepFill').style.width = `${step * 50}%`;
-    renderFormSteps();
-  }
-
-  // The sections of the record form sit under step 1, so the rail shows the whole journey.
-  function renderFormSteps() {
-    const host = $('#formSteps');
-    if (!host) return;
-    const show = step === 1 && formSections.length > 1 && !$('#recordForm').hidden;
-    host.hidden = !show;
-    if (!show) { host.innerHTML = ''; return; }
-    host.innerHTML = formSections.map((sec, i) => `
-      <li class="stepper__subitem${i === formPart ? ' is-current' : ''}">
-        <button type="button" data-part="${i}">
-          <span class="stepper__dot" aria-hidden="true"></span>
-          <span>${esc(sectionTitle(sec))}</span>
-        </button>
-      </li>`).join('');
+    const at = step === 2 ? items.length : (items[0].part != null ? formPart + 1 : 1);
+    $('#stepLabel').textContent = t('entry.stepOf', { a: at, b: items.length });
+    $('#stepFill').style.width = `${Math.round(at / items.length * 100)}%`;
   }
   function renderFooter() {
-    $('#btnBack').disabled = step === 1;
+    $('#btnBack').disabled = step === 1 && !(mode === 'form' && formPart > 0);
     const n = $('#btnNext');
     n.textContent = step === 2 ? t('common.submit') : t('common.next');
     n.disabled = step === 2 && !$('#confirmAccurate').checked;
+    // the partial submit only makes sense while some records fail validation
+    const v = $('#btnSubmitValid');
+    v.hidden = !(step === 2 && errorCount() > 0);
+    v.disabled = n.disabled;
   }
 
   // ---------- grid ----------
@@ -381,7 +444,7 @@
     return esc(trunc(String(val), 40));
   }
   function visibleRecords() {
-    let list = records.map(r => ({ r, errors: S.validate(r, records, schema) }));
+    let list = scoped().map(r => ({ r, errors: S.validate(r, records, schema) }));
     if (filter === 'valid') list = list.filter(x => !Object.keys(x.errors).length);
     if (filter === 'error') list = list.filter(x => Object.keys(x.errors).length);
     if (query) {
@@ -406,10 +469,10 @@
     const slice = list.slice((page - 1) * pageSize, page * pageSize);
     const C = cols();
 
-    $('#gridHead').innerHTML = C.map(f => `<th class="sortable${f.control === 'number' ? ' num' : ''}${f.key === sortKey ? ' is-sorted' : ''}" data-sort="${f.key}">${esc(f.label)} <span class="sort-ind">⇅</span></th>`).join('')
+    $('#gridHead').innerHTML = C.map(f => `<th class="sortable${f.control === 'number' ? ' num' : ''}${f.key === sortKey ? ' is-sorted' : ''}" data-sort="${f.key}">${esc(f.label)} <span class="sort-ind" aria-hidden="true"></span></th>`).join('')
       + '<th class="th-actions"><span class="sr-only">Actions</span></th>';
     const ind = $(`#gridHead th[data-sort="${sortKey}"] .sort-ind`);
-    if (ind) ind.textContent = sortDir === 1 ? '↑' : '↓';
+    if (ind) ind.dataset.dir = sortDir === 1 ? 'asc' : 'desc';
 
     gridBody.innerHTML = slice.map(({ r, errors }) => {
       const errs = Object.values(errors);
@@ -421,19 +484,29 @@
     }).join('');
 
     const errs = errorCount();
-    if (!errs && filter !== 'all') {
-      filter = 'all';
-      $$('.segmented button').forEach(x => x.setAttribute('aria-pressed', x.dataset.filter === 'all' ? 'true' : 'false'));
+    if (!errs && filter === 'error') {
+      filter = mode === 'bulk' ? 'valid' : 'all';
+      $$('#gridFilter button').forEach(x => x.setAttribute('aria-pressed', x.dataset.filter === filter ? 'true' : 'false'));
       return render();
     }
-    $('#gridFilter').hidden = !errs;
-    const filtered = records.length > 0 && total === 0;
+    // bulk always shows the valid / invalid split; the form keeps the tabs for when errors exist
+    const all = scoped();
+    $('#gridFilter').hidden = mode === 'bulk' ? !all.length : !errs;
+    const bad = all.filter(r => Object.keys(S.validate(r, records, schema)).length).length;
+    $('#gridFilter [data-n="all"]').textContent = fmt(all.length);
+    $('#gridFilter [data-n="valid"]').textContent = fmt(all.length - bad);
+    $('#gridFilter [data-n="error"]').textContent = fmt(bad);
+    $('#btnExport span').textContent = t(mode === 'bulk' && filter === 'error' ? 'entry.exportInvalid' : mode === 'bulk' && filter === 'valid' ? 'entry.exportValid' : 'entry.export');
+    // re-upload and export exist to get bad rows fixed: a clean upload has no use for them
+    $('#btnImport').hidden = !(mode === 'bulk' && bad > 0);
+    $('#btnExport').hidden = !(mode === 'bulk' && bad > 0);
+    const filtered = all.length > 0 && total === 0;
     $('#emptyTitle').textContent = filtered ? t('entry.noMatch') : t('entry.noRecords');
     $('#emptyText').textContent = filtered ? t('entry.noMatchText') : t('entry.noRecordsText');
     $('#btnLoadSample').hidden = filtered;
     $('#gridEmpty').hidden = total !== 0;
     $('#grid').hidden = total === 0;
-    $('#gridCount').textContent = total !== records.length ? `${fmt(total)} of ${fmt(records.length)}` : fmt(records.length);
+    $('#gridCount').textContent = total !== all.length ? `${fmt(total)} of ${fmt(all.length)}` : fmt(all.length);
     const hidden = schema.fields.length - C.length;
     $('#colNote').hidden = hidden <= 0;
     $('#colNote').textContent = hidden > 0 ? t('entry.columnsShown', { a: C.length, b: schema.fields.length }) : '';
@@ -465,8 +538,8 @@
   function bindGrid() {
     $('#gridSearch').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); page = 1; render(); });
     $('#reviewSearch').addEventListener('input', e => { reviewQuery = e.target.value.trim().toLowerCase(); renderReview(); });
-    $$('.segmented button').forEach(b => b.addEventListener('click', () => {
-      $$('.segmented button').forEach(x => x.setAttribute('aria-pressed', 'false'));
+    $$('#gridFilter button').forEach(b => b.addEventListener('click', () => {
+      $$('#gridFilter button').forEach(x => x.setAttribute('aria-pressed', 'false'));
       b.setAttribute('aria-pressed', 'true'); filter = b.dataset.filter; page = 1; render();
     }));
     $('#gridHead').addEventListener('click', e => {
@@ -515,19 +588,46 @@
   }
 
   // ---------- review ----------
+  // Form mode submits one record, so the review (and the submit copy) is scoped to the form's own
+  // record rather than every record in the draft.
+  function reviewed() { return scoped(); }
   function reviewRows() {
-    if (!reviewQuery) return records;
-    return records.filter(r => {
+    const base = reviewed();
+    if (!reviewQuery) return base;
+    return base.filter(r => {
       const hay = schema.fields.map(f => `${r[f.key] ?? ''} ${S.display(r, f) ?? ''}`).join(' ').toLowerCase();
       return reviewQuery.split(/\s+/).every(w => hay.includes(w));
     });
   }
+  // Form mode reviews one record, so a table with a count, a search box and a totals row says
+  // nothing useful: show the record by section instead, each with an Edit link back to the form.
+  function renderReviewRecord() {
+    const list = reviewed(), r = list[0];
+    const host = $('#reviewRecord');
+    const single = mode === 'form' && list.length === 1;   // the form's one record reads better as cards than as a one-row grid
+    host.hidden = !single; $('#reviewBlock').hidden = single || mode !== 'full';
+    if (mode === 'form') $('.records').hidden = single;
+    if (!single) { host.innerHTML = ''; return; }
+    const val = f => {
+      const raw = r[f.key], shown = S.display(r, f);
+      if (raw == null || raw === '') return '<dd class="is-empty">—</dd>';
+      return shown && shown !== String(raw) ? `<dd>${esc(raw)}<small>${esc(shown)}</small></dd>` : `<dd>${esc(shown || raw)}</dd>`;
+    };
+    host.innerHTML = `<p class="review-record__hint">${esc(t('entry.reviewRecordHint'))}</p>` + formSections.map((sec, i) => `
+      <section class="review-record__section">
+        <div class="review-record__head">
+          <h3 class="review-record__title">${esc(sectionTitle(sec))}</h3>
+          <button type="button" class="btn btn--outline btn--sm review-record__edit" data-part="${i}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>${esc(t('entry.editSection'))}</span></button>
+        </div>
+        <dl class="kv">${sec.fields.map(k => schema.field(k)).filter(Boolean).map(f => `<div><dt>${esc(f.label)}</dt>${val(f)}</div>`).join('')}</dl>
+      </section>`).join('');
+  }
   function renderReview() {
+    renderReviewRecord();
     const C = cols();
     const rows = reviewRows();
-    $('#reviewCount').textContent = rows.length === records.length
-      ? fmt(records.length)
-      : `${fmt(rows.length)} / ${fmt(records.length)}`;
+    const all = reviewed().length;
+    $('#reviewCount').textContent = rows.length === all ? fmt(all) : `${fmt(rows.length)} / ${fmt(all)}`;
     $('#reviewEmpty').hidden = rows.length !== 0;
     $('#reviewTable').hidden = rows.length === 0;
     const hidden = schema.fields.length - C.length;
@@ -544,32 +644,57 @@
   }
   function submit() {
     if (!$('#confirmAccurate').checked) return;
-    confirm(t('entry.submitTitle'), t('entry.submitText', { n: records.length, x: schema.title }), t('common.submit'))
+    const errs = errorCount();
+    if (errs) {
+      filter = 'error'; $$('#gridFilter button').forEach(x => x.setAttribute('aria-pressed', x.dataset.filter === 'error' ? 'true' : 'false')); page = 1; render();
+      toast('error', t('entry.recordsNeedAttention'), t('entry.fixNBeforeContinuing', { n: errs }));
+      $('.records').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    const n = reviewed().length;
+    confirm(t('entry.submitTitle'), t('entry.submitText', { n, x: schema.title }), t('common.submit'))
+      .then(ok => { if (ok) finishSubmit(n); });
+  }
+  // Submit the records that pass validation and drop the ones that do not from the draft,
+  // so a bulk upload with a few bad rows can still go in on time.
+  function submitValid() {
+    if (!$('#confirmAccurate').checked) return;
+    const bad = new Set(scoped().filter(r => Object.keys(S.validate(r, records, schema)).length).map(r => r.id));
+    const n = reviewed().length - bad.size, e = bad.size;
+    if (!e) { submit(); return; }
+    if (!n) { toast('error', t('entry.noRecords'), t('entry.fixNBeforeContinuing', { n: e })); return; }
+    confirm(t('entry.submitValidTitle'), t('entry.submitValidText', { n, e, x: schema.title }), t('common.submit'))
       .then(ok => {
         if (!ok) return;
-        submittedAt = new Date().toISOString();
-        persist();
-        note('submitted', records.length);
-        $('#successText').textContent = t('entry.successDetail', { n: records.length, x: schema.title });
-        $('#entryView').hidden = true; $('#successView').hidden = false;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        records = records.filter(r => !bad.has(r.id));
+        finishSubmit(n, t('entry.submitValidDone', { e }));
       });
+  }
+  function finishSubmit(n, extra) {
+    submittedAt = new Date().toISOString();
+    formIds = new Set(); editingId = null;   // the next form submission starts from a clean review
+    persist();
+    note('submitted', n);
+    $('#successText').textContent = t('entry.successDetail', { n, x: schema.title }) + (extra ? ' ' + extra + '.' : '');
+    $('#entryView').hidden = true; $('#successView').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // ---------- footer ----------
   function bindFooter() {
-    $('#btnBack').addEventListener('click', () => { if (step > 1) goTo(step - 1); });
+    $('#btnBack').addEventListener('click', () => { if (step === 1 && mode === 'form' && formPart > 0) showSection(formPart - 1); else if (step > 1) goTo(step - 1); });
     $('#btnNext').addEventListener('click', next);
-    $('#btnSaveExit').addEventListener('click', () => { persist(); toast('success', t('entry.draftSaved'), t('entry.draftSavedText')); });
+    $('#btnSubmitValid').addEventListener('click', submitValid);
     $('#confirmAccurate').addEventListener('change', renderFooter);
-    $('#btnBackToEntry').addEventListener('click', () => { $('#successView').hidden = true; $('#entryView').hidden = false; goTo(1); });
-    $('#aboutLink').addEventListener('click', e => {
-      e.preventDefault();
-      confirm(t('entry.aboutTitle'), `${schema.desc || schema.title}  —  ${schema.fields.length} fields, ${schema.group} submission, sheet "${schema.sheet}" of the HEDB Data Dictionary 2026.`, 'Got it', true);
+    $('#reviewRecord').addEventListener('click', e => {
+      const b = e.target.closest('[data-part]'); if (!b) return;
+      goTo(1, { silent: true }); showSection(Number(b.dataset.part));
     });
+    $('#btnBackToEntry').addEventListener('click', () => { $('#successView').hidden = true; $('#entryView').hidden = false; goTo(1); });
   }
 
   // ---------- Excel ----------
+  const ROW_ID = 'Row ID', ISSUES = 'Issues';
   const headers = () => schema.fields.map(f => f.db);
   const rowFor = r => schema.fields.map(f => {
     const v = r[f.key] ?? '';
@@ -585,6 +710,57 @@
       saveCsv([headers()], fileName('Template') + '.csv');
       toast('info', t('entry.templateCsv'), t('entry.templateCsvText'));
     }
+  }
+  // Sample rows for the top of the Data sheet: three that pass every rule and two that break a few
+  // (a blank mandatory field, a code outside its list, an over-long text, a bad number, a future
+  // date), so a reviewer can see what the upload reports. The Field guide says to delete them.
+  function sampleRows() {
+    const derive = rec => {
+      for (const f of schema.fields) {
+        if (!f.derivedFrom) continue;
+        const src = schema.field(f.derivedFrom), hit = src && src.opts && src.opts.find(o => String(o.v) === String(rec[f.derivedFrom]));
+        rec[f.key] = hit ? labelOf(hit).slice(0, f.maxLen || 90) : '';
+      }
+      return rec;
+    };
+    const base = S.sampleRecord(schema);
+    // the n-th variation of the sample: shifts codes along their list, bumps numbers, backdates dates, suffixes text
+    const vary = n => {
+      const rec = { ...base };
+      for (const f of schema.fields) {
+        if (f.derivedFrom) continue;
+        const v = rec[f.key];
+        if (f.opts) { const at = f.opts.findIndex(o => String(o.v) === v); rec[f.key] = String(f.opts[(Math.max(0, at) + n) % f.opts.length].v); }
+        else if (f.control === 'number') rec[f.key] = v === '' ? '' : String(Number(v) + n);
+        else if (f.control === 'date') { const d = new Date(v || Date.now()); if (!isNaN(d)) { d.setDate(d.getDate() - 7 * n); rec[f.key] = d.toISOString().slice(0, 10); } }
+        else if (f.email) rec[f.key] = v.replace('@', `${n}@`);
+        else if (v) rec[f.key] = (n ? `${v.slice(0, Math.max(1, (f.maxLen || 60) - 2))}-${n}` : v).slice(0, f.maxLen || 60);
+      }
+      return derive(rec);
+    };
+    const valid = [];
+    for (let n = 0; n < 12 && valid.length < 3; n++) {
+      const rec = vary(n);
+      if (!Object.keys(S.validate(rec, valid.map((r, i) => ({ id: i, ...r })), schema)).length) valid.push(rec);
+    }
+    const bad = [];
+    const req = schema.fields.filter(f => f.required && !f.derivedFrom && !schema.pk.includes(f.key));
+    const first = (pred) => schema.fields.find(f => !f.derivedFrom && pred(f));
+    if (valid.length) {
+      const a = derive({ ...vary(20) });             // blank mandatory + code outside the list
+      const r1 = req[0] || first(f => f.required), c1 = first(f => f.opts && f.key !== (r1 && r1.key));
+      if (r1) a[r1.key] = '';
+      if (c1) a[c1.key] = 'ZZ';
+      const b = derive({ ...vary(21) });             // too long, not a number, future date, bad email
+      const t1 = first(f => f.maxLen && !f.opts && f.control === 'text' && !f.email), n1 = first(f => f.control === 'number'),
+            d1 = first(f => f.control === 'date'), e1 = first(f => f.email);
+      if (t1) b[t1.key] = 'X'.repeat(t1.maxLen + 5);
+      if (n1) b[n1.key] = 'twelve';
+      if (d1) b[d1.key] = '31/12/2030';
+      if (e1) b[e1.key] = 'not-an-email';
+      for (const rec of [a, b]) if (Object.keys(S.validate(rec, [], schema)).length) bad.push(rec);
+    }
+    return { valid, bad };
   }
   function templateWorkbook() {
     const TEMPLATE_ROWS = 100, VALID_ROWS = 1000;
@@ -613,10 +789,15 @@
 
     const head = headers();
     const rows = [head];
+    const samples = sampleRows(), sampleList = [...samples.valid, ...samples.bad];
     for (let r = 2; r <= TEMPLATE_ROWS + 1; r++) {
       const row = new Array(head.length).fill('');
+      const sample = sampleList[r - 2];
       schema.fields.forEach((f, i) => {
-        if (f.derivedFrom) {
+        if (sample && !f.derivedFrom) {
+          const v = sample[f.key] ?? '';
+          row[i] = f.control === 'number' && v !== '' && isFinite(Number(v)) ? Number(v) : v;
+        } else if (f.derivedFrom) {
           const src = schema.field(f.derivedFrom);
           if (src && src._list) row[i] = { f: `IFERROR(VLOOKUP($${col(src.idx)}${r},'${src._list.name}'!$A:$B,2,FALSE),"")`, s: 2 };
         } else if (f.control === 'date') row[i] = { v: '', s: 3 };
@@ -652,6 +833,10 @@
     guide.push(['1. Fill in one row per record on the Data sheet. Do not rename the header row.']);
     guide.push(['2. Coded columns have dropdown lists; grey columns fill in by themselves.']);
     guide.push(['3. Save the file, then use Upload on the submission page.']);
+    if (sampleList.length) {
+      const v = samples.valid.length, b = samples.bad.length;
+      guide.push([`4. Rows 2–${1 + sampleList.length} are sample data — delete them before you submit. Rows 2–${1 + v} pass every rule${b ? `; rows ${2 + v}–${1 + v + b} deliberately break some (a blank mandatory field, a code outside its list, an over-long text, a bad number, a future date) so you can see how the upload reports errors` : ''}.`]);
+    }
 
     const sheets = [
       { name: 'Data', rows, opts: { freeze: true, cols: schema.fields.map(f => Math.min(40, Math.max(14, f.db.length + 4))), validations } },
@@ -662,15 +847,24 @@
   }
   function col(i) { let s = ''; for (i += 1; i > 0; i = Math.floor((i - 1) / 26)) s = String.fromCharCode(65 + ((i - 1) % 26)) + s; return s; }
 
+  // Bulk exports the rows of the open tab. Invalid rows go out with an Issues column so they can be
+  // fixed offline, and every row carries its Row ID so the corrected file updates the same records
+  // when it comes back through the drop zone.
   function exportData() {
-    if (!records.length) { toast('info', t('entry.nothingToExport'), t('entry.addRecordsFirst')); return; }
-    const rows = [headers(), ...records.map(rowFor)];
-    const base = fileName(today());
-    const n = `${records.length} record${records.length > 1 ? 's' : ''}`;
+    if (!scoped().length) { toast('info', t('entry.nothingToExport'), t('entry.addRecordsFirst')); return; }
+    const bulk = mode === 'bulk';
+    const withErr = scoped().map(r => ({ r, errs: Object.values(S.validate(r, records, schema)) }));
+    const list = bulk && filter === 'error' ? withErr.filter(x => x.errs.length) : bulk && filter === 'valid' ? withErr.filter(x => !x.errs.length) : withErr;
+    if (!list.length) { toast('info', t('entry.nothingToExport'), t('entry.noRowsInTab')); return; }
+    const invalid = bulk && filter === 'error';
+    const head = [...headers(), ...(bulk ? [ROW_ID] : []), ...(invalid ? [ISSUES] : [])];
+    const rows = [head, ...list.map(x => [...rowFor(x.r), ...(bulk ? [x.r.id] : []), ...(invalid ? [x.errs.join(' | ')] : [])])];
+    const base = fileName((invalid ? 'invalid_' : bulk && filter === 'valid' ? 'valid_' : '') + today());
+    const n = `${list.length} record${list.length > 1 ? 's' : ''}`;
     if (typeof XLSX === 'undefined') { saveCsv(rows, base + '.csv'); toast('success', 'CSV exported', `${n} using the database field names.`); return; }
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = schema.fields.map(f => ({ wch: Math.min(40, Math.max(14, f.db.length + 4)) }));
+    ws['!cols'] = [...schema.fields.map(f => ({ wch: Math.min(40, Math.max(14, f.db.length + 4)) })), ...(bulk ? [{ wch: 14 }] : []), ...(invalid ? [{ wch: 60 }] : [])];
     XLSX.utils.book_append_sheet(wb, ws, 'Data');
     XLSX.writeFile(wb, base + '.xlsx');
     toast('success', t('entry.exported'), t('entry.exportedText', { x: n }));
@@ -720,23 +914,35 @@
     }
     const found = Object.values(idx).filter(i => i >= 0).length;
     if (!found) { toast('error', t('entry.importFailed'), t('entry.importBadHeader')); return; }
-    let added = 0, skipped = 0;
+    const idCol = head.indexOf(ROW_ID);
+    let added = 0, updated = 0, skipped = 0;
     for (const row of rows.slice(1)) {
-      if (!row.some(c => String(c ?? '').trim() !== '')) continue;
+      if (!row.some((c, j) => j !== idCol && String(c ?? '').trim() !== '')) continue;
       const rec = {};
       for (const f of schema.fields) rec[f.key] = idx[f.key] >= 0 ? String(row[idx[f.key]] ?? '').trim() : '';
+      // a corrected file comes back with the Row ID it was exported with; otherwise a row that
+      // matches an existing record's key replaces that record rather than duplicating it
+      const rid = idCol >= 0 ? String(row[idCol] ?? '').trim() : '';
       const dk = S.dupKeyOf(rec, schema);
-      if (dk && records.some(r => S.dupKeyOf(r, schema) === dk)) { skipped++; continue; }
+      const at = records.findIndex(r => (rid && r.id === rid) || (dk && S.dupKeyOf(r, schema) === dk));
+      if (at >= 0) {
+        const same = schema.fields.every(f => (records[at][f.key] ?? '') === rec[f.key]);
+        if (same) { skipped++; continue; }
+        records[at] = { ...records[at], ...rec }; updated++; continue;
+      }
       records.push({ id: uid(), ...rec }); added++;
     }
     markChanged(); persist(); render();
     const errs = errorCount();
     const notes = [];
     if (found < schema.fields.length) notes.push(t('entry.importColsMatched', { a: found, b: schema.fields.length }));
+    if (updated) notes.unshift(t('entry.importUpdated', { n: updated }));
     if (skipped) notes.push(t('entry.importDupes', { n: skipped }));
     notes.push(errs ? t('entry.importNeedAttention', { n: errs }) : t('entry.importAllValid'));
     if (added) note('imported', added);
-    toast(added ? 'success' : 'info', t('entry.importDone', { n: added }), notes.join(' '));
+    if (updated) note('updated', updated);
+    toast(added || updated ? 'success' : 'info', added || !updated ? t('entry.importDone', { n: added }) : t('entry.importUpdatedTitle', { n: updated }), notes.join(' '));
+    if ((added || updated) && mode === 'bulk') { filter = errs ? 'error' : 'valid'; $$('#gridFilter button').forEach(x => x.setAttribute('aria-pressed', x.dataset.filter === filter ? 'true' : 'false')); page = 1; goTo(2); }
   }
   // RFC 4180: a quoted cell may hold commas, doubled quotes and line breaks, so the whole
   // file is scanned in one pass rather than split into lines first
@@ -777,7 +983,7 @@
   // ---------- storage ----------
   function load() { try { return JSON.parse(localStorage.getItem(schema.storageKey) || '{}'); } catch { return {}; } }
   function persist() {
-    try { localStorage.setItem(schema.storageKey, JSON.stringify({ records, step, submittedAt })); } catch { /* ignore */ }
+    try { localStorage.setItem(schema.storageKey, JSON.stringify({ records, step, submittedAt, current: mode === 'form' ? editingId : undefined, formIds: [...formIds] })); } catch { /* ignore */ }
   }
   // any change to the records reopens the submission
   function markChanged() { submittedAt = null; }

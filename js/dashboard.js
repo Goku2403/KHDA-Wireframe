@@ -114,7 +114,7 @@
     restart();
   }
 
-  // ---------- remediation queue ----------
+  // ---------- reconciliation queue ----------
   const RANK = { errors: 0, progress: 1, new: 2, submitted: 3 };
   const CHIP = { errors: 'error', progress: 'current', new: 'neutral', submitted: 'complete' };
 
@@ -322,21 +322,16 @@
   // ---------- quick actions ----------
   function renderQuick() {
     const firstOpen = rows.find(r => r.status !== 'submitted') || rows[0];
-    const firstWithData = rows.find(r => r.records > 0) || rows[0];
     const items = [
+      // the published HEDB API documentation, off-site
+      { icon: '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/>', label: t('dash.quick.restDocs'), href: 'https://api.khda.gov.ae/higheredu-apidoc.html', external: true },
       { icon: '<path d="M12 5v14m-7-7h14"/>', label: t('dash.quick.start'), href: 'submissions.html' },
       { icon: '<path d="M14 3v5h5M7 3h7l5 5v13H7z"/><path d="M12 11v6m-2.5-2.5L12 17l2.5-2.5"/>', label: t('dash.quick.continue'), href: entryHref(firstOpen.sheet) },
       { icon: '<path d="M4 7h16M4 12h16M4 17h10"/>', label: t('nav.status'), href: 'status.html' },
-      { icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', label: t('nav.monitor'), href: 'monitor.html' },
       { icon: '<path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>', label: sm && sm.returnedRows ? t('dash.quick.reconcileN', { n: fmt(sm.returnedRows) }) : t('nav.reconciliation'), href: 'reconciliation.html' },
-      { icon: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', label: t('nav.compliance'), href: 'compliance.html' },
-      { icon: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>', label: t('nav.leaderboard'), href: 'leaderboard.html' },
-      { icon: '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/>', label: t('nav.api'), href: 'api.html' },
-      { icon: '<path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>', label: t('nav.integration'), href: 'credentials.html' },
-      { icon: '<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>', label: t('dash.quick.report'), href: 'report.html?sheet=' + encodeURIComponent(firstWithData.sheet) },
     ];
     $('#quickList').innerHTML = items.map(i => `
-      <li><a class="quick" href="${i.href}">
+      <li><a class="quick" href="${i.href}"${i.external ? ' target="_blank" rel="noopener"' : ''}>
         <span class="quick__icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${i.icon}</svg></span>
         <span class="quick__label">${esc(i.label)}</span>
         <svg class="quick__go" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
@@ -475,7 +470,7 @@
     host.innerHTML = `
       <a class="kpi kpi--primary" href="submissions.html"><div class="kpi__label">Total datasets</div><div class="kpi__value">${totals.datasets}</div><div class="kpi__note">in the catalogue · ${sm.required} required this period</div><span class="kpi__link">View all datasets →</span></a>
       <a class="kpi kpi--success" href="submissions.html?view=table&status=accepted"><div class="kpi__label">Accepted</div><div class="kpi__value">${accepted}</div><div class="kpi__note">${Math.round(accepted / Math.max(1, sm.required) * 100)}% of required · ${Math.min(submitted, sm.required)} received</div><span class="kpi__link">${esc(PER.label)} →</span></a>
-      <a class="kpi kpi--error" href="remediation.html"><div class="kpi__label">Needs correction</div><div class="kpi__value">${needs + rows.filter(r => r.status === 'errors').length}</div><div class="kpi__note">${sm.rowsRejected.toLocaleString()} rows rejected · ${sm.openIssues} open rules</div><span class="kpi__link">Remediation report →</span></a>
+      <a class="kpi kpi--error" href="remediation.html"><div class="kpi__label">Needs correction</div><div class="kpi__value">${needs + rows.filter(r => r.status === 'errors').length}</div><div class="kpi__note">${sm.rowsRejected.toLocaleString()} rows rejected · ${sm.openIssues} open rules</div><span class="kpi__link">Reconciliation report →</span></a>
       <button class="kpi kpi--warning" type="button" id="kpiOverdue" style="text-align:left;cursor:pointer"><div class="kpi__label">Overdue</div><div class="kpi__value">${overdue}</div><div class="kpi__note">past their due date with no receipt</div><span class="kpi__link">Show overdue →</span></button>
       <a class="kpi kpi--info" href="leaderboard.html"><div class="kpi__label">Readiness rank</div><div class="kpi__value">#${K.ranking(PER.id).find(x => x.inst.id === OWN.id).rank}<small style="font:400 16px/24px var(--font);color:var(--on-surface-muted)"> of ${K.INSTITUTIONS.length}</small></div><div class="kpi__note">${K.ranking(PER.id).find(x => x.inst.id === OWN.id).total} / 1,000 points</div><span class="kpi__link">Leaderboard →</span></a>`;
     $('#kpiOverdue').addEventListener('click', () => { document.querySelector('#taskFilter [data-filter="overdue"]').click(); document.querySelector('.dash-card--tasks').scrollIntoView({ behavior: 'smooth', block: 'start' }); });

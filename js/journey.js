@@ -1,6 +1,6 @@
 /* Submission journey — the R1 pipeline drawn as a horizontal stepper for one submission.
    Source → iPaaS → API Hub → Adapter → Validation → Profiling → Processing → Published.
-   Reused on the dashboard, the dataset drawer, the monitor and the remediation report (plan X-2). */
+   Reused on the dashboard, the dataset drawer, the monitor and the reconciliation report (plan X-2). */
 (function () {
   'use strict';
   const K = window.KHDA_SECTOR;

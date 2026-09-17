@@ -1,8 +1,8 @@
-/* Remediation workbench — every dataset with records to fix for the reporting period: returned by KHDA
+/* Reconciliation workbench — every dataset with records to fix for the reporting period: returned by KHDA
    validation or quality review, or failing checks in a draft. Three views on one page:
      Workbench  — dataset list, then the records grouped by failing rule: fix in place, bulk-fix a coded field,
                   mark fixed, download the error report, resubmit as the next version
-     Report     — the remediation report: dataset × rule with severity, records, fields, sample value, suggested
+     Report     — the reconciliation report: dataset × rule with severity, records, fields, sample value, suggested
                   fix, recurrence across periods, age and progress; exportable
      Analytics  — interactive SVG charts (hover for detail, click to drill into the workbench)
    Deep links: ?sheet=<sheet> opens a dataset; ?view=report|analytics opens a view. */
@@ -24,7 +24,7 @@
   const valuesLS = 'khda.recon.values.v1';   // record id → corrected value, per sheet
   const fixedValues = () => M.ls.get(valuesLS, {});
 
-  // ---------- items: one per dataset needing remediation ----------
+  // ---------- items: one per dataset needing reconciliation ----------
   function draftIssues(d) {
     const draft = M.ls.get(M.draftKey(d), {}); const recs = draft.records || []; if (!recs.length || draft.submittedAt) return [];
     const sc = S.get(d.sheet), out = [];
@@ -75,9 +75,8 @@
     const recurring = list.reduce((n, i) => n + i.rules.filter(g => g.recurrence > 1).length, 0);
     const ready = list.filter(i => i.src !== 'draft' && i.records.every(r => r.fixed)).length;
 
-    $('#rmActions').innerHTML = `${U.periodSelect('rmPeriod')}<button class="tool-btn" type="button" id="rmReport"${list.length ? '' : ' disabled'}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12m0 0-4-4m4 4 4-4M4 16v4h16v-4"/></svg><span>${t('rem.downloadReport')}</span></button>`;
+    $('#rmActions').innerHTML = U.periodSelect('rmPeriod');
     $('#rmPeriod').addEventListener('change', e => { M.setPeriod(e.target.value); sheet = ''; render(); });
-    $('#rmReport').addEventListener('click', () => exportReport(list));
     $('#rmTabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === view));
 
     $('#rmStats').innerHTML = [
@@ -192,7 +191,7 @@
     sheet = ''; history.replaceState(null, '', 'reconciliation.html'); render();
   }
 
-  // ================= Remediation report =================
+  // ================= Reconciliation report =================
   function reportRows(list) {
     return list.flatMap(i => i.rules.map(g => ({ item: i, dataset: i.title, code: M.codeOf(i.dataset), src: i.src, rule: g.rule, kind: g.rule.kind, sev: g.sev, records: g.records.length, open: g.records.filter(r => !r.fixed).length, fields: [...g.fields], sample: g.records[0].value, recurrence: g.recurrence, age: i.age })));
   }
@@ -238,7 +237,7 @@
     const per = M.period();
     const grid = [[t('status.h.dataset'), 'Code', t('recon.h.returnedBy'), 'Rule', t('rem.h.rule'), 'Kind', t('rem.h.severity'), t('status.h.records'), 'Open', t('rem.h.fields'), t('rem.h.sample'), t('recon.h.fix'), t('rem.h.recurrence'), t('rem.h.age')]];
     reportRows(list).forEach(r => grid.push([r.dataset, r.code, srcLabel(r.src), r.rule.id, r.rule.text, r.kind, r.sev, r.records, r.open, r.fields.join(' '), r.sample, r.rule.fix, r.recurrence, r.age]));
-    U.download(`KHDA-remediation-report-${M.INSTITUTION.short}-${per.id}.csv`, U.csv(grid), 'text/csv');
+    U.download(`KHDA-reconciliation-report-${M.INSTITUTION.short}-${per.id}.csv`, U.csv(grid), 'text/csv');
     U.toast('success', t('rem.downloadReport'), t('rem.reportExported', { n: grid.length - 1, x: per.label }));
   }
 
@@ -266,11 +265,11 @@
   }
   // stacked columns per period with a rate line
   function columns(cols, series, line, W) {
-    W = W || 640; const H = 220, L = 44, B = 36, T = 20; const max = Math.max(1, ...cols.map(c => series.reduce((n, s) => n + c[s.key], 0))); const cw = (W - L - 16) / cols.length, bw = Math.min(64, cw * 0.5);
+    W = W || 640; const H = 220, L = 44, B = 36, T = 20; const raw = Math.max(1, ...cols.map(c => series.reduce((n, s) => n + c[s.key], 0))), max = raw * 1.45; /* headroom: the rate line rides in its own band above the columns */ const cw = (W - L - 16) / cols.length, bw = Math.min(64, cw * 0.5);
     const y = v => T + (H - T - B) * (1 - v / max);
-    const grid = [0, 0.5, 1].map(f => `<line x1="${L}" x2="${W - 8}" y1="${y(max * f)}" y2="${y(max * f)}" stroke="var(--outline)"/><text x="${L - 6}" y="${y(max * f) + 4}" text-anchor="end" class="viz__lbl">${Math.round(max * f)}</text>`).join('');
+    const grid = [0, 0.5, 1].map(f => `<line x1="${L}" x2="${W - 8}" y1="${y(raw * f)}" y2="${y(raw * f)}" stroke="var(--outline)"/><text x="${L - 6}" y="${y(raw * f) + 4}" text-anchor="end" class="viz__lbl">${Math.round(raw * f)}</text>`).join('');
     const bars = cols.map((c, i) => { let acc = 0; const x = L + cw * i + (cw - bw) / 2; return `<g class="viz__col" data-i="${i}" tabindex="0"><rect x="${L + cw * i}" y="${T}" width="${cw}" height="${H - T - B}" fill="transparent"/>${series.map(s => { const v = c[s.key]; const yTop = y(acc + v), h = y(acc) - yTop; acc += v; return v ? `<rect x="${x}" y="${yTop}" width="${bw}" height="${h}" fill="${s.colour}" rx="3"/>` : ''; }).join('')}<text x="${x + bw / 2}" y="${y(acc) - 6}" text-anchor="middle" class="viz__val">${acc}</text><text x="${x + bw / 2}" y="${H - 12}" text-anchor="middle" class="viz__lbl">${esc(c.label)}</text></g>`; }).join('');
-    const lmax = Math.max(1, ...cols.map(c => c[line.key])); const pts = cols.map((c, i) => [L + cw * i + cw / 2, y(max * c[line.key] / lmax)]);
+    const lvals = cols.map(c => c[line.key]), lmax = Math.max(1, ...lvals), lmin = Math.min(...lvals), band = [T + 8, T + 30]; const pts = cols.map((c, i) => [L + cw * i + cw / 2, lmax === lmin ? (band[0] + band[1]) / 2 : band[1] - (band[1] - band[0]) * (c[line.key] - lmin) / (lmax - lmin)]);
     const path = `<polyline points="${pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="${line.colour}" stroke-width="2" pointer-events="none"/>${pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${line.colour}" pointer-events="none"/><text x="${p[0]}" y="${p[1] - 8}" text-anchor="middle" class="viz__lbl" fill="${line.colour}" pointer-events="none">${cols[i][line.key]}%</text>`).join('')}`;
     return `<svg class="viz" viewBox="0 0 ${W} ${H}" role="img">${grid}${bars}${path}</svg>
       <div class="legend legend--wrap">${series.map(s => `<span class="legend__item"><span class="legend__dot" style="background:${s.colour}"></span><span class="legend__label">${esc(s.label)}</span></span>`).join('')}<span class="legend__item"><span class="legend__dot" style="background:${line.colour}"></span><span class="legend__label">${esc(line.label)}</span></span></div>`;

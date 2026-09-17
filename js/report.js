@@ -25,8 +25,8 @@
     document.title = 'KHDA';
     $('#repTitle').textContent = schema.title;
     $('#repDesc').textContent = schema.desc || t('rep.descFallback', { x: schema.title });
-    $('#repOpen').href = 'index.html?sheet=' + encodeURIComponent(schema.sheet);
-    $('#repExport').hidden = !records.length;
+    const repOpen = $('#repOpen'); if (repOpen) repOpen.href = 'index.html?sheet=' + encodeURIComponent(schema.sheet);
+    const repExport = $('#repExport'); if (repExport) repExport.hidden = !records.length;
 
     if (!records.length) {
       $('#repEmpty').hidden = false;
@@ -193,7 +193,7 @@
       note.textContent = hidden > 0 ? t('entry.columnsShownExport', { a: C.length, b: schema.fields.length }) : '';
     }
 
-    $('#repGridHead').innerHTML = C.map(f => `<th class="sortable${f.control === 'number' ? ' num' : ''}${f.key === gridSort ? ' is-sorted' : ''}" data-sort="${esc(f.key)}">${esc(f.label)} <span class="sort-ind">${f.key === gridSort ? (gridDir === 1 ? '\u2191' : '\u2193') : '\u21c5'}</span></th>`).join('')
+    $('#repGridHead').innerHTML = C.map(f => `<th class="sortable${f.control === 'number' ? ' num' : ''}${f.key === gridSort ? ' is-sorted' : ''}" data-sort="${esc(f.key)}">${esc(f.label)} <span class="sort-ind" aria-hidden="true"${f.key === gridSort ? ` data-dir="${gridDir === 1 ? 'asc' : 'desc'}"` : ''}></span></th>`).join('')
       + `<th><span class="sr-only">${esc(t('common.actions'))}</span></th>`;
     $('#repGridBody').innerHTML = slice.map(r => {
       const bad = Object.values(S.validate(r, records, schema));
@@ -258,7 +258,7 @@
   });
 
   // ---------- export ----------
-  $('#repExport').addEventListener('click', () => {
+  if ($('#repExport')) $('#repExport').addEventListener('click', () => {
     const head = schema.fields.map(f => f.db);
     const rows = [head, ...records.map(r => schema.fields.map(f => {
       const v = r[f.key] ?? '';

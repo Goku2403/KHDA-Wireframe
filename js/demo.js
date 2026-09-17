@@ -134,7 +134,7 @@
   }
 
   function breakOne(records, sheet) {
-    // clear one mandatory field so the row lands in the remediation queue
+    // clear one mandatory field so the row lands in the reconciliation queue
     const schema = S.get(sheet);
     const f = schema.fields.find(x => x.required && !x.readonly && !x.derivedFrom);
     if (f && records.length) records[0] = { ...records[0], [f.key]: '' };

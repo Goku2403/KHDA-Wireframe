@@ -4,49 +4,100 @@
       "stage": "0. Source (HE system or portal upload)",
       "system": "HE (University) source system via REST API; or Excel/portal upload bridge for exception-approved institutions; legacy School System Portal remains for existing users (read-only reference in our portal)",
       "whatPortalShows": "Submission card header: institution, dataset, reporting period, channel (API | portal upload), dictionary version targeted, initiated-by user or client ID, row count, payload/file hash, submitted-at, correlation ID. For portal-upload channel: Steward draft, upload result (rows accepted / skipped duplicates / flagged), Approver sign-off before dispatch. For API channel: the client ID and environment (sandbox | production) that sent it.",
-      "statesToShow": ["draft", "ready_for_approval", "approved_for_dispatch", "dispatched", "dispatch_failed"]
+      "statesToShow": [
+        "draft",
+        "ready_for_approval",
+        "approved_for_dispatch",
+        "dispatched",
+        "dispatch_failed"
+      ]
     },
     {
       "stage": "1. iPaaS (Integration Layer)",
       "system": "iPaaS integration layer - secure API access: auth, client ID, secret, private/public key, IP whitelisting",
       "whatPortalShows": "Journey step 'Received by integration layer': received-at timestamp, client ID used, auth method (secret | key pair), signature check result, source IP and whether it matched an allowlist entry, correlation ID, forwarded-at. On failure: reason code (invalid_client, bad_signature, ip_not_allowed) with a 'fix it' link to the credential or allowlist page. Aggregated on KHDA IT Integration Health: auth success rate, rejected-by-IP count, per-institution last successful call.",
-      "statesToShow": ["received", "authenticated", "auth_failed", "ip_rejected", "forwarded"]
+      "statesToShow": [
+        "received",
+        "authenticated",
+        "auth_failed",
+        "ip_rejected",
+        "forwarded"
+      ]
     },
     {
       "stage": "2. Azure API Hub (API Management)",
       "system": "Azure API Management - inbound/outbound validation: auth validation, token validation, IP whitelisting, throttling, contract check",
       "whatPortalShows": "Journey step 'Gateway validation': token validated (issued-at / expires-at, token ID), IP check result, API product/version invoked, request ID, latency ms, HTTP status, rate-limit state. On failure: token_expired, token_invalid, ip_rejected, throttled, contract_mismatch with the returned error body. KHDA IT view: gateway health per environment, throttle events, token issuance timeline, error-code breakdown; institution view: their own recent gateway calls (self-service diagnostics).",
-      "statesToShow": ["token_validated", "token_invalid", "token_expired", "ip_rejected", "throttled", "contract_failed", "routed"]
+      "statesToShow": [
+        "token_validated",
+        "token_invalid",
+        "token_expired",
+        "ip_rejected",
+        "throttled",
+        "contract_failed",
+        "routed"
+      ]
     },
     {
       "stage": "3. University Adapter / API Service",
       "system": "University Adapter / API Service - 'University API stores data in own DB' (landing store, versioning, receipt)",
       "whatPortalShows": "Journey step 'Stored and acknowledged': stored-at, submission version number (v1, v2 resubmission ...), supersedes-submission link, duplicate detection result (same hash already stored), record count persisted, Receipt issued (receipt ID, hash, downloadable PDF/JSON). Resubmission history timeline per dataset x period lives here.",
-      "statesToShow": ["queued", "stored", "duplicate_detected", "superseded", "persist_failed", "receipt_issued"]
+      "statesToShow": [
+        "queued",
+        "stored",
+        "duplicate_detected",
+        "superseded",
+        "persist_failed",
+        "receipt_issued"
+      ]
     },
     {
       "stage": "4a. Qlik DQ - Data validation",
       "system": "Qlik Data Quality layer (inside Azure) - rule-based validation against the HEDB Data Dictionary (mandatory, coded lists, numeric limits, text length, cross-field, dates, primary-key duplicates)",
       "whatPortalShows": "Journey step 'Validation': rule pack / dictionary version applied, started/finished, counts by severity (error | warning | info), pass rate, and the full ValidationIssue list (rule ID, field, row/key, actual value, expected, severity, message, EN/AR). Actions: download issue report (xlsx), open remediation, mark as acknowledged, request waiver for a rule. Outcome drives dataset status 'needs correction' vs proceed.",
-      "statesToShow": ["pending", "running", "passed", "passed_with_warnings", "failed_needs_correction", "waived"]
+      "statesToShow": [
+        "pending",
+        "running",
+        "passed",
+        "passed_with_warnings",
+        "failed_needs_correction",
+        "waived"
+      ]
     },
     {
       "stage": "4b. Qlik DQ - Data profiling",
       "system": "Qlik Data Quality layer - statistical profiling of the submitted dataset",
       "whatPortalShows": "Journey step 'Profiling': per-field completeness %, distinct counts, min/max/mean for numerics, code-list coverage (values not in the 44 referenced code lists), null pattern, and comparison to the institution's previous period (row-count delta, outlier flags). Presented as a profile card grid plus a 'what changed since last period' panel. KHDA Data can flag an anomaly for follow-up.",
-      "statesToShow": ["pending", "running", "complete", "anomaly_flagged"]
+      "statesToShow": [
+        "pending",
+        "running",
+        "complete",
+        "anomaly_flagged"
+      ]
     },
     {
       "stage": "4c. Qlik DQ - Data processing",
       "system": "Qlik Data Quality layer - transformation, standardisation, load to SaaS platform (Snowflake / SaaS data warehouse) and reference-data reconciliation with On-Prem School System (MSSQL) via Qlik data access",
       "whatPortalShows": "Journey step 'Processing and acceptance': processing started/finished, reference-data reconciliation result, KHDA Data review decision (accept | return with comments), accepted-at, accepted-by, warehouse load timestamp. This is where dataset status becomes 'accepted'. Also shows hold reasons when KHDA Data pauses processing.",
-      "statesToShow": ["pending", "processing", "held_for_review", "returned", "accepted", "loaded"]
+      "statesToShow": [
+        "pending",
+        "processing",
+        "held_for_review",
+        "returned",
+        "accepted",
+        "loaded"
+      ]
     },
     {
       "stage": "5. Qlik Portal (Dashboards & Reporting)",
       "system": "Qlik Portal - real-time dashboards, KPIs and metrics, self-service reporting (the web application we are building, surfaced to the three roles)",
       "whatPortalShows": "Journey step 'Published': dashboards refreshed-at, which KPIs/tiles include this submission, link to the institution's own dashboard and to KHDA sector dashboards. Portal-wide: submission progress ring, compliance matrix 37x46, compliance history (Required / Late / Missing / On-time computed from the Requirement table), leaderboard score with corrected formula, self-service report builder, exports/board packs.",
-      "statesToShow": ["not_published", "published", "refreshed", "stale"]
+      "statesToShow": [
+        "not_published",
+        "published",
+        "refreshed",
+        "stale"
+      ]
     }
   ],
   "securityObjects": [
@@ -136,7 +187,10 @@
       "Manage follow-up: send notifications and emails (with branded preview), set next steps and contacts, run escalation, log compliance history (Required / Late / Missing / On-time).",
       "Manage the HEDB data dictionary: dataset and field definitions, code lists, display names EN/AR, dictionary versions and effective periods, validation rules; publish a new version without code change.",
       "Manage reporting periods and requirements: open/close periods, set due dates per dataset frequency, mark applicability, approve waivers (channel exception, extension, not applicable, rule waiver).",
-      "Analytics and reporting: sector dashboards, leaderboard and score formulas, self-service reports, exports and board packs; validate that the score model uses required datasets as denominators."
+      "Analytics and reporting: sector dashboards, leaderboard and score formulas, self-service reports, exports and board packs; validate that the score model uses required datasets as denominators.",
+      "Chatbot: use the in-portal assistant (grounded in dictionary, rules, submission history) to query status, explain rejections, draft follow-ups; Administrator curates knowledge sources.",
+      "Remediation report: generate, review and export the remediation report per institution x dataset x period and roll-ups; attach to follow-ups; track recurrence and SLA age.",
+      "Analytics: sector and institution dashboards, DQ analytics (rule hit-rates, top failing rules, profiling anomalies), compliance trends, leaderboard, self-service report builder, scheduled board packs."
     ],
     "khdaIt": [
       "Onboard institutions to the API by wave: track onboarding touchpoints with owners and dates; enable sandbox and production environments; publish API docs and sandbox try-it console.",
@@ -144,97 +198,450 @@
       "Manage IP allowlists: approve or reject requests, apply to iPaaS and API Hub per environment, prune stale entries using last-seen data.",
       "Watch pipeline and integration health: auth success rate, IP rejections, token failures, gateway latency and throttling, adapter persist failures, DQ queue depth; configure alerts and escalations; investigate a submission by correlation ID.",
       "Security and access: manage KHDA staff access (Active Directory), deactivate any user, review audit trail, respond to incidents (suspend client, revoke tokens), maintain environment configuration.",
-      "Change and release: schedule maintenance windows, announce API version changes, coordinate dictionary version rollouts with KHDA Data, monitor legacy School System Portal usage."
-    ]
+      "Change and release: schedule maintenance windows, announce API version changes, coordinate dictionary version rollouts with KHDA Data, monitor legacy School System Portal usage.",
+      "Chatbot: same assistant scoped to integration questions (auth failures, correlation IDs, API docs, environment status); Administrator manages knowledge sources and audit of assistant usage.",
+      "Remediation report: technical view of the same report filtered to pipeline failures (auth, IP, schema, format, adapter persist) per institution and environment.",
+      "Rule engine for all forms: own the single rule library that drives portal forms, Excel templates, API validation in the Qlik DQ layer and the remediation report; rule types mandatory / type-length / code list / range / cross-field / cross-dataset / primary key / date logic / custom expression; versioned with effective periods, sandbox-tested, published by an Administrator (rules authored jointly with KHDA Data)."
+    ],
+    "khdaTiers": {
+      "note": "Permission tiers for KHDA staff; apply to both KHDA Data and KHDA IT. A user is one team x one tier.",
+      "analyst": "View all dashboards and reports; open institutions and submissions; run remediation reports; use chatbot; draft follow-ups; annotate; draft/propose rules. Cannot send bulk communications, accept/return submissions, publish rules, or change credentials/configuration.",
+      "supervisor": "Analyst plus: approve/return submissions; approve waivers; send and bulk-send communications; assign owners and escalate; approve rule changes and dictionary versions for publishing; sign off onboarding gates. Cannot manage users/roles, environments, scoring weights or system configuration.",
+      "administrator": "Supervisor plus: manage KHDA users and tiers; publish rules and dictionary versions; configure scoring weights with effective dates; credentials, IP allowlists, environments; chatbot knowledge sources; audit-log access; system settings."
+    }
   },
   "dataModel": [
     {
       "entity": "Institution",
-      "fields": ["institutionId", "code", "nameEn", "nameAr", "licenseStatus", "onboardingWave (Pilot Wave 1 | Wave 2 | Wave 3 | Wave 4)", "onboardingStatus", "primaryContactUserId", "itContactUserId", "channelDefault (api | portal_upload)", "environmentStatus (sandbox_enabled, production_enabled)", "dqScoreCurrent", "readinessRank", "createdAt", "updatedAt"]
+      "fields": [
+        "institutionId",
+        "code",
+        "nameEn",
+        "nameAr",
+        "licenseStatus",
+        "onboardingWave (Pilot Wave 1 | Wave 2 | Wave 3 | Wave 4)",
+        "onboardingStatus",
+        "primaryContactUserId",
+        "itContactUserId",
+        "channelDefault (api | portal_upload)",
+        "environmentStatus (sandbox_enabled, production_enabled)",
+        "dqScoreCurrent",
+        "readinessRank",
+        "createdAt",
+        "updatedAt"
+      ]
     },
     {
       "entity": "User",
-      "fields": ["userId", "institutionId (null for KHDA staff)", "nameEn", "nameAr", "email", "identityProvider (uae_pass | active_directory)", "status (invited | active | deactivated)", "roleIds[]", "languagePreference (en | ar)", "a11yPreferences", "lastSignInAt", "createdAt"]
+      "fields": [
+        "userId",
+        "institutionId (null for KHDA staff)",
+        "nameEn",
+        "nameAr",
+        "email",
+        "identityProvider (uae_pass | active_directory)",
+        "status (invited | active | deactivated)",
+        "roleIds[]",
+        "languagePreference (en | ar)",
+        "a11yPreferences",
+        "lastSignInAt",
+        "createdAt"
+      ]
     },
     {
       "entity": "Role",
-      "fields": ["roleId", "name (institution_admin | data_steward | approver | read_only | khda_data | khda_it)", "scope (institution | khda)", "permissions[]", "descriptionEn", "descriptionAr"]
+      "fields": [
+        "roleId",
+        "name (institution_admin | data_steward | approver | read_only | khda_data | khda_it)",
+        "scope (institution | khda)",
+        "permissions[]",
+        "descriptionEn",
+        "descriptionAr"
+      ]
     },
     {
       "entity": "Dataset",
-      "fields": ["datasetId", "code", "displayNameEn", "displayNameAr", "subjectArea (Employees | Graduates | Institution | Programs & courses | Research & innovation | Students & applicants)", "frequency (semester | annual | real_time)", "dictionaryVersionId", "primaryKeyFieldIds[]", "hasPrimaryKey", "fieldCount", "referenceSheet", "descriptionEn", "descriptionAr", "channelAllowed (api | portal_upload | both)", "isActive"]
+      "fields": [
+        "datasetId",
+        "code",
+        "displayNameEn",
+        "displayNameAr",
+        "subjectArea (Employees | Graduates | Institution | Programs & courses | Research & innovation | Students & applicants)",
+        "frequency (semester | annual | real_time)",
+        "dictionaryVersionId",
+        "primaryKeyFieldIds[]",
+        "hasPrimaryKey",
+        "fieldCount",
+        "referenceSheet",
+        "descriptionEn",
+        "descriptionAr",
+        "channelAllowed (api | portal_upload | both)",
+        "isActive"
+      ]
     },
     {
       "entity": "Field",
-      "fields": ["fieldId", "datasetId", "code", "labelEn", "labelAr", "dataType", "isMandatory", "codeListId", "minValue", "maxValue", "maxLength", "format", "crossFieldRule", "isPrimaryKeyPart", "dictionaryRowRef", "order"]
+      "fields": [
+        "fieldId",
+        "datasetId",
+        "code",
+        "labelEn",
+        "labelAr",
+        "dataType",
+        "isMandatory",
+        "codeListId",
+        "minValue",
+        "maxValue",
+        "maxLength",
+        "format",
+        "crossFieldRule",
+        "isPrimaryKeyPart",
+        "dictionaryRowRef",
+        "order"
+      ]
     },
     {
       "entity": "CodeList",
-      "fields": ["codeListId", "name (e.g. Institutional Codes, Universities, Country, Academic Period)", "dictionaryVersionId", "entries[] {code, labelEn, labelAr, isActive}", "source (dictionary | on_prem_reference_data)"]
+      "fields": [
+        "codeListId",
+        "name (e.g. Institutional Codes, Universities, Country, Academic Period)",
+        "dictionaryVersionId",
+        "entries[] {code, labelEn, labelAr, isActive}",
+        "source (dictionary | on_prem_reference_data)"
+      ]
     },
     {
       "entity": "DictionaryVersion",
-      "fields": ["dictionaryVersionId", "name (e.g. HEDB 2026)", "versionNumber", "status (draft | published | retired)", "effectiveFromPeriodId", "effectiveToPeriodId", "datasetCount", "fieldCount", "codeListCount", "changeSummary", "publishedBy", "publishedAt"]
+      "fields": [
+        "dictionaryVersionId",
+        "name (e.g. HEDB 2026)",
+        "versionNumber",
+        "status (draft | published | retired)",
+        "effectiveFromPeriodId",
+        "effectiveToPeriodId",
+        "datasetCount",
+        "fieldCount",
+        "codeListCount",
+        "changeSummary",
+        "publishedBy",
+        "publishedAt"
+      ]
     },
     {
       "entity": "Period",
-      "fields": ["periodId", "academicYear", "term (fall | winter | spring)", "labelEn", "labelAr", "startDate", "endDate", "status (upcoming | open | closing | closed)", "dictionaryVersionId"]
+      "fields": [
+        "periodId",
+        "academicYear",
+        "term (fall | winter | spring)",
+        "labelEn",
+        "labelAr",
+        "startDate",
+        "endDate",
+        "status (upcoming | open | closing | closed)",
+        "dictionaryVersionId"
+      ]
     },
     {
       "entity": "Requirement",
-      "fields": ["requirementId", "institutionId", "datasetId", "periodId", "dueDate", "isApplicable", "waiverId", "expectedChannel", "status (non_submitted | processing | needs_correction | accepted)", "latestSubmissionId", "daysLate", "onTime", "weightForScore"]
+      "fields": [
+        "requirementId",
+        "institutionId",
+        "datasetId",
+        "periodId",
+        "dueDate",
+        "isApplicable",
+        "waiverId",
+        "expectedChannel",
+        "status (non_submitted | processing | needs_correction | accepted)",
+        "latestSubmissionId",
+        "daysLate",
+        "onTime",
+        "weightForScore"
+      ]
     },
     {
       "entity": "Submission",
-      "fields": ["submissionId", "requirementId", "institutionId", "datasetId", "periodId", "dictionaryVersionId", "version", "supersedesSubmissionId", "channel (api | portal_upload | form)", "clientId", "environment (sandbox | production)", "correlationId", "submittedByUserId", "approvedByUserId", "rowCount", "payloadHash", "currentStage", "currentState", "status (draft | pending_approval | dispatched | received | validating | needs_correction | processing | accepted | returned)", "submittedAt", "acceptedAt", "receiptId"]
+      "fields": [
+        "submissionId",
+        "requirementId",
+        "institutionId",
+        "datasetId",
+        "periodId",
+        "dictionaryVersionId",
+        "version",
+        "supersedesSubmissionId",
+        "channel (api | portal_upload | form)",
+        "clientId",
+        "environment (sandbox | production)",
+        "correlationId",
+        "submittedByUserId",
+        "approvedByUserId",
+        "rowCount",
+        "payloadHash",
+        "currentStage",
+        "currentState",
+        "status (draft | pending_approval | dispatched | received | validating | needs_correction | processing | accepted | returned)",
+        "submittedAt",
+        "acceptedAt",
+        "receiptId"
+      ]
     },
     {
       "entity": "PipelineEvent",
-      "fields": ["pipelineEventId", "submissionId", "correlationId", "stage (source | ipaas | api_hub | adapter | dq_validation | dq_profiling | dq_processing | qlik_portal)", "state", "occurredAt", "durationMs", "reasonCode", "messageEn", "messageAr", "details (json: token id, source ip, request id, latency, counts)", "actorType (system | user)", "actorId"]
+      "fields": [
+        "pipelineEventId",
+        "submissionId",
+        "correlationId",
+        "stage (source | ipaas | api_hub | adapter | dq_validation | dq_profiling | dq_processing | qlik_portal)",
+        "state",
+        "occurredAt",
+        "durationMs",
+        "reasonCode",
+        "messageEn",
+        "messageAr",
+        "details (json: token id, source ip, request id, latency, counts)",
+        "actorType (system | user)",
+        "actorId"
+      ]
     },
     {
       "entity": "ValidationIssue",
-      "fields": ["validationIssueId", "submissionId", "ruleId", "ruleType (mandatory | code_list | numeric_range | text_length | cross_field | date | primary_key_duplicate | contract)", "fieldId", "rowNumber", "primaryKeyValue", "actualValue", "expectedValue", "severity (error | warning | info)", "messageEn", "messageAr", "status (open | fixed | acknowledged | waived)", "waiverId", "resolvedInSubmissionId"]
+      "fields": [
+        "validationIssueId",
+        "submissionId",
+        "ruleId",
+        "ruleType (mandatory | code_list | numeric_range | text_length | cross_field | date | primary_key_duplicate | contract)",
+        "fieldId",
+        "rowNumber",
+        "primaryKeyValue",
+        "actualValue",
+        "expectedValue",
+        "severity (error | warning | info)",
+        "messageEn",
+        "messageAr",
+        "status (open | fixed | acknowledged | waived)",
+        "waiverId",
+        "resolvedInSubmissionId"
+      ]
     },
     {
       "entity": "ProfileMetric",
-      "fields": ["profileMetricId", "submissionId", "fieldId", "completenessPct", "distinctCount", "nullCount", "min", "max", "mean", "codeListCoveragePct", "unknownCodes[]", "previousPeriodDelta", "anomalyFlag", "anomalyNote"]
+      "fields": [
+        "profileMetricId",
+        "submissionId",
+        "fieldId",
+        "completenessPct",
+        "distinctCount",
+        "nullCount",
+        "min",
+        "max",
+        "mean",
+        "codeListCoveragePct",
+        "unknownCodes[]",
+        "previousPeriodDelta",
+        "anomalyFlag",
+        "anomalyNote"
+      ]
     },
     {
       "entity": "Receipt",
-      "fields": ["receiptId", "submissionId", "institutionId", "datasetId", "periodId", "version", "payloadHash", "rowCount", "issuedAt", "issuedByStage (adapter)", "signature", "downloadUrlPdf", "downloadUrlJson"]
+      "fields": [
+        "receiptId",
+        "submissionId",
+        "institutionId",
+        "datasetId",
+        "periodId",
+        "version",
+        "payloadHash",
+        "rowCount",
+        "issuedAt",
+        "issuedByStage (adapter)",
+        "signature",
+        "downloadUrlPdf",
+        "downloadUrlJson"
+      ]
     },
     {
       "entity": "Approval",
-      "fields": ["approvalId", "objectType (submission | credential | ip_allowlist_entry | waiver | dictionary_version | key_registration)", "objectId", "step (institution_signoff | khda_acceptance | khda_it_second_approver | khda_data_review)", "requestedByUserId", "decidedByUserId", "decision (pending | approved | rejected | returned)", "comment", "requestedAt", "decidedAt"]
+      "fields": [
+        "approvalId",
+        "objectType (submission | credential | ip_allowlist_entry | waiver | dictionary_version | key_registration)",
+        "objectId",
+        "step (institution_signoff | khda_acceptance | khda_it_second_approver | khda_data_review)",
+        "requestedByUserId",
+        "decidedByUserId",
+        "decision (pending | approved | rejected | returned)",
+        "comment",
+        "requestedAt",
+        "decidedAt"
+      ]
     },
     {
       "entity": "Credential",
-      "fields": ["credentialId", "institutionId", "type (client_id | client_secret | key_pair | access_token_policy)", "environment (sandbox | production)", "clientId", "publicKeyFingerprint", "secretHint (last 4 chars)", "status (requested | pending_approval | active | rotating | expiring | expired | suspended | revoked)", "issuedByUserId", "issuedAt", "validFrom", "validTo", "rotationGraceUntil", "lastUsedAt", "revokedAt", "revokedReason"]
+      "fields": [
+        "credentialId",
+        "institutionId",
+        "type (client_id | client_secret | key_pair | access_token_policy)",
+        "environment (sandbox | production)",
+        "clientId",
+        "publicKeyFingerprint",
+        "secretHint (last 4 chars)",
+        "status (requested | pending_approval | active | rotating | expiring | expired | suspended | revoked)",
+        "issuedByUserId",
+        "issuedAt",
+        "validFrom",
+        "validTo",
+        "rotationGraceUntil",
+        "lastUsedAt",
+        "revokedAt",
+        "revokedReason"
+      ]
     },
     {
       "entity": "IPAllowlistEntry",
-      "fields": ["ipAllowlistEntryId", "institutionId", "ipOrCidr", "label", "environment (sandbox | production)", "status (requested | pending_approval | active | rejected | removal_requested | removed)", "justification", "requestedByUserId", "approvedByUserId", "appliedAtIpaas", "appliedAtApiHub", "lastSeenAt", "createdAt"]
+      "fields": [
+        "ipAllowlistEntryId",
+        "institutionId",
+        "ipOrCidr",
+        "label",
+        "environment (sandbox | production)",
+        "status (requested | pending_approval | active | rejected | removal_requested | removed)",
+        "justification",
+        "requestedByUserId",
+        "approvedByUserId",
+        "appliedAtIpaas",
+        "appliedAtApiHub",
+        "lastSeenAt",
+        "createdAt"
+      ]
     },
     {
       "entity": "Waiver",
-      "fields": ["waiverId", "institutionId", "type (channel_exception | deadline_extension | dataset_not_applicable | rule_waiver)", "datasetId", "periodId", "ruleId", "reason", "status (requested | under_review | approved | rejected | expired | revoked)", "validFrom", "validTo", "requestedByUserId", "decidedByUserId", "decisionComment", "createdAt"]
+      "fields": [
+        "waiverId",
+        "institutionId",
+        "type (channel_exception | deadline_extension | dataset_not_applicable | rule_waiver)",
+        "datasetId",
+        "periodId",
+        "ruleId",
+        "reason",
+        "status (requested | under_review | approved | rejected | expired | revoked)",
+        "validFrom",
+        "validTo",
+        "requestedByUserId",
+        "decidedByUserId",
+        "decisionComment",
+        "createdAt"
+      ]
     },
     {
       "entity": "Notification",
-      "fields": ["notificationId", "recipientUserId", "institutionId", "type (due_soon | overdue | needs_correction | accepted | credential_expiring | allowlist_decision | waiver_decision | escalation | system_announcement)", "channel (in_app | email)", "subjectEn", "subjectAr", "bodyEn", "bodyAr", "objectType", "objectId", "sentAt", "deliveryStatus (queued | sent | failed)", "readAt", "escalationLevel"]
+      "fields": [
+        "notificationId",
+        "recipientUserId",
+        "institutionId",
+        "type (due_soon | overdue | needs_correction | accepted | credential_expiring | allowlist_decision | waiver_decision | escalation | system_announcement)",
+        "channel (in_app | email)",
+        "subjectEn",
+        "subjectAr",
+        "bodyEn",
+        "bodyAr",
+        "objectType",
+        "objectId",
+        "sentAt",
+        "deliveryStatus (queued | sent | failed)",
+        "readAt",
+        "escalationLevel"
+      ]
     },
     {
       "entity": "AuditEvent",
-      "fields": ["auditEventId", "actorUserId", "actorRole", "institutionId", "objectType", "objectId", "action (create | update | approve | reject | rotate | revoke | submit | accept | return | sign_in | role_change | publish)", "before (json)", "after (json)", "ipAddress", "occurredAt", "correlationId"]
+      "fields": [
+        "auditEventId",
+        "actorUserId",
+        "actorRole",
+        "institutionId",
+        "objectType",
+        "objectId",
+        "action (create | update | approve | reject | rotate | revoke | submit | accept | return | sign_in | role_change | publish)",
+        "before (json)",
+        "after (json)",
+        "ipAddress",
+        "occurredAt",
+        "correlationId"
+      ]
     },
     {
       "entity": "Score",
-      "fields": ["scoreId", "institutionId", "periodId", "computedAt", "requiredDatasetCount", "acceptedDatasetCount", "coverageScore (max 400)", "dataQualityScore (max 250)", "timelinessScore (max 200)", "automationScore (max 150)", "totalScore (max 1000)", "rank", "previousRank", "formulaVersion", "breakdown (json per component with numerator and denominator)", "nextMoveEn", "nextMoveAr"]
+      "fields": [
+        "scoreId",
+        "institutionId",
+        "periodId",
+        "computedAt",
+        "requiredDatasetCount",
+        "acceptedDatasetCount",
+        "coverageScore (max 400)",
+        "dataQualityScore (max 250)",
+        "timelinessScore (max 200)",
+        "automationScore (max 150)",
+        "totalScore (max 1000)",
+        "rank",
+        "previousRank",
+        "formulaVersion",
+        "breakdown (json per component with numerator and denominator)",
+        "nextMoveEn",
+        "nextMoveAr"
+      ]
     },
     {
       "entity": "OnboardingTouchpoint",
-      "fields": ["touchpointId", "institutionId", "sequence (1..6)", "name (kick_off | credentials_issued | sandbox_connected | sample_submission_validated | production_enabled | first_accepted_submission)", "ownerUserId", "ownerRole", "plannedDate", "completedAt", "status (not_started | in_progress | done | blocked)", "blockerNote"]
+      "fields": [
+        "touchpointId",
+        "institutionId",
+        "sequence (1..6)",
+        "name (kick_off | credentials_issued | sandbox_connected | sample_submission_validated | production_enabled | first_accepted_submission)",
+        "ownerUserId",
+        "ownerRole",
+        "plannedDate",
+        "completedAt",
+        "status (not_started | in_progress | done | blocked)",
+        "blockerNote"
+      ]
+    }
+  ],
+  "crossCuttingCapabilities": [
+    {
+      "capability": "Chatbot",
+      "teams": [
+        "KHDA Data",
+        "KHDA IT",
+        "Institution (scoped)"
+      ],
+      "surface": "Persistent assistant panel on every page; answers cite dictionary/rule/receipt sources and deep-link to the page; drafts emails; institution users see only their own data."
+    },
+    {
+      "capability": "Remediation report",
+      "teams": [
+        "KHDA Data",
+        "KHDA IT",
+        "Institution"
+      ],
+      "surface": "Report per institution x dataset x period with roll-ups: failing rule, severity, rows/fields, sample values, suggested fix, recurrence, owner, SLA age; XLSX/PDF export; feeds the institution remediation workbench and follow-up emails."
+    },
+    {
+      "capability": "Rule engine for all forms",
+      "teams": [
+        "KHDA IT (owner)",
+        "KHDA Data (author)"
+      ],
+      "surface": "Rule library page: list, versions, effective periods, sandbox test against sample rows, publish; applied identically in form, template, API validation and remediation report."
+    },
+    {
+      "capability": "Analytics",
+      "teams": [
+        "KHDA Data"
+      ],
+      "surface": "Sector/institution dashboards, DQ analytics, compliance trends, leaderboard, self-service report builder, scheduled exports."
     }
   ]
 }

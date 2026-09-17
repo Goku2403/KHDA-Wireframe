@@ -89,6 +89,29 @@
       <div class="results__head">
         <h2 class="results__count" id="catCount">Showing 0 datasets</h2>
         <div class="results__tools">
+          <div class="view-toggle" role="group" aria-label="View" id="catView">
+            <button type="button" data-view="cards" aria-pressed="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>Cards</button>
+            <button type="button" data-view="table" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>Table</button>
+          </div>
+          <label class="results__sort" id="catGroupWrap" hidden>
+            <span class="sr-only">Group by</span>
+            <select class="control control--select control--sort" id="catGroup">
+              <option value="area">Group by subject area</option>
+              <option value="frequency">Group by frequency</option>
+              <option value="none">All datasets</option>
+            </select>
+          </label>
+          <label class="results__sort" id="catStatusWrap" hidden>
+            <span class="sr-only">Status</span>
+            <select class="control control--select control--sort" id="catStatus">
+              <option value="all">All statuses</option>
+              <option value="not_started">Not started</option>
+              <option value="in_pipeline">In pipeline</option>
+              <option value="needs_correction">Needs correction</option>
+              <option value="accepted">Accepted</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </label>
           <button class="btn btn--outline btn--sm" type="button" id="exportAll">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12m0 0-4-4m4 4 4-4M4 16v4h16v-4"/></svg>
             <span data-i18n="dash.export.button">Export everything</span>
@@ -105,6 +128,7 @@
       </div>
 
       <div class="card-grid" id="catGrid"></div>
+      <div class="cat-groups" id="catTable" hidden></div>
 
       <div class="empty" id="catEmpty" hidden>
         <div class="empty__title" data-i18n="cat.none">No datasets found</div>
@@ -123,15 +147,23 @@
 
   <!-- Dataset details modal -->
   <div class="modal-backdrop sheet-backdrop" id="detailsModal" hidden>
-    <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
+    <aside class="sheet sheet--wide" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
       <div class="sheet__body">
         <div class="sheet__head">
-          <h3 class="sheet__title" id="detailsTitle"></h3>
+          <h3 class="sheet__title" id="detailsTitle" style="font-size:32px;line-height:40px"></h3>
           <button class="icon-btn sheet__close" type="button" id="detailsClose" aria-label="Close" data-i18n-aria="common.close">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
 
+        <p class="sheet__sub" id="detailsSub"></p>
+        <div class="sheet__meta" id="detailsMeta"></div>
+        <div class="tabs" id="detailsTabs" role="tablist">
+          <button type="button" role="tab" data-tab="spec" aria-selected="true">Specification</button>
+          <button type="button" role="tab" data-tab="subs" aria-selected="false">Submissions</button>
+          <button type="button" role="tab" data-tab="issues" aria-selected="false">Issues <span class="count-badge" id="detailsIssueCount">0</span></button>
+          <button type="button" role="tab" data-tab="journey" aria-selected="false">Journey</button>
+        </div>
         <div class="field-list" id="detailsFields"></div>
       </div>
 
@@ -182,6 +214,10 @@
   <script src="js/lists.js?v=20260926ze"></script>
   <script src="js/datasets.js?v=20260926ze"></script>
   <script src="js/schema.js?v=20260926ze"></script>
+  <script src="js/sector.js?v=20260926ze"></script>
+  <script src="js/roles.js?v=20260926ze"></script>
+  <script src="js/journey.js?v=20260926ze"></script>
+  <script src="js/chatbot.js?v=20260926ze"></script>
   <script src="js/template.js?v=20260926ze"></script>
   <script src="js/export.js?v=20260926ze"></script>
   <script src="js/demo.js?v=20260926ze"></script>

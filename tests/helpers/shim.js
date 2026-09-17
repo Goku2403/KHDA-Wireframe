@@ -13,7 +13,7 @@ function install() {
   require(root + '/js/lists.js');
   require(root + '/js/datasets.js');
   require(root + '/js/schema.js');
-  require(root + '/js/rules.js');
+  require(root + '/js/rule-model.js');
   return window;
 }
 module.exports = { install };

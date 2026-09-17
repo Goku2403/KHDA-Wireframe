@@ -20,7 +20,7 @@
     const byGate = k => K.INSTITUTIONS.filter(i => gateStatus(i) === k).length;
     $('#main').innerHTML = `
       <div class="page-head"><div><div class="page-head__eyebrow">KHDA IT · Onboarding</div><h1 class="page-head__title">Onboarding board</h1><p class="page-head__sub">${K.INSTITUTIONS.length} institutions in 4 waves · six named touch points from kick-off to production</p></div>
-        <div class="page-head__actions"><button class="btn btn--outline" type="button" id="exportB">Export board</button><button class="btn btn--primary" type="button" id="newWave" data-tier="administrator">＋ Allocate wave</button></div></div>
+        </div>
       <div class="kpi-grid"><div class="kpi kpi--success"><div class="kpi__label">In production</div><div class="kpi__value">${byGate('live')}</div><div class="kpi__note">API live, credentials active</div></div><div class="kpi kpi--primary"><div class="kpi__label">At go-live gate</div><div class="kpi__value">${byGate('gate')}</div><div class="kpi__note">awaiting Supervisor sign-off</div></div><div class="kpi kpi--info"><div class="kpi__label">In sandbox</div><div class="kpi__value">${byGate('sandbox')}</div><div class="kpi__note">testing against Dictionary 2026</div></div><div class="kpi kpi--warning"><div class="kpi__label">Setup</div><div class="kpi__value">${byGate('setup')}</div><div class="kpi__note">kick-off or data mapping</div></div></div>
       <section class="panel"><div class="panel__head"><div><h2 class="panel__title">Institutions by wave</h2><p class="panel__sub">Owner, commitment, current touch point and blocker. Open a row for the full journey.</p></div><div class="panel__tools">${[0, 1, 2, 3, 4].map(w => `<button class="chip-toggle" type="button" data-wave="${w}" aria-pressed="${wave === w}">${w ? (w === 1 ? 'Pilot Wave 1' : 'Wave ' + w) : 'All'} <span class="count-badge">${w ? K.INSTITUTIONS.filter(i => i.wave === w).length : K.INSTITUTIONS.length}</span></button>`).join('')}</div></div>
         <div class="table-wrap" style="border-radius:12px"><table class="data-table data-table--compact"><thead><tr><th>Institution</th><th>Wave</th><th>KHDA owner</th><th>Commitment</th><th>Touch point</th><th>Gate</th><th>Blocker</th><th></th></tr></thead><tbody>
@@ -28,8 +28,6 @@
         </tbody></table></div></section>`;
     $('#main').removeAttribute('aria-busy');
     $('#main').querySelectorAll('[data-wave]').forEach(b => b.addEventListener('click', () => { wave = Number(b.dataset.wave); renderBoard(); }));
-    $('#exportB').addEventListener('click', () => window.khdaToast('success', 'Exported', 'onboarding-board.xlsx'));
-    $('#newWave').addEventListener('click', () => { if (!R.can('administrator')) return window.khdaToast('error', 'Administrator tier required', 'Wave allocation is an Administrator action.'); window.khdaToast('info', 'Wave allocation', 'Opens the wave editor (not in this wireframe).'); });
     R.gate();
   }
 

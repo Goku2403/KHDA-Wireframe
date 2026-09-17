@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Remediation workbench — KHDA</title>
+  <title>KHDA staff · Monitor — KHDA</title>
   <meta name="application-name" content="KHDA">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260926a">
   <meta name="theme-color" content="#A8305C">
   <link rel="stylesheet" href="css/khda.css?v=20260926a">
 </head>
-<body class="on-canvas">
+<body class="on-canvas" data-team="khda">
 
   <!-- ===== Portal header ===== -->
   <header class="portal-header">
@@ -24,14 +24,8 @@
       </div>
       <div class="portal-header__sub">
         <nav class="portal-nav" aria-label="Portal">
-          <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
+          <a href="dashboard.html" aria-current="page" data-i18n="nav.dashboard">Dashboard</a>
           <a href="submissions.html" data-i18n="nav.submissions">Submissions</a>
-          <a href="status.html" data-i18n="nav.status">Submission status</a>
-          <a href="monitor.html" data-i18n="nav.monitor">Data monitor</a>
-          <a href="reconciliation.html" aria-current="page" data-i18n="nav.reconciliation">Remediation</a>
-          <a href="compliance.html" data-i18n="nav.compliance">Compliance history</a>
-          <a href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
-          <a href="api.html" data-i18n="nav.api">REST API</a>
         </nav>
         <div class="portal-tools">
           <button class="tool-pill tool-pill--demo" type="button" id="demoToggle" aria-pressed="false" hidden>
@@ -65,29 +59,7 @@
     </div>
   </header>
 
-  <main class="page page--report">
-
-    <section class="service-header">
-      <div class="title-bar">
-        <h1 class="title-bar__headline" data-i18n="rem.title">Remediation workbench</h1>
-        <div class="title-bar__actions" id="rmActions"></div>
-      </div>
-      <div class="segmented segmented--pill rem-tabs" role="group" id="rmTabs" aria-label="View">
-        <button type="button" data-view="work" aria-pressed="true" data-i18n="rem.tab.work">Workbench</button>
-        <button type="button" data-view="report" aria-pressed="false" data-i18n="rem.tab.report">Remediation report</button>
-        <button type="button" data-view="analytics" aria-pressed="false" data-i18n="rem.tab.analytics">Analytics</button>
-      </div>
-    </section>
-
-    <section class="report-block">
-      <div class="stat-grid" id="rmStats"></div>
-    </section>
-
-    <div id="rmView"></div>
-  </main>
-
-
-  <div class="viz-tip" id="vizTip" role="tooltip" hidden></div>
+  <main class="page page--plan" id="main" aria-busy="true"></main>
 
   <div class="toast-host" id="toastHost" aria-live="polite"></div>
 
@@ -101,10 +73,6 @@
   <script src="js/roles.js?v=20260926a"></script>
   <script src="js/journey.js?v=20260926a"></script>
   <script src="js/chatbot.js?v=20260926a"></script>
-  <script src="js/demo.js?v=20260926a"></script>
-  <script src="js/model.js?v=20260926a"></script>
-  <script src="js/portal.js?v=20260926a"></script>
-  <script src="js/reconciliation.js?v=20260926a"></script>
-  <script src="js/shell.js?v=20260926a"></script>
+  <script src="js/khda-monitor.js?v=20260926a"></script>
 </body>
 </html>

@@ -8,6 +8,55 @@ The interface runs in **English and Arabic**, including a right-to-left layout.
 
 ## Pages
 
+The wireframe now covers three sides of the portal — the institution, KHDA Data and KHDA IT — on one KHDA Design System header. The plan behind it is `plan/DEVELOPMENT-PLAN.md`.
+
+### Sign-in and roles
+
+| Page | Purpose |
+|---|---|
+| `login.html` | Institution picker + UAE PASS for institutions; Active Directory for KHDA staff. The side panel is a live sector readiness strip from the sector model, not decoration. |
+
+Roles live in `js/roles.js` and are switched from the account menu (demo) or set by sign-in. Institution: Institution Admin, Data Steward, Approver, Read-only. KHDA: team (Data or IT) x tier (Analyst < Supervisor < Administrator). Controls that need a higher tier carry `data-tier="supervisor|administrator"` and are shown disabled with the reason, never hidden. The header also carries the reporting-period selector, the assistant button and a dark-theme switch.
+
+### Institution
+
+| Page | Purpose |
+|---|---|
+| `dashboard.html` | Home: KPI tiles (total, accepted, needs correction, overdue, readiness rank), highlights carousel, agenda with Overdue / Upcoming tabs and due dates, institution card, quick actions, progress gauge, calendar, activity, and the submissions currently in the pipeline drawn as journeys. |
+| `submissions.html` | Catalogue of the 46 datasets: Cards or Table view; the table groups by subject area or frequency with due date, status, freshness + channel, open issues; the details drawer has Specification / Submissions / Issues / Journey tabs. |
+| `choose.html`, `index.html`, `report.html` | Unchanged: choose bulk or form, two-step data entry, data report. |
+| `leaderboard.html` | Readiness ranking with the corrected scoring model (denominators are required datasets, lateness deducts), podium, rankings with per-row breakdown, next moves, ranking over time, formula panel. |
+| `credentials.html` | Institution view of its API access: client ID per environment, secret status, keys, IP allowlist requests, sandbox tester, API docs. |
+
+### KHDA Data
+
+| Page | Purpose |
+|---|---|
+| `sector.html` | Sector overview: KPI tiles, follow-up queue with reason codes and SLA age, entity table with bulk select, sector gauge, onboarding overview by wave. |
+| `monitor.html` | Cards or 37 x 46 compliance matrix; `?inst=` opens the institution monitor with touch points, dataset agenda, per-row submission journey, acceptance actions and a working email composer with a delivery log. |
+| `compliance.html` | Computed compliance history per institution or sector: Required / Received / Accepted / Late / Missing / On-time per period, trend, recurring corrections. |
+| `remediation.html` | Remediation report per institution x dataset x period: failing rule, severity, rows, sample, fix, recurrence, owner, SLA age; `?view=technical` is the KHDA IT view of pipeline failures. |
+
+### KHDA IT
+
+| Page | Purpose |
+|---|---|
+| `onboarding.html` | Waves as managed objects; six named touch points with owners, dates and evidence; go-live gate checklist. |
+| `credentials.html` | Issue, rotate, suspend, revoke client credentials; IP allowlists; sandbox tester; per environment. |
+| `rules.html` | Rule library derived from the dictionary through the same schema the form, template and validator use: typed rules, versions with effective periods, sandbox test, draft -> approve -> publish. |
+
+### Cross-cutting
+
+- `js/sector.js` - deterministic sector model: 37 institutions x 46 datasets x 4 reporting periods, requirement table, receipts, journeys, issues, scoring and rankings. Nothing is typed per dataset.
+- `js/journey.js` - the submission journey component (Source -> iPaaS -> API Hub -> Adapter -> Validation -> Profiling -> Processing -> Published).
+- `js/chatbot.js` - scripted, source-citing assistant over the dictionary, rules, requirement table and history; institution users are scoped to their own institution.
+- Dark theme is a DS token set under `[data-theme="dark"]`; Arabic RTL applies to every page.
+
+The wireframe's reference date is 20 October 2026 (seven weeks into Fall 2026-2027), set in `js/sector.js`.
+
+### Original pages
+
+
 | Page | Purpose |
 |---|---|
 | `dashboard.html` | Landing page: highlights carousel, remediation queue, institution card, quick actions, submission progress gauge, submission calendar and analytics meters. Follows the Figma Portal Delivery dashboard (`24570:127550`). |
@@ -24,6 +73,10 @@ The interface runs in **English and Arabic**, including a right-to-left layout.
 | `api.html` | REST API documentation for institutions pushing datasets from their own systems: quick start, authentication, submit, status, returned records, errors, payload schema and reference lists — all generated from the same dictionary as the form and the Excel template. Downloads the OpenAPI document and per-dataset JSON Schema. |
 
 A card's **Start submission** button goes to `index.html?sheet=<sheet>`; its report icon goes to `report.html?sheet=<sheet>`. The report grid's edit icon returns to `index.html?sheet=<sheet>&edit=<record id>` with that record open in the form.
+
+## Two page families after the merge
+
+The repository carries both builds. **Institution pages** (dashboard, submissions, `status`, `monitor`, `reconciliation`, `compliance`, `leaderboard`, `api`, `login`) are the institution-role portal driven by `js/model.js`. **KHDA-staff pages** from Wireframe v2 (`sector`, `khda-monitor`, `khda-compliance`, `khda-leaderboard`, `remediation`, `rules`, `onboarding`, `credentials`, `khda-login`) are driven by `js/sector.js`; the role switch in the account menu (`js/roles.js`) moves between the two navigations. `js/dashboard-v2.js` is v2's dashboard renderer, kept for reference and not loaded.
 
 ## Run
 

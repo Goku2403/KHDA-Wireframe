@@ -83,19 +83,6 @@
         location.href = ROLES[b.dataset.roleId].home;
       });
     }
-    if (menu && !menu.querySelector('.theme-row')) {
-      const row = document.createElement('div');
-      row.className = 'theme-row';
-      const on = document.documentElement.dataset.theme === 'dark';
-      row.innerHTML = `<span>Dark theme</span><button class="switch" type="button" role="switch" aria-checked="${on}" aria-label="Dark theme"></button>`;
-      row.querySelector('.switch').addEventListener('click', e => {
-        const next = e.currentTarget.getAttribute('aria-checked') !== 'true';
-        e.currentTarget.setAttribute('aria-checked', String(next));
-        document.documentElement.dataset.theme = next ? 'dark' : 'light';
-        try { localStorage.setItem('khda.theme', next ? 'dark' : 'light'); } catch { /* ignore */ }
-      });
-      menu.insertBefore(row, menu.querySelector('.user-menu__logout'));
-    }
     const logout = $('#btnLogout');
     if (logout) logout.addEventListener('click', () => { location.href = 'login.html'; });
   }
@@ -118,7 +105,6 @@
     });
   }
 
-  try { document.documentElement.dataset.theme = localStorage.getItem('khda.theme') === 'dark' ? 'dark' : 'light'; } catch { /* ignore */ }
   reconcile();
   renderHeader();
   gate();

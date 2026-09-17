@@ -1,4 +1,4 @@
-/* Portal shell additions on every page: light / dark theme toggle, global search (datasets, receipts, pages),
+/* Portal shell additions on every page: global search (datasets, receipts, pages),
    the notifications bell (returned datasets, overdue, recent acceptances — from the submission model when it is
    loaded), and sign-out to the sign-in page. Everything is injected into the existing header tools. */
 (function () {
@@ -6,29 +6,18 @@
   const $ = s => document.querySelector(s);
   const t = (k, v) => (window.t ? window.t(k, v) : k);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const ls = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch { /* ignore */ } } };
-
-  // ---------- theme ----------
-  const THEME = 'khda.theme';
-  function applyTheme(mode) { if (mode === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); }
-  applyTheme(ls.get(THEME));
 
   const tools = $('.portal-tools'), anchor = tools && tools.querySelector('.tool-pill--icon');
   if (!tools || !anchor) return;
   const svg = p => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-  const ICON = { moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>', sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', bell: '<path d="M6 8a6 6 0 0 1 12 0v5l2 3H4l2-3z"/><path d="M10 19a2 2 0 0 0 4 0"/>' };
+  const ICON = { search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', bell: '<path d="M6 8a6 6 0 0 1 12 0v5l2 3H4l2-3z"/><path d="M10 19a2 2 0 0 0 4 0"/>' };
 
   // search pill
   const search = document.createElement('button'); search.type = 'button'; search.className = 'tool-pill tool-pill--search'; search.id = 'shellSearch'; search.setAttribute('aria-haspopup', 'dialog');
   search.innerHTML = svg(ICON.search) + `<span>${esc(t('shell.search'))}</span>`;
   // notifications bell
   const bell = document.createElement('button'); bell.type = 'button'; bell.className = 'tool-pill tool-pill--round'; bell.id = 'shellBell'; bell.setAttribute('aria-label', t('shell.notifications')); bell.innerHTML = svg(ICON.bell);
-  // theme toggle
-  const theme = document.createElement('button'); theme.type = 'button'; theme.className = 'tool-pill tool-pill--round'; theme.id = 'shellTheme';
-  const paintTheme = () => { const dark = document.documentElement.getAttribute('data-theme') === 'dark'; theme.innerHTML = svg(dark ? ICON.sun : ICON.moon); theme.setAttribute('aria-label', t(dark ? 'shell.light' : 'shell.dark')); theme.setAttribute('aria-pressed', String(dark)); };
-  paintTheme();
-  theme.addEventListener('click', () => { const dark = document.documentElement.getAttribute('data-theme') === 'dark'; applyTheme(dark ? 'light' : 'dark'); ls.set(THEME, dark ? 'light' : 'dark'); paintTheme(); });
-  tools.insertBefore(search, anchor); tools.insertBefore(bell, anchor); tools.insertBefore(theme, anchor);
+  tools.insertBefore(search, anchor); tools.insertBefore(bell, anchor);
 
   // ---------- popovers ----------
   let pop = null;

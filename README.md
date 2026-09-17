@@ -50,7 +50,7 @@ Roles live in `js/roles.js` and are switched from the account menu (demo) or set
 - `js/sector.js` - deterministic sector model: 37 institutions x 46 datasets x 4 reporting periods, requirement table, receipts, journeys, issues, scoring and rankings. Nothing is typed per dataset.
 - `js/journey.js` - the submission journey component (Source -> iPaaS -> API Hub -> Adapter -> Validation -> Profiling -> Processing -> Published).
 - `js/chatbot.js` - scripted, source-citing assistant over the dictionary, rules, requirement table and history; institution users are scoped to their own institution.
-- Dark theme is a DS token set under `[data-theme="dark"]`; Arabic RTL applies to every page.
+- Arabic RTL applies to every page.
 
 The wireframe's reference date is 20 October 2026 (seven weeks into Fall 2026-2027), set in `js/sector.js`.
 
@@ -116,7 +116,7 @@ Then browse to <http://localhost:8765/submissions.html>.
 | `js/monitor.js` | Data monitor page |
 | `js/compliance.js` | Compliance history page, including the dataset × period compliance matrix |
 | `js/leaderboard.js` | Leaderboard: scoring model and ranking (37 institutions, ours from the model) |
-| `js/shell.js` | Header additions on every page: dark / light theme, global search (Ctrl + K), notifications bell, sign-out |
+| `js/shell.js` | Header additions on every page: global search (Ctrl + K), notifications bell, sign-out |
 | `js/login.js` | Sign-in page |
 | `js/api.js` | REST API documentation page |
 

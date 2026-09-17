@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign in — KHDA</title>
   <meta name="application-name" content="KHDA">
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260926i">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260926n">
   <meta name="theme-color" content="#A8305C">
-  <link rel="stylesheet" href="css/khda.css?v=20260926i">
+  <link rel="stylesheet" href="css/khda.css?v=20260926n">
 </head>
 <body class="on-canvas login-page">
 
@@ -18,7 +18,7 @@
           <img src="assets/gov-dubai.svg" width="129" height="51" alt="Government of Dubai">
         </a>
         <a class="brand-khda" href="#" aria-label="Dubai Knowledge">
-          <img src="assets/khda-logo.svg?v=20260926i" width="85" height="44" alt="Dubai Knowledge">
+          <img src="assets/khda-logo.svg?v=20260926n" width="85" height="44" alt="Dubai Knowledge">
         </a>
       </div>
       <div class="portal-header__sub login-sub">
@@ -42,6 +42,15 @@
         <img src="assets/uaepass.svg" width="30" height="29" alt="" aria-hidden="true">
         <span data-i18n="login.uaepass">Sign in with UAE PASS</span>
       </button>
+      <div class="login__roles" role="group" aria-label="Sign in as" id="loginRoles">
+        <span class="small muted" data-i18n="login.signInAs">Sign in as</span>
+        <div class="segmented segmented--pill">
+          <button type="button" data-role="inst" aria-pressed="true">Institution</button>
+          <button type="button" data-role="khda" aria-pressed="false">KHDA</button>
+          <button type="button" data-role="data" aria-pressed="false">KHDA Data</button>
+          <button type="button" data-role="it" aria-pressed="false">KHDA IT</button>
+        </div>
+      </div>
       <p class="login__blurb" data-i18n="login.blurb">A single trusted digital identity for all citizens, residents and visitors.</p>
       <p class="login__register"><span data-i18n="login.noAccount">Don't have an account?</span> <a href="#" data-i18n="login.register">Register</a></p>
     </section>
@@ -68,10 +77,11 @@
 
   <div class="toast-host" id="toastHost" aria-live="polite"></div>
 
-  <script src="js/i18n.js?v=20260926i"></script>
-  <script src="js/a11y.js?v=20260926i"></script>
+  <script src="js/i18n.js?v=20260926n"></script>
+  <script src="js/a11y.js?v=20260926n"></script>
   <script src="js/vendor/matter.min.js" data-matter defer></script>
-  <script src="js/login.js?v=20260926i"></script>
-  <script src="js/login-hero.js?v=20260926i"></script>
+  <script src="js/roles.js?v=20260926n"></script>
+  <script src="js/login.js?v=20260926n"></script>
+  <script src="js/login-hero.js?v=20260926n"></script>
 </body>
 </html>

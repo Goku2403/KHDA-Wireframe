@@ -1070,15 +1070,7 @@ body.is-choosing { overflow: hidden; }
 .dropzone__icon { color: var(--primary); }
 .dropzone__title { font: 400 20px/28px var(--font); color: var(--on-surface); }
 .dropzone__hint { font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-muted); }
-.dropzone__side {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
-  padding: 20px; border: 1px solid var(--outline); border-radius: 16px; background: var(--surface);
-}
-.dropzone__step { display: flex; align-items: center; gap: 10px; font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-variant); }
-.dropzone__num {
-  width: 24px; height: 24px; flex: 0 0 auto; border-radius: 50%; display: grid; place-items: center;
-  background: var(--primary-container); color: var(--on-primary-container); font: 400 12px/16px var(--font);
-}
+.dropzone__side { display: flex; align-items: center; justify-content: center; padding: 0; }
 .dropzone__side .btn { gap: 8px; }
 
 @media (max-width: 767px) {
@@ -1343,6 +1335,7 @@ body.is-choosing { overflow: hidden; }
 @media (max-width: 991px) { .cmp-grid { grid-template-columns: minmax(0, 1fr); } .stat-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* ---------- shell: search / notifications popovers ---------- */
+.tool-pill--round { width: 40px; padding: 0; justify-content: center; position: relative; }
 .shellpop { position: fixed; z-index: 70; width: 380px; max-width: calc(100vw - 16px); background: var(--surface); border: 1px solid var(--outline); border-radius: 16px; box-shadow: var(--elevation-3); overflow: hidden; }
 .shellpop__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--outline); font: 400 16px/24px var(--font); }
 .shellpop__search { margin: 12px; }
@@ -1837,8 +1830,7 @@ a.kpi:hover { text-decoration: none; border-color: var(--outline-variant); box-s
 .sheet .field-list .data-table--compact td { padding: 12px 16px; }
 .sheet .field-list .receipt, .sheet .field-list .issue { margin: 0; }
 .sheet .field-list { display: flex; flex-direction: column; gap: 12px; }
-/* ============================================================/* ==========================================================================
-   Configuration — rule engine
+/* ============================================================/* ===================================================================   Configuration — rule engine
    Built from the dashboard card vocabulary: .dash-card surfaces, .dash-card__head
    headers, .control fields, .search wrappers, .chip status and .btn-actions row menus.
    ========================================================================== */
@@ -2367,4 +2359,21 @@ html.has-drawer, html.has-drawer body { overflow: hidden; }
 =======
 /* ===================================================================/* dashboard: the Quick actions list is long, so the other cards in its row keep their own height and the gauge sits under its legend */
 .dash-card--progress, .dash-card--calendar, .dash-card--analytics { align-self: start; }
+=======
+/* ===================================================================/* dashboard: the Quick actions list is long, so it spans rows 2-3 and the activity feed sits beside it; the gauge sits under its legend */
+.dash-card--quick { grid-row: 2 / span 2; }
+.dash-card--activity { grid-column: 2 / -1; grid-row: 3; }
 .dash-card--progress .gauge { margin-top: 8px; }
+@media (max-width: 1399px) {
+  .dash-card--quick { grid-column: 1; grid-row: 2 / span 3; }
+  .dash-card--progress { grid-column: 2; grid-row: 2; }
+  .dash-card--calendar { grid-column: 2; grid-row: 3; }
+  .dash-card--analytics { grid-column: 3; grid-row: 2 / span 2; }
+  .dash-card--activity { grid-column: 2 / -1; grid-row: 4; }
+}
+@media (max-width: 991px) {
+  .dash-card--quick, .dash-card--activity { grid-column: auto; grid-row: auto; }
+  .dash-card--activity { grid-column: 1 / span 2; }
+}
+.login__roles { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+.login__roles .segmented button { padding: 0 14px; }

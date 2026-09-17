@@ -31,7 +31,7 @@
     const onb = K.INSTITUTIONS.filter(i => !wave || i.wave === wave).map(i => ({ i, s: sec.institutions.find(x => x.inst.id === i.id) }));
     $('#main').innerHTML = `
       <div class="page-head"><div><div class="page-head__eyebrow">KHDA Data · ${esc(R.role().label)}</div><h1 class="page-head__title">Sector overview</h1><p class="page-head__sub">Submission progress and follow-up priorities · ${esc(per.label)}</p></div>
-        <div class="page-head__actions"><a class="btn btn--outline" href="khda-monitor.html?view=matrix">Compliance matrix</a><a class="btn btn--outline" href="remediation.html">Remediation report</a><a class="btn btn--primary" href="khda-monitor.html">Open monitor</a></div></div>
+        </div>
       <div class="kpi-grid">
         <a class="kpi kpi--info" href="khda-monitor.html"><div class="kpi__label">Total HEIs</div><div class="kpi__value">${sec.total}</div><div class="kpi__note">Institutions in scope · 4 onboarding waves</div><span class="kpi__link">Open monitor →</span></a>
         <button class="kpi kpi--success${tab === 'compliant' ? ' is-selected' : ''}" type="button" data-tab="compliant" style="text-align:left;cursor:pointer"><div class="kpi__label">Compliant</div><div class="kpi__value">${sec.compliant}</div><div class="kpi__note">No overdue work or open corrections</div><span class="kpi__link">Show →</span></button>

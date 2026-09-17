@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remediation workbench — KHDA</title>
+  <meta name="application-name" content="KHDA">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260926c">
+  <meta name="theme-color" content="#A8305C">
+  <link rel="stylesheet" href="css/khda.css?v=20260926c">
+</head>
+<body class="on-canvas">
+
+  <!-- ===== Portal header ===== -->
+  <header class="portal-header">
+    <div class="portal-header__inner">
+      <div class="portal-header__top">
+        <a class="brand-gov" href="#" aria-label="Government of Dubai">
+          <img src="assets/gov-dubai.svg" width="129" height="51" alt="Government of Dubai">
+        </a>
+        <a class="brand-khda" href="#" aria-label="Dubai Knowledge">
+          <img src="assets/khda-logo.svg?v=20260926c" width="85" height="44" alt="Dubai Knowledge">
+        </a>
+      </div>
+      <div class="portal-header__sub">
+        <nav class="portal-nav" aria-label="Portal">
+          <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
+          <a href="submissions.html" data-i18n="nav.submissions">Submissions</a>
+          <a href="status.html" data-i18n="nav.status">Submission status</a>
+          <a href="monitor.html" data-i18n="nav.monitor">Data monitor</a>
+          <a href="reconciliation.html" aria-current="page" data-i18n="nav.reconciliation">Remediation</a>
+          <a href="compliance.html" data-i18n="nav.compliance">Compliance history</a>
+          <a href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
+          <a href="api.html" data-i18n="nav.api">REST API</a>
+        </nav>
+        <div class="portal-tools">
+          <button class="tool-pill tool-pill--demo" type="button" id="demoToggle" aria-pressed="false" hidden>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+            <span id="demoToggleLabel">Demo data</span>
+          </button>
+          <button class="tool-pill tool-pill--icon" type="button" aria-label="Accessibility" data-i18n-aria="tool.accessibility">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M4 9h16M12 9v6m0 0-3 6m3-6 3 6"/></svg>
+          </button>
+          <button class="tool-pill tool-pill--lang" type="button" id="langToggle" data-i18n="tool.lang" data-i18n-aria="tool.langAria">العربية</button>
+          <div class="tool-account">
+            <button class="tool-pill tool-user" type="button" id="userPill" aria-haspopup="true" aria-expanded="false" aria-controls="userMenu">
+              <span class="tool-user__avatar" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              </span>
+              <span class="tool-user__text">
+                <span class="tool-user__role" data-i18n="user.role">Institution Admin</span>
+                <span class="tool-user__name" data-i18n="user.name">Noura Al Khatib</span>
+              </span>
+              <svg class="tool-user__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="user-menu" id="userMenu" role="menu" aria-label="Account menu" data-i18n-aria="user.menu" hidden>
+              <button class="user-menu__logout" type="button" id="btnLogout" role="menuitem">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17l5-5-5-5"/><path d="M20 12H9"/><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"/></svg>
+                <span data-i18n="user.logout">Log out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page page--report">
+
+    <section class="service-header">
+      <div class="title-bar">
+        <h1 class="title-bar__headline" data-i18n="rem.title">Remediation workbench</h1>
+        <div class="title-bar__actions" id="rmActions"></div>
+      </div>
+      <div class="segmented segmented--pill rem-tabs" role="group" id="rmTabs" aria-label="View">
+        <button type="button" data-view="work" aria-pressed="true" data-i18n="rem.tab.work">Workbench</button>
+        <button type="button" data-view="report" aria-pressed="false" data-i18n="rem.tab.report">Remediation report</button>
+        <button type="button" data-view="analytics" aria-pressed="false" data-i18n="rem.tab.analytics">Analytics</button>
+      </div>
+    </section>
+
+    <section class="report-block">
+      <div class="stat-grid" id="rmStats"></div>
+    </section>
+
+    <div id="rmView"></div>
+  </main>
+
+
+  <div class="viz-tip" id="vizTip" role="tooltip" hidden></div>
+
+  <div class="toast-host" id="toastHost" aria-live="polite"></div>
+
+  <script src="js/i18n.js?v=20260926c"></script>
+  <script src="js/a11y.js?v=20260926c"></script>
+  <script src="js/fit.js?v=20260926c"></script>
+  <script src="js/lists.js?v=20260926c"></script>
+  <script src="js/datasets.js?v=20260926c"></script>
+  <script src="js/schema.js?v=20260926c"></script>
+  <script src="js/sector.js?v=20260926c"></script>
+  <script src="js/roles.js?v=20260926c"></script>
+  <script src="js/journey.js?v=20260926c"></script>
+  <script src="js/chatbot.js?v=20260926c"></script>
+  <script src="js/demo.js?v=20260926c"></script>
+  <script src="js/model.js?v=20260926c"></script>
+  <script src="js/portal.js?v=20260926c"></script>
+  <script src="js/reconciliation.js?v=20260926c"></script>
+  <script src="js/shell.js?v=20260926c"></script>
+</body>
+</html>

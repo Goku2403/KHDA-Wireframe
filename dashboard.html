@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KHDA</title>
   <meta name="application-name" content="KHDA">
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260926ze">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260926c">
   <meta name="theme-color" content="#A8305C">
-  <link rel="stylesheet" href="css/khda.css?v=20260926ze">
+  <link rel="stylesheet" href="css/khda.css?v=20260926c">
 </head>
 <body class="on-canvas">
 
@@ -19,13 +19,19 @@
           <img src="assets/gov-dubai.svg" width="129" height="51" alt="Government of Dubai">
         </a>
         <a class="brand-khda" href="#" aria-label="Dubai Knowledge">
-          <img src="assets/khda-logo.svg?v=20260926ze" width="85" height="44" alt="Dubai Knowledge">
+          <img src="assets/khda-logo.svg?v=20260926c" width="85" height="44" alt="Dubai Knowledge">
         </a>
       </div>
       <div class="portal-header__sub">
         <nav class="portal-nav" aria-label="Portal">
           <a href="dashboard.html" aria-current="page" data-i18n="nav.dashboard">Dashboard</a>
           <a href="submissions.html" data-i18n="nav.submissions">Submissions</a>
+          <a href="status.html" data-i18n="nav.status">Submission status</a>
+          <a href="monitor.html" data-i18n="nav.monitor">Data monitor</a>
+          <a href="reconciliation.html" data-i18n="nav.reconciliation">Remediation</a>
+          <a href="compliance.html" data-i18n="nav.compliance">Compliance history</a>
+          <a href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
+          <a href="api.html" data-i18n="nav.api">REST API</a>
           <a href="governance.html" data-i18n="nav.governance">Data Governance Policies</a>
           <a href="api-integration.html" data-i18n="nav.apiIntegration">API Integration</a>
         </nav>
@@ -63,10 +69,8 @@
 
   <main class="page page--dash">
 
-    <div class="dash dash--v2">
+    <div class="dash">
 
-      <!-- ===== KPI tiles (plan I-1) ===== -->
-      <section class="dash-card dash-card--kpis" aria-label="Key figures"><div class="kpi-grid" id="kpis"></div></section>
 
       <!-- ===== Highlights carousel ===== -->
       <section class="dash-card dash-card--hero" aria-label="Highlights">
@@ -91,8 +95,6 @@
           <button type="button" data-filter="attention" aria-pressed="true" data-i18n="dash.filter.attention">Needs remediation</button>
           <button type="button" data-filter="progress" aria-pressed="false" data-i18n="dash.filter.progress">In progress</button>
           <button type="button" data-filter="new" aria-pressed="false" data-i18n="dash.filter.new">Not started</button>
-          <button type="button" data-filter="overdue" aria-pressed="false">Overdue</button>
-          <button type="button" data-filter="upcoming" aria-pressed="false">Upcoming</button>
           <button type="button" data-filter="all" aria-pressed="false" data-i18n="dash.filter.all">All</button>
         </div>
         <ul class="task-list" id="taskList"></ul>
@@ -132,7 +134,10 @@
 
       <!-- ===== Progress ===== -->
       <section class="dash-card dash-card--progress">
-        <h2 class="dash-card__title" data-i18n="dash.progressTitle">Submission progress</h2>
+        <div class="dash-card__head">
+          <h2 class="dash-card__title" data-i18n="dash.progressTitle">Submission progress</h2>
+          <span class="chip chip--neutral" id="progressPct"></span>
+        </div>
         <div class="segmented segmented--pill" role="group" id="progressScope">
           <button type="button" data-scope="periodic" aria-pressed="true" data-i18n="dash.scopePeriodic">Semester &amp; annual</button>
           <button type="button" data-scope="realtime" aria-pressed="false" data-i18n="dash.scopeRealtime">Real-time</button>
@@ -171,15 +176,6 @@
         </div>
       </section>
 
-      <!-- ===== In-flight journeys (plan X-2) ===== -->
-      <section class="dash-card dash-card--journeys">
-        <div class="dash-card__head">
-          <h2 class="dash-card__title">Submissions in the pipeline</h2>
-          <a class="btn btn--outline btn--sm" href="submissions.html?view=table">All datasets</a>
-        </div>
-        <div id="journeys"></div>
-      </section>
-
       <!-- ===== Analytics ===== -->
       <section class="dash-card dash-card--analytics">
         <h2 class="dash-card__title" data-i18n="dash.analyticsTitle">Analytics updates</h2>
@@ -190,20 +186,23 @@
 
   <div class="toast-host" id="toastHost" aria-live="polite"></div>
 
-  <script src="js/i18n.js?v=20260926ze"></script>
-  <script src="js/a11y.js?v=20260926ze"></script>
-  <script src="js/activity.js?v=20260926ze"></script>
-  <script src="js/fit.js?v=20260926ze"></script>
-  <script src="js/lists.js?v=20260926ze"></script>
-  <script src="js/datasets.js?v=20260926ze"></script>
-  <script src="js/schema.js?v=20260926ze"></script>
-  <script src="js/sector.js?v=20260926ze"></script>
-  <script src="js/roles.js?v=20260926ze"></script>
-  <script src="js/journey.js?v=20260926ze"></script>
-  <script src="js/chatbot.js?v=20260926ze"></script>
-  <script src="js/template.js?v=20260926ze"></script>
-  <script src="js/export.js?v=20260926ze"></script>
-  <script src="js/demo.js?v=20260926ze"></script>
-  <script src="js/dashboard.js?v=20260926ze"></script>
+  <script src="js/i18n.js?v=20260926c"></script>
+  <script src="js/a11y.js?v=20260926c"></script>
+  <script src="js/activity.js?v=20260926c"></script>
+  <script src="js/fit.js?v=20260926c"></script>
+  <script src="js/lists.js?v=20260926c"></script>
+  <script src="js/datasets.js?v=20260926c"></script>
+  <script src="js/schema.js?v=20260926c"></script>
+  <script src="js/template.js?v=20260926c"></script>
+  <script src="js/export.js?v=20260926c"></script>
+  <script src="js/sector.js?v=20260926c"></script>
+  <script src="js/roles.js?v=20260926c"></script>
+  <script src="js/journey.js?v=20260926c"></script>
+  <script src="js/chatbot.js?v=20260926c"></script>
+  <script src="js/demo.js?v=20260926c"></script>
+  <script src="js/model.js?v=20260926c"></script>
+  <script src="js/portal.js?v=20260926c"></script>
+  <script src="js/dashboard.js?v=20260926c"></script>
+  <script src="js/shell.js?v=20260926c"></script>
 </body>
 </html>

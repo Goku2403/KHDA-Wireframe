@@ -1,57 +1,86 @@
-/* Compliance history (plan D-4) — computed from the requirement table: Required / Received / Accepted / Late /
-   Missing / On-time per period, submission trend, recurring corrections, board-pack export. */
+/* Compliance history — the institution's performance across reporting periods: datasets received, corrections,
+   recurring corrections, on-time compliance (computed from due dates and receipts), a submission trend chart and
+   the period-by-period table with Required / Received / Accepted / Corrections / Late / Missing. */
 (function () {
   'use strict';
-  const K = window.KHDA_SECTOR, R = window.KHDA_ROLES;
-  const $ = s => document.querySelector(s);
-  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const params = new URLSearchParams(location.search);
-  let inst = K.INSTITUTIONS.find(i => i.id === params.get('inst')) || (R.role().team === 'inst' ? K.own() : null);
-  let openPeriod = null;
+  const M = window.KHDA_MODEL, U = window.KHDA_UI;
+  if (!M || !U) return;
+  const { $, esc, t } = U;
+  let range = 'all';
 
-  function sectorHistory() {
-    return K.PERIODS.map(p => { const s = K.sector(p.id); return { period: p, required: s.required, received: s.received, accepted: s.accepted, needsCorrection: s.needsCorrection, processing: s.processing, late: s.institutions.reduce((n, x) => n + x.late, 0), missing: s.required - s.received, onTime: s.received - s.institutions.reduce((n, x) => n + x.late, 0) }; });
+  function periodStats(p) {
+    const sm = M.summary(p), req = sm.all.filter(M.REQ);
+    const withDue = req.filter(s => s.req.due);
+    const onTime = withDue.filter(s => M.RECEIVED(s) && s.receivedAt <= s.req.due).length;
+    const late = withDue.filter(s => M.RECEIVED(s) && s.receivedAt > s.req.due).length;
+    const ended = p.end < M.TODAY;
+    const missing = req.filter(s => !M.RECEIVED(s) && (ended || (s.req.due && s.req.due < M.TODAY))).length;
+    return { p, sm, required: sm.required, received: sm.received, accepted: sm.accepted, corrections: sm.returned, processing: sm.inReview, late, missing, api: sm.api, onTime, withDue: withDue.length, onTimePct: withDue.length ? Math.round(onTime / withDue.length * 100) : null, returnedSheets: new Set(req.filter(M.RETURNED).map(s => s.dataset.sheet)) };
   }
 
-  function render() {
-    const hist = inst ? K.history(inst) : sectorHistory();
-    const recurring = inst ? K.recurringCorrections(inst) : [];
-    const max = Math.max(...hist.map(h => h.received), 1);
-    const totalReceived = hist.reduce((n, h) => n + h.received, 0);
-    const onTimePct = Math.round(hist.reduce((n, h) => n + h.onTime, 0) / Math.max(1, totalReceived) * 100);
-    $('#main').innerHTML = `
-      <div class="page-head"><div><div class="page-head__eyebrow">KHDA · Performance over time</div><h1 class="page-head__title">Compliance history</h1><p class="page-head__sub">${inst ? 'See how ' + esc(inst.short) + ' is progressing and where follow-up keeps recurring.' : 'Sector-wide compliance per reporting period, computed from the requirement table.'}</p></div>
-        <div class="page-head__actions">${R.role().team === 'inst' ? '' : `<select class="control control--sm" id="instPick" aria-label="Institution"><option value="">Whole sector</option>${K.INSTITUTIONS.map(i => `<option value="${i.id}"${inst && inst.id === i.id ? ' selected' : ''}>${esc(i.name)}</option>`).join('')}</select>`}${inst ? `<a class="btn btn--outline" href="${R.role().team === 'inst' ? 'dashboard.html' : 'monitor.html?inst=' + inst.id}">Open current monitor →</a>` : ''}<button class="btn btn--primary" type="button" id="boardPack">Export board pack</button></div></div>
-      <div class="kpi-grid">
-        <div class="kpi kpi--info"><div class="kpi__label">Reporting periods</div><div class="kpi__value">${hist.length}</div><div class="kpi__note">Receipts available from ${K.fmtDate(K.PERIODS[0].start)}</div></div>
-        <div class="kpi kpi--primary"><div class="kpi__label">Datasets received</div><div class="kpi__value">${totalReceived.toLocaleString()}</div><div class="kpi__note">Counted once within each period</div></div>
-        <div class="kpi kpi--error"><div class="kpi__label">Recurring corrections</div><div class="kpi__value">${inst ? recurring.length : hist.reduce((n, h) => n + h.needsCorrection, 0)}</div><div class="kpi__note">${inst ? 'Datasets needing correction in more than one period' : 'Dataset submissions returned across all periods'}</div></div>
-        <div class="kpi kpi--success"><div class="kpi__label">On-time compliance</div><div class="kpi__value">${onTimePct}%</div><div class="kpi__note">Received on or before the due date — computed, never "not available"</div></div>
-      </div>
-      <div class="grid-main-side">
-        <section class="panel"><div class="panel__head"><div><h2 class="panel__title">Submission trend</h2><p class="panel__sub">Unique datasets received per period · latest outcome. Axis shows counts; hover a segment for its value.</p></div><button class="btn btn--outline btn--md" type="button" id="exportTrend">Export data</button></div>
-          <div style="position:relative"><div class="stack-bars" role="img" aria-label="Datasets received per period: ${hist.map(h => h.period.short + ' ' + h.received).join(', ')}">${hist.map(h => `<div class="stack-bar"><div class="stack-bar__total">${h.received}</div><div class="stack-bar__col" style="height:${h.received / max * 200}px">${[['accepted', h.accepted], ['needs_correction', h.needsCorrection], ['processing', h.processing]].map(([k, n]) => `<span class="seg--${k}" style="height:${n / Math.max(1, h.received) * 100}%" title="${K.STATUS[k] ? K.STATUS[k][0] : 'Processing'}: ${n}"></span>`).join('')}</div></div>`).join('')}</div>
-          <div class="stack-bars__labels">${hist.map(h => `<div>${esc(h.period.label)}</div>`).join('')}</div></div>
-          <div class="legend legend--wrap"><span class="legend__item"><i class="legend__dot" style="background:var(--success)"></i><span class="legend__label">Accepted</span></span><span class="legend__item"><i class="legend__dot" style="background:var(--primary)"></i><span class="legend__label">Needs correction</span></span><span class="legend__item"><i class="legend__dot" style="background:#E0A800"></i><span class="legend__label">Processing</span></span></div>
-        </section>
-        <section class="panel"><div class="panel__head"><h2 class="panel__title">What to follow up on</h2></div>
-          ${inst ? (recurring.length ? `<div><div class="rank-hero__score" style="font-size:32px;line-height:40px">${recurring.length} recurring dataset${recurring.length === 1 ? '' : 's'}</div><p class="panel__sub">These still need correction in more than one reporting period.</p></div><ul class="spec-rules">${recurring.map(r => `<li><a href="remediation.html?inst=${inst.id}&sheet=${encodeURIComponent(r.sheet)}">${esc(r.title)}</a> · ${r.periods} periods</li>`).join('')}</ul>` : '<div class="empty empty--inline"><div class="empty__title">No recurring corrections</div><div class="empty__text">No dataset has been returned in more than one period.</div></div>')
-          : `<ul class="spec-rules">${K.INSTITUTIONS.map(i => ({ i, n: K.recurringCorrections(i).length })).filter(x => x.n).sort((a, b) => b.n - a.n).slice(0, 8).map(x => `<li><a href="compliance.html?inst=${x.i.id}">${esc(x.i.short)}</a> · ${x.n} recurring dataset${x.n === 1 ? '' : 's'}</li>`).join('')}</ul>`}
-          <div class="alert"><div><div class="alert__text" style="margin:0">Required, late and missing counts come from the requirement table (due date per institution × dataset × period). Waived requirements are excluded from the denominator.</div></div></div>
-        </section>
-      </div>
-      <section class="panel"><div class="panel__head"><div><h2 class="panel__title">Period-by-period status</h2><p class="panel__sub">Outcomes are based on each dataset's latest receipt within the period.</p></div></div>
-        <div class="table-wrap" style="border-radius:12px"><table class="data-table data-table--compact"><thead><tr><th>Reporting period</th><th class="num">Required</th><th class="num">Received</th><th class="num">Accepted</th><th class="num">Late</th><th class="num">Missing</th><th class="num">On-time</th><th></th></tr></thead><tbody>
-          ${hist.slice().reverse().map(h => `<tr><td><div class="cell-title">${esc(h.period.label)}${h.period.current ? ' <span class="chip chip--complete">Current</span>' : ''}</div><div class="cell-sub">${h.received} submission${h.received === 1 ? '' : 's'}</div></td><td class="num">${h.required}</td><td class="num">${h.received}</td><td class="num" style="color:var(--success)">${h.accepted}</td><td class="num" style="color:var(--error)">${h.late}</td><td class="num">${h.missing}</td><td class="num">${Math.round(h.onTime / Math.max(1, h.received) * 100)}%</td><td class="actions">${inst ? `<button class="btn btn--text btn--sm" type="button" data-period="${h.period.id}">Datasets ${openPeriod === h.period.id ? '▴' : '▾'}</button>` : `<a class="btn btn--text btn--sm" href="monitor.html">Monitor →</a>`}</td></tr>
-            ${inst && openPeriod === h.period.id ? `<tr><td colspan="8" style="background:var(--surface-bright);padding:8px 24px 16px"><div style="display:flex;gap:8px;flex-wrap:wrap">${h.subs.filter(K.REQUIRED).map(s => `<span class="chip ${K.STATUS[s.status][1]}" title="${esc(K.dueText(s))}">${esc(K.titleOf(s.dataset))}</span>`).join('')}</div></td></tr>` : ''}`).join('')}
-        </tbody></table></div>
-        <div class="panel__foot"><span>Late = received after the due date. Missing = required and not received by the end of the period (or today for the current period).</span></div>
-      </section>`;
-    $('#main').removeAttribute('aria-busy');
-    const pick = $('#instPick'); if (pick) pick.addEventListener('change', e => { inst = K.INSTITUTIONS.find(i => i.id === e.target.value) || null; openPeriod = null; history.replaceState(null, '', 'compliance.html' + (inst ? '?inst=' + inst.id : '')); render(); });
-    $('#main').querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => { openPeriod = openPeriod === b.dataset.period ? null : b.dataset.period; render(); }));
-    $('#boardPack').addEventListener('click', () => window.khdaToast('success', 'Board pack exported', 'compliance-' + (inst ? inst.short : 'sector') + '.xlsx · summary, trend, period table, recurring datasets'));
-    $('#exportTrend').addEventListener('click', () => window.khdaToast('success', 'Chart data exported', hist.length + ' periods written to submission-trend.csv'));
+  let render = function () {
+    const all = M.PERIODS.map(periodStats);
+    const rows = range === 'all' ? all : all.slice(-2);
+    const cur = M.period();
+    const firstReceipt = all.flatMap(r => r.sm.all.filter(M.RECEIVED).map(s => s.receivedAt)).sort((a, b) => a - b)[0];
+    // recurring: datasets returned in more than one of the shown periods
+    const counts = {}; rows.forEach(r => r.returnedSheets.forEach(sh => { counts[sh] = (counts[sh] || 0) + 1; }));
+    const recurring = Object.entries(counts).filter(([, n]) => n > 1).map(([sh, n]) => ({ sheet: sh, n, d: (window.KHDA_DATASETS || []).find(d => d.sheet === sh) })).sort((a, b) => b.n - a.n);
+    const received = rows.reduce((n, r) => n + r.received, 0);
+    const onTimeAll = rows.reduce((n, r) => n + r.onTime, 0), withDueAll = rows.reduce((n, r) => n + r.withDue, 0);
+    const onTimePct = withDueAll ? Math.round(onTimeAll / withDueAll * 100) : 0;
+
+    $('#cmpName').textContent = M.INSTITUTION.name;
+    $('#cmpSince').textContent = firstReceipt ? t('cmp.since', { d: M.fmtDate(firstReceipt) }) : '';
+    $('#cmpActions').innerHTML = `<label class="period"><span class="small muted">${t('cmp.show')}</span> <select class="control control--select control--sm" id="cmpRange"><option value="all"${range === 'all' ? ' selected' : ''}>${t('cmp.allPeriods')}</option><option value="last2"${range === 'last2' ? ' selected' : ''}>${t('cmp.last2')}</option></select></label><a class="tool-btn" href="monitor.html">${t('cmp.openMonitor')} →</a>`;
+    $('#cmpRange').addEventListener('change', e => { range = e.target.value; render(); });
+
+    const stat = (label, value, note, accent) => `<div class="stat${accent ? ' stat--accent' : ''}"><span class="stat__label">${esc(label)}</span><span class="stat__value">${value}</span><span class="stat__note">${esc(note)}</span></div>`;
+    $('#cmpStats').innerHTML = [
+      stat(t('cmp.s.periods'), rows.length, t('cmp.s.periodsNote'), true),
+      stat(t('cmp.s.received'), received, t('cmp.s.receivedNote')),
+      stat(t('cmp.s.recurring'), recurring.length, t('cmp.s.recurringNote')),
+      stat(t('cmp.h.onTime'), onTimePct + '%', t('cmp.s.onTimeNote', { a: onTimeAll, b: withDueAll })),
+    ].join('');
+
+    // ---- submission trend: stacked columns per period ----
+    const W = Math.max(480, Math.round(($('#cmpTrend').clientWidth || 700) - 48)), H = 260, L = 8, B = 48, T = 36;
+    const max = Math.max(1, ...rows.map(r => r.received));
+    const cw = (W - L) / rows.length, bw = Math.min(120, cw * 0.55);
+    const y = v => T + (H - T - B) * (1 - v / max);
+    const series = [['accepted', 'var(--success)'], ['corrections', 'var(--primary)'], ['processing', 'var(--warning)']];
+    const cols = rows.map((r, i) => { let acc = 0; const x = L + cw * i + (cw - bw) / 2; const parts = series.map(([k, c]) => { const v = r[k]; const yTop = y(acc + v), h = y(acc) - yTop; acc += v; return v ? `<rect x="${x}" y="${yTop}" width="${bw}" height="${h}" fill="${c}"><title>${esc(t('cmp.l.' + k))}: ${v}</title></rect>` : ''; }).join(''); return `<g>${parts}<text x="${x + bw / 2}" y="${y(acc) - 10}" text-anchor="middle" class="viz__val" style="font-size:18px">${r.received}</text><text x="${x + bw / 2}" y="${H - 22}" text-anchor="middle" class="viz__lbl">${esc(r.p.label)}${r.p.id === cur.id ? ' ·' : ''}</text><text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle" class="viz__lbl" fill="${r.onTimePct == null ? 'var(--on-surface-muted)' : r.onTimePct >= 80 ? 'var(--success)' : 'var(--error)'}">${r.onTimePct == null ? '—' : t('cmp.onTimeShort', { n: r.onTimePct })}</text></g>`; }).join('');
+    $('#cmpTrend').innerHTML = `<div class="dash-card__head"><div><h2 class="dash-card__title">${t('cmp.trend')}</h2><p class="dash-card__sub cmp-sub">${t('cmp.trendSub')}</p></div><a class="tool-btn" href="status.html">${t('nav.status')}</a></div>
+      <svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('cmp.trend')}">${[0.5, 1].map(f => `<line x1="${L}" x2="${W}" y1="${y(max * f)}" y2="${y(max * f)}" stroke="var(--outline)"/>`).join('')}${cols}</svg>
+      <div class="legend">${series.map(([k, c]) => `<span class="legend__item"><span class="legend__dot" style="background:${c}"></span><span class="legend__label">${t('cmp.l.' + k)}</span></span>`).join('')}<span class="legend__item"><span class="legend__label">${t('cmp.onTimeLegend')}</span></span></div>`;
+
+    // ---- what to follow up on ----
+    $('#cmpFollow').innerHTML = `<div class="dash-card__head"><h2 class="dash-card__title">${t('cmp.follow')}</h2></div>
+      <div class="cmp-big">${t('cmp.recurringN', { n: recurring.length })}</div><p class="dash-card__sub cmp-sub">${t('cmp.recurringText')}</p>
+      <ul class="cmp-list">${recurring.map(r => `<li><span class="legend__dot" style="background:var(--primary)"></span><a href="reconciliation.html?sheet=${encodeURIComponent(r.sheet)}">${esc(r.d ? M.titleOf(r.d) : r.sheet)}</a><span class="muted">${t('cmp.inPeriods', { n: r.n })}</span></li>`).join('') || `<li class="muted">${t('cmp.noRecurring')}</li>`}</ul>
+      <div class="alert cmp-note"><div><div class="alert__text">${t('cmp.note', { n: withDueAll })}</div></div></div>`;
+
+    // ---- period table ----
+    $('#cmpBody').innerHTML = rows.map(r => `<tr${r.p.id === cur.id ? ' class="is-editing"' : ''}><td><div class="cell-title">${esc(r.p.label)}</div><div class="cell-sub">${esc(M.fmtDate(r.p.start))} – ${esc(M.fmtDate(r.p.end))}${r.p.id === cur.id ? ' · ' + t('mon.currentPeriod') : ''}</div></td><td class="num">${r.required}</td><td class="num">${r.received}</td><td class="num">${r.accepted}</td><td class="num">${r.corrections ? `<span class="late">${r.corrections}</span>` : 0}</td><td class="num">${r.late ? `<span class="late">${r.late}</span>` : 0}</td><td class="num">${r.missing ? `<span class="late">${r.missing}</span>` : 0}</td><td class="num">${r.api}</td><td>${r.onTimePct == null ? '—' : `<span class="cmp-bar"><span style="width:${r.onTimePct}%;background:${r.onTimePct >= 80 ? 'var(--success)' : 'var(--error)'}"></span></span><span class="cell-sub">${t('cmp.onTimeCell', { p: r.onTimePct, a: r.onTime, b: r.withDue })}</span>`}</td></tr>`).join('');
+  };
+
+  // ---------- dataset × period matrix ----------
+  const CELL = { accepted: ['cmp.m.accepted', 'var(--success)'], review: ['cmp.m.review', '#7FD1A6'], returned: ['cmp.m.returned', 'var(--primary)'], not: ['cmp.m.not', 'var(--outline)'], na: ['cmp.m.na', 'transparent'] };
+  const cellOf = s => s.status === 'na' ? 'na' : M.ACCEPTED(s) ? 'accepted' : M.RETURNED(s) ? 'returned' : M.IN_REVIEW(s) ? 'review' : 'not';
+  function renderMatrix(rows) {
+    const DATA = window.KHDA_DATASETS || [];
+    const per = rows.map(r => r.p), subsBy = Object.fromEntries(per.map(p => [p.id, M.subs(p)]));
+    $('#cmpLegend').innerHTML = ['accepted', 'review', 'returned', 'not'].map(k => `<span class="legend__item"><span class="matrix__sq matrix__sq--${k}"></span><span class="legend__label">${t(CELL[k][0])}</span></span>`).join('');
+    $('#cmpJump').innerHTML = `<option value="">${t('cmp.choose')}</option>` + DATA.map(d => `<option value="${esc(d.sheet)}">${esc(M.titleOf(d))}</option>`).join('');
+    const groups = M.AREAS.map(a => [a, DATA.filter(d => M.areaOf(d) === a)]).filter(([, l]) => l.length);
+    const totals = per.map(p => subsBy[p.id].filter(M.ACCEPTED).length);
+    $('#cmpMatrix').innerHTML = `<thead><tr><th>${t('status.h.dataset')}</th>${per.map(p => `<th class="matrix__ph">${esc(p.label)}</th>`).join('')}<th class="num">${t('cmp.accepted')}</th></tr></thead><tbody>
+      ${groups.map(([a, list]) => `<tr class="grp"><td colspan="${per.length + 2}"><div class="grp__btn grp__btn--static"><span class="grp__text"><span class="grp__title">${t('area.' + a)}</span><span class="grp__sub">${t('rem.datasetsN', { n: list.length })}</span></span></div></td></tr>` + list.map(d => { const cells = per.map(p => subsBy[p.id].find(s => s.dataset === d)); const acc = cells.filter(M.ACCEPTED).length; const shown = cells.filter(s => s.status !== 'na').length; return `<tr id="mx-${esc(M.codeOf(d))}"><td><div class="cell-title">${esc(M.titleOf(d))}</div><div class="cell-sub">${esc(M.codeOf(d))}</div></td>${cells.map(s => { const k = cellOf(s); return `<td class="matrix__cell">${k === 'na' ? `<span class="matrix__sq matrix__sq--na" title="${t('cmp.m.na')}"></span>` : `<a class="matrix__sq matrix__sq--${k}" href="status.html?period=${s.period.id}&track=${encodeURIComponent(d.sheet)}" title="${esc(M.titleOf(d))} · ${esc(s.period.label)} · ${t(CELL[k][0])}${s.receipt ? ' · ' + s.receipt.id : ''}${s.returnedCount ? ' · ' + t('status.returnedN', { n: s.returnedCount }) : ''}" aria-label="${esc(M.titleOf(d))} ${esc(s.period.label)} ${t(CELL[k][0])}"></a>`}</td>`; }).join('')}<td class="num"><b>${acc}</b><span class="cell-sub"> / ${shown}</span></td></tr>`; }).join('')).join('')}
+      </tbody><tfoot><tr><th>${t('cmp.totals', { n: DATA.length })}</th>${totals.map((n, i) => `<th class="num">${n}<div class="cell-sub">${Math.round(n / Math.max(1, rows[i].required) * 100)}%</div></th>`).join('')}<th class="num">${Math.round(totals.reduce((a, b) => a + b, 0) / Math.max(1, rows.reduce((a, r) => a + r.required, 0)) * 100)}%</th></tr></tfoot>`;
+    $('#cmpJump').onchange = e => { const d = DATA.find(x => x.sheet === e.target.value); if (!d) return; const tr = document.getElementById('mx-' + M.codeOf(d)); if (tr) { tr.scrollIntoView({ behavior: 'smooth', block: 'center' }); tr.classList.add('is-editing'); setTimeout(() => tr.classList.remove('is-editing'), 2500); } };
   }
+  const _render = render;
+  render = function () { _render(); renderMatrix((range === 'all' ? M.PERIODS : M.PERIODS.slice(-2)).map(periodStats)); };
+  document.addEventListener('khda:refresh', render);
   render();
 })();

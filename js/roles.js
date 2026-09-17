@@ -1,9 +1,5 @@
-/* Roles and tiers — one header for every page.
-   Institution: Institution Admin · Data Steward · Approver · Read-only.
-   KHDA: team (Data | IT) × tier (Analyst < Supervisor < Administrator).
-   The role lives in localStorage (khda.role); the sign-in page and the account menu set it.
-   Controls gated by tier carry data-tier="supervisor|administrator" (KHDA) or data-role="steward,approver" (institution);
-   a user below the tier sees the control disabled with the reason, never hidden — plan §5 "honest actions". */
+/* Roles — one header for every page. Four roles, no sub-roles or tiers: Institution · KHDA · KHDA Data · KHDA IT.
+   The role lives in localStorage (khda.role); the sign-in pages and the account menu set it. */
 (function () {
   'use strict';
 
@@ -11,42 +7,36 @@
   const t = (k, v) => (window.t ? window.t(k, v) : k);
   const KEY = 'khda.role';
 
-  const TIER = { analyst: 1, supervisor: 2, administrator: 3 };
+  // Four roles, no sub-roles or tiers: Institution · KHDA (whole authority) · KHDA Data · KHDA IT
   const ROLES = {
-    inst_admin: { team: 'inst', label: 'Institution Admin', name: 'Noura Al Khatib', home: 'dashboard.html' },
-    steward: { team: 'inst', label: 'Data Steward', name: 'Omar Haddad', home: 'dashboard.html' },
-    approver: { team: 'inst', label: 'Approver', name: 'Layla Rashid', home: 'dashboard.html' },
-    readonly: { team: 'inst', label: 'Read-only', name: 'Sami Farouk', home: 'dashboard.html' },
-    data_analyst: { team: 'data', tier: 'analyst', label: 'KHDA Data · Analyst', name: 'Mariam Saeed', home: 'sector.html' },
-    data_supervisor: { team: 'data', tier: 'supervisor', label: 'KHDA Data · Supervisor', name: 'Khalid Al Mansoori', home: 'sector.html' },
-    data_admin: { team: 'data', tier: 'administrator', label: 'KHDA Data · Administrator', name: 'Hessa Al Marri', home: 'sector.html' },
-    it_analyst: { team: 'it', tier: 'analyst', label: 'KHDA IT · Analyst', name: 'Yousef Karim', home: 'onboarding.html' },
-    it_supervisor: { team: 'it', tier: 'supervisor', label: 'KHDA IT · Supervisor', name: 'Fatima Al Zaabi', home: 'onboarding.html' },
-    it_admin: { team: 'it', tier: 'administrator', label: 'KHDA IT · Administrator', name: 'Ahmed Al Suwaidi', home: 'onboarding.html' },
+    inst: { team: 'inst', label: 'Institution', name: 'Noura Al Khatib', home: 'dashboard.html' },
+    khda: { team: 'khda', label: 'KHDA', name: 'Hessa Al Marri', home: 'sector.html' },
+    data: { team: 'data', label: 'KHDA Data', name: 'Mariam Saeed', home: 'sector.html' },
+    it: { team: 'it', label: 'KHDA IT', name: 'Yousef Karim', home: 'onboarding.html' },
   };
   const NAV = {
-    inst: [['dashboard.html', 'nav.dashboard', 'Dashboard'], ['submissions.html', 'nav.submissions', 'Submissions'], ['leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['credentials.html', 'nav.integration', 'Integration']],
-    data: [['sector.html', 'nav.sector', 'Sector home'], ['monitor.html', 'nav.monitor', 'Monitor'], ['compliance.html', 'nav.compliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['rules.html', 'nav.rules', 'Rule library']],
-    it: [['onboarding.html', 'nav.onboarding', 'Onboarding'], ['credentials.html', 'nav.credentials', 'Credentials'], ['rules.html', 'nav.rules', 'Rule library'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['monitor.html', 'nav.monitor', 'Monitor']],
+    inst: [['dashboard.html', 'nav.dashboard', 'Dashboard'], ['submissions.html', 'nav.submissions', 'Submissions'], ['status.html', 'nav.status', 'Submission status'], ['monitor.html', 'nav.monitor', 'Data monitor'], ['reconciliation.html', 'nav.reconciliation', 'Remediation'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['api.html', 'nav.api', 'REST API'], ['credentials.html', 'nav.integration', 'Integration']],
+    data: [['sector.html', 'nav.sector', 'Sector home'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['rules.html', 'nav.rules', 'Rule library']],
+    khda: [['sector.html', 'nav.sector', 'Sector home'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor'], ['khda-compliance.html', 'nav.khdaCompliance', 'Compliance history'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-leaderboard.html', 'nav.leaderboard', 'Leaderboard'], ['rules.html', 'nav.rules', 'Rule library'], ['onboarding.html', 'nav.onboarding', 'Onboarding'], ['credentials.html', 'nav.credentials', 'Credentials']],
+    it: [['onboarding.html', 'nav.onboarding', 'Onboarding'], ['credentials.html', 'nav.credentials', 'Credentials'], ['rules.html', 'nav.rules', 'Rule library'], ['remediation.html', 'nav.remediation', 'Remediation report'], ['khda-monitor.html', 'nav.khdaMonitor', 'Monitor']],
   };
-  const TEAM_LABEL = { inst: 'Institution', data: 'KHDA Data', it: 'KHDA IT' };
+  const TEAM_LABEL = { inst: 'Institution', khda: 'KHDA', data: 'KHDA Data', it: 'KHDA IT' };
 
-  function current() { let id = null; try { id = localStorage.getItem(KEY); } catch { /* ignore */ } return ROLES[id] ? id : 'inst_admin'; }
+  function current() { let id = null; try { id = localStorage.getItem(KEY); } catch { /* ignore */ } return ROLES[id] ? id : 'inst'; }
   function set(id) { if (ROLES[id]) { try { localStorage.setItem(KEY, id); } catch { /* ignore */ } } }
   function role() { return { id: current(), ...ROLES[current()] }; }
-  function can(tier) { const r = role(); return r.team === 'inst' ? false : TIER[r.tier] >= TIER[tier]; }
-  function canRole(list) { const r = role(); return r.team !== 'inst' || list.split(',').includes(r.id); }
+  // no tiers: every KHDA role can do everything on the KHDA side; institution controls are open to the institution
+  function can() { return role().team !== 'inst'; }
+  function canRole() { return true; }
   const page = location.pathname.split('/').pop() || 'dashboard.html';
 
   // a page that belongs to a KHDA team is viewed with a role of that team (tier kept), so demos never dead-end
   function reconcile() {
     const need = document.body.dataset.team;
     const r = role();
-    if (!need || need === r.team) return;
-    if (need === 'khda') { if (r.team === 'inst') set('data_analyst'); return; } // any KHDA team may view
-    if (need === 'inst') { set('inst_admin'); return; }
-    const tier = r.tier || 'analyst';
-    set(need + '_' + (tier === 'administrator' ? 'admin' : tier));
+    if (!need || need === r.team || r.team === 'khda' && need !== 'inst') return;
+    if (need === 'khda') { if (r.team === 'inst') set('khda'); return; } // any KHDA role may view
+    set(need === 'inst' ? 'inst' : need);
   }
 
   function renderHeader() {
@@ -84,29 +74,14 @@
     if (menu && !menu.querySelector('.user-menu__roles')) {
       const box = document.createElement('div');
       box.className = 'user-menu__roles';
-      box.innerHTML = `<div class="user-menu__label">Switch role</div>` + ['inst', 'data', 'it'].map(team => `
-        <div class="user-menu__group">${TEAM_LABEL[team]}</div>
-        ${Object.entries(ROLES).filter(([, x]) => x.team === team).map(([id, x]) =>
-          `<button type="button" role="menuitemradio" aria-checked="${id === r.id}" data-role-id="${id}">${x.label.replace(/^KHDA (Data|IT) · /, '')}</button>`).join('')}`).join('');
+      box.innerHTML = `<div class="user-menu__label">Switch role</div>` + Object.entries(ROLES).map(([id, x]) =>
+        `<button type="button" role="menuitemradio" aria-checked="${id === r.id}" data-role-id="${id}">${x.label}</button>`).join('');
       menu.insertBefore(box, menu.firstChild);
       box.addEventListener('click', e => {
         const b = e.target.closest('[data-role-id]'); if (!b) return;
         set(b.dataset.roleId);
         location.href = ROLES[b.dataset.roleId].home;
       });
-    }
-    if (menu && !menu.querySelector('.theme-row')) {
-      const row = document.createElement('div');
-      row.className = 'theme-row';
-      const on = document.documentElement.dataset.theme === 'dark';
-      row.innerHTML = `<span>Dark theme</span><button class="switch" type="button" role="switch" aria-checked="${on}" aria-label="Dark theme"></button>`;
-      row.querySelector('.switch').addEventListener('click', e => {
-        const next = e.currentTarget.getAttribute('aria-checked') !== 'true';
-        e.currentTarget.setAttribute('aria-checked', String(next));
-        document.documentElement.dataset.theme = next ? 'dark' : 'light';
-        try { localStorage.setItem('khda.theme', next ? 'dark' : 'light'); } catch { /* ignore */ }
-      });
-      menu.insertBefore(row, menu.querySelector('.user-menu__logout'));
     }
     const logout = $('#btnLogout');
     if (logout) logout.addEventListener('click', () => { location.href = 'login.html'; });
@@ -120,20 +95,19 @@
       el.classList.toggle('is-gated', !ok);
       if ('disabled' in el) el.disabled = !ok;
       el.setAttribute('aria-disabled', String(!ok));
-      if (!ok) el.title = `Requires ${need.charAt(0).toUpperCase() + need.slice(1)} tier — you are ${r.label}`;
+      if (!ok) el.title = `Available to KHDA staff — you are ${r.label}`;
     });
     (root || document).querySelectorAll('[data-role]').forEach(el => {
       const ok = canRole(el.dataset.role);
       el.classList.toggle('is-gated', !ok);
       if ('disabled' in el) el.disabled = !ok;
-      if (!ok) el.title = `Available to ${el.dataset.role.split(',').map(id => ROLES[id] ? ROLES[id].label : id).join(' or ')} — you are ${r.label}`;
+      if (!ok) el.title = `Not available to ${r.label}`;
     });
   }
 
-  try { document.documentElement.dataset.theme = localStorage.getItem('khda.theme') === 'dark' ? 'dark' : 'light'; } catch { /* ignore */ }
   reconcile();
   renderHeader();
   gate();
 
-  window.KHDA_ROLES = { ROLES, TIER, NAV, role, set, can, canRole, gate, TEAM_LABEL };
+  window.KHDA_ROLES = { ROLES, NAV, role, set, can, canRole, gate, TEAM_LABEL };
 })();

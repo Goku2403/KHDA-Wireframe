@@ -41,7 +41,7 @@
     if (/why|reject|fail|correction|issue|wrong/.test(s) && (ds || inst)) {
       const i = inst || K.INSTITUTIONS[0];
       const subs = K.subsOf(i, p).filter(x => x.status === 'needs_correction' && (!ds || x.dataset === ds));
-      if (!subs.length) return { html: `<p>${esc(i.short)} has no dataset needing correction${ds ? ' for ' + esc(K.titleOf(ds)) : ''} in ${esc(p.label)}.</p>`, sources: [src('Sector model · ' + p.label, 'monitor.html')] };
+      if (!subs.length) return { html: `<p>${esc(i.short)} has no dataset needing correction${ds ? ' for ' + esc(K.titleOf(ds)) : ''} in ${esc(p.label)}.</p>`, sources: [src('Sector model · ' + p.label, 'khda-monitor.html')] };
       const x = subs[0];
       return {
         html: `<p><strong>${esc(K.titleOf(x.dataset))}</strong> for ${esc(i.short)} was returned on ${esc(K.fmtDate(x.receivedAt))}: ${x.rowsRejected} of ${x.rowsAccepted + x.rowsRejected} rows failed ${x.issues.length} rule${x.issues.length === 1 ? '' : 's'}.</p>` +
@@ -54,23 +54,23 @@
       if (scoped || inst) {
         const i = inst || scoped;
         const list = K.subsOf(i, p).filter(x => K.REQUIRED(x) && x.req.due && x.req.due < K.TODAY && !K.RECEIVED(x)).sort((a, b) => a.req.due - b.req.due);
-        return { html: `<p>${esc(i.short)} has <strong>${list.length}</strong> overdue dataset${list.length === 1 ? '' : 's'} in ${esc(p.label)}.</p>` + li(list.slice(0, 6).map(x => `${esc(K.titleOf(x.dataset))} — ${esc(K.dueText(x))} (due ${esc(K.fmtDate(x.req.due))})`)), sources: [src('Requirement table · ' + p.label, scoped ? 'dashboard.html' : 'monitor.html?inst=' + i.id)] };
+        return { html: `<p>${esc(i.short)} has <strong>${list.length}</strong> overdue dataset${list.length === 1 ? '' : 's'} in ${esc(p.label)}.</p>` + li(list.slice(0, 6).map(x => `${esc(K.titleOf(x.dataset))} — ${esc(K.dueText(x))} (due ${esc(K.fmtDate(x.req.due))})`)), sources: [src('Requirement table · ' + p.label, scoped ? 'dashboard.html' : 'khda-monitor.html?inst=' + i.id)] };
       }
       const sec = K.sector(p.id).institutions.filter(x => x.overdue).sort((a, b) => b.overdue - a.overdue);
-      return { html: `<p>${sec.length} institutions have overdue datasets${ds ? '' : ''}. Most overdue:</p>` + li(sec.slice(0, 6).map(x => `${esc(x.inst.short)} — ${x.overdue} overdue · ${esc(x.reason)}`)), sources: [src('Sector home', 'sector.html'), src('Requirement table', 'compliance.html')] };
+      return { html: `<p>${sec.length} institutions have overdue datasets${ds ? '' : ''}. Most overdue:</p>` + li(sec.slice(0, 6).map(x => `${esc(x.inst.short)} — ${x.overdue} overdue · ${esc(x.reason)}`)), sources: [src('Sector home', 'sector.html'), src('Requirement table', 'khda-compliance.html')] };
     }
     if (/rank|score|leaderboard|position|points/.test(s)) {
       const i = inst || K.INSTITUTIONS[0];
       const r = K.ranking(p.id).find(x => x.inst.id === i.id);
-      return { html: `<p><strong>${esc(i.short)}</strong> is ranked <strong>#${r.rank}</strong> of ${K.INSTITUTIONS.length} with ${r.total} / 1,000 points in ${esc(p.label)}${r.movement ? ` (${r.movement > 0 ? '▲' : '▼'} ${Math.abs(r.movement)} since last period)` : ''}.</p>` + li([`Coverage ${r.coverage} / 400 — ${esc(r.detail.coverage)}`, `Data quality ${r.dq} / 250 — ${esc(r.detail.dq)}`, `Timeliness ${r.timeliness} / 200 — ${esc(r.detail.timeliness)}`, `Automation ${r.automation} / 150 — ${esc(r.detail.automation)}`]), sources: [src('Leaderboard · how scores are calculated', 'leaderboard.html#how')] };
+      return { html: `<p><strong>${esc(i.short)}</strong> is ranked <strong>#${r.rank}</strong> of ${K.INSTITUTIONS.length} with ${r.total} / 1,000 points in ${esc(p.label)}${r.movement ? ` (${r.movement > 0 ? '▲' : '▼'} ${Math.abs(r.movement)} since last period)` : ''}.</p>` + li([`Coverage ${r.coverage} / 400 — ${esc(r.detail.coverage)}`, `Data quality ${r.dq} / 250 — ${esc(r.detail.dq)}`, `Timeliness ${r.timeliness} / 200 — ${esc(r.detail.timeliness)}`, `Automation ${r.automation} / 150 — ${esc(r.detail.automation)}`]), sources: [src('Leaderboard · how scores are calculated', 'khda-leaderboard.html#how')] };
     }
     if (/compliant|follow.?up|at risk|sector|how many institutions/.test(s)) {
       const sec = K.sector(p.id);
-      return { html: `<p>In ${esc(p.label)}: <strong>${sec.compliant}</strong> compliant, <strong>${sec.needsFollowUp}</strong> need follow-up (${sec.atRisk} at risk or blocked). ${sec.accepted.toLocaleString()} of ${sec.required.toLocaleString()} required datasets accepted; ${sec.rowsRejected.toLocaleString()} rows await correction.</p>`, sources: [src('Sector home', 'sector.html'), src('Monitor · matrix', 'monitor.html?view=matrix')] };
+      return { html: `<p>In ${esc(p.label)}: <strong>${sec.compliant}</strong> compliant, <strong>${sec.needsFollowUp}</strong> need follow-up (${sec.atRisk} at risk or blocked). ${sec.accepted.toLocaleString()} of ${sec.required.toLocaleString()} required datasets accepted; ${sec.rowsRejected.toLocaleString()} rows await correction.</p>`, sources: [src('Sector home', 'sector.html'), src('Monitor · matrix', 'khda-monitor.html?view=matrix')] };
     }
     if (/email|draft|remind|follow up with/.test(s) && inst) {
       const sm = K.summary(inst, p);
-      return { html: `<p>Draft for ${esc(inst.short)}:</p><blockquote class="bot__quote">Dear ${esc(inst.short)} team,<br>We are following up on your ${esc(p.label)} submissions: ${sm.notSubmitted} not submitted, ${sm.needsCorrection} need correction, ${sm.processing} processing. ${sm.accepted} of ${sm.required} datasets are accepted. Please review the attached remediation report.<br>KHDA Data</blockquote>`, sources: [src('Open composer', 'monitor.html?inst=' + inst.id + '&email=1'), src('Remediation report', 'remediation.html?inst=' + inst.id)] };
+      return { html: `<p>Draft for ${esc(inst.short)}:</p><blockquote class="bot__quote">Dear ${esc(inst.short)} team,<br>We are following up on your ${esc(p.label)} submissions: ${sm.notSubmitted} not submitted, ${sm.needsCorrection} need correction, ${sm.processing} processing. ${sm.accepted} of ${sm.required} datasets are accepted. Please review the attached remediation report.<br>KHDA Data</blockquote>`, sources: [src('Open composer', 'khda-monitor.html?inst=' + inst.id + '&email=1'), src('Remediation report', 'remediation.html?inst=' + inst.id)] };
     }
     if (/dictionary|changed|2027|version/.test(s)) {
       return { html: `<p>The portal runs HEDB Data Dictionary <strong>2026</strong> (46 datasets, ${DATA.reduce((n, d) => n + d.fields.length, 0).toLocaleString()} fields). Dictionary 2027 is a data change, not a code change: forms, templates, validation and this assistant regenerate from the new file, and the rule library keeps both versions with effective periods.</p>`, sources: [src('Rule library · versions', 'rules.html'), src('Submissions catalogue', 'submissions.html')] };
@@ -86,11 +86,11 @@
     if (ds) {
       const i = inst || K.INSTITUTIONS[0];
       const x = K.subsOf(i, p).find(y => y.dataset === ds);
-      return { html: `<p><strong>${esc(K.titleOf(ds))}</strong> (${esc(K.codeOf(ds))}) — ${esc(K.frequencyOf(ds))}, ${ds.fields.length} fields, subject area ${esc(K.areaOf(ds))}. For ${esc(i.short)} in ${esc(p.label)}: ${K.STATUS[x.status][0]} · ${esc(K.dueText(x))} · ${esc(K.freshness(x))}.</p>`, sources: [src('Specification', 'submissions.html?details=' + encodeURIComponent(ds.sheet)), src('Journey', (scoped ? 'submissions.html?details=' : 'monitor.html?inst=' + i.id + '&sheet=') + encodeURIComponent(ds.sheet))] };
+      return { html: `<p><strong>${esc(K.titleOf(ds))}</strong> (${esc(K.codeOf(ds))}) — ${esc(K.frequencyOf(ds))}, ${ds.fields.length} fields, subject area ${esc(K.areaOf(ds))}. For ${esc(i.short)} in ${esc(p.label)}: ${K.STATUS[x.status][0]} · ${esc(K.dueText(x))} · ${esc(K.freshness(x))}.</p>`, sources: [src('Specification', 'submissions.html?details=' + encodeURIComponent(ds.sheet)), src('Journey', (scoped ? 'submissions.html?details=' : 'khda-monitor.html?inst=' + i.id + '&sheet=') + encodeURIComponent(ds.sheet))] };
     }
     if (inst && !scoped) {
       const sm = K.summary(inst, p);
-      return { html: `<p><strong>${esc(inst.name)}</strong> (${esc(inst.waveLabel)}, ${esc(inst.location)}) — ${K.INST_STATE[sm.state][0]}: ${sm.accepted} of ${sm.required} accepted, ${sm.needsCorrection} need correction, ${sm.overdue} overdue, DQ ${sm.dq == null ? '—' : sm.dq + '%'}. Owner: ${esc(inst.owner)} · liaison ${esc(inst.liaison)}.</p>`, sources: [src('Institution monitor', 'monitor.html?inst=' + inst.id), src('Compliance history', 'compliance.html?inst=' + inst.id)] };
+      return { html: `<p><strong>${esc(inst.name)}</strong> (${esc(inst.waveLabel)}, ${esc(inst.location)}) — ${K.INST_STATE[sm.state][0]}: ${sm.accepted} of ${sm.required} accepted, ${sm.needsCorrection} need correction, ${sm.overdue} overdue, DQ ${sm.dq == null ? '—' : sm.dq + '%'}. Owner: ${esc(inst.owner)} · liaison ${esc(inst.liaison)}.</p>`, sources: [src('Institution monitor', 'khda-monitor.html?inst=' + inst.id), src('Compliance history', 'khda-compliance.html?inst=' + inst.id)] };
     }
     return { html: `<p>I can answer from the dictionary, the rule library, the requirement table and the submission history. Try one of the suggestions below.</p>`, sources: [] };
   }

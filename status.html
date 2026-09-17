@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KHDA</title>
+  <title>Submission status — KHDA</title>
   <meta name="application-name" content="KHDA">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260925a">
   <meta name="theme-color" content="#A8305C">
@@ -25,8 +25,8 @@
       <div class="portal-header__sub">
         <nav class="portal-nav" aria-label="Portal">
           <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
-          <a href="submissions.html" aria-current="page" data-i18n="nav.submissions">Submissions</a>
-          <a href="status.html" data-i18n="nav.status">Submission status</a>
+          <a href="submissions.html" data-i18n="nav.submissions">Submissions</a>
+          <a href="status.html" aria-current="page" data-i18n="nav.status">Submission status</a>
           <a href="monitor.html" data-i18n="nav.monitor">Data monitor</a>
           <a href="reconciliation.html" data-i18n="nav.reconciliation">Remediation</a>
           <a href="compliance.html" data-i18n="nav.compliance">Compliance history</a>
@@ -67,99 +67,95 @@
 
   <main class="page page--report">
 
-    <!-- Title -->
     <section class="service-header">
-      <a class="back-link" href="submissions.html">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-        <span data-i18n="entry.backToSubmissions">Back to submissions</span>
-      </a>
       <div class="title-bar">
-        <h1 class="title-bar__headline" id="repTitle">Data report</h1>
-        <div class="title-bar__actions">
-          <button class="tool-btn" type="button" id="repExport">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12m0 0-4-4m4 4 4-4M4 16v4h16v-4"/></svg>
-            <span data-i18n="rep.exportData">Export data</span>
-          </button>
-          <a class="link-icon" href="index.html" id="repOpen">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg>
-            <span data-i18n="rep.openEntry">Open data entry</span>
-          </a>
+        <h1 class="title-bar__headline" data-i18n="status.title">Submission status</h1>
+        <div class="title-bar__actions" id="stActions"></div>
+      </div>
+      <p class="report-sub" data-i18n="status.sub">Where every dataset stands for the reporting period — sent by REST API or from the portal, received by KHDA, validated, quality-reviewed and accepted. Returned datasets link straight to reconciliation.</p>
+    </section>
+
+    <section class="report-block">
+      <div class="stat-grid" id="stStats"></div>
+    </section>
+
+    <section class="report-block">
+      <div class="report-block__head">
+        <h2 class="report-block__title"><span data-i18n="status.register">Submission register</span> <span class="chip chip--outline" id="stCount"></span></h2>
+        <div class="st-tools">
+          <span class="small muted" data-i18n="status.groupBy">Group by</span>
+          <div class="segmented segmented--pill" role="group" id="stGroup" aria-label="Group by">
+            <button type="button" data-group="area" aria-pressed="true" data-i18n="status.g.area">Subject area</button>
+            <button type="button" data-group="freq" aria-pressed="false" data-i18n="status.g.freq">Frequency</button>
+            <button type="button" data-group="all" aria-pressed="false" data-i18n="status.g.all">All datasets</button>
+          </div>
+          <select class="control control--select control--sm" id="stFilter" aria-label="Filter datasets">
+            <option value="all" data-i18n="status.f.allSubs">All submissions</option>
+            <option value="action" data-i18n="status.f.action">Needs action</option>
+            <option value="review" data-i18n="status.f.review">With KHDA</option>
+            <option value="accepted" data-i18n="status.f.accepted">Accepted</option>
+            <option value="not" data-i18n="status.f.not">Not submitted</option>
+          </select>
+          <button class="btn btn--text btn--sm" type="button" id="stExpand" data-i18n="status.collapseAll">Collapse all</button>
+        </div>
+        <label class="search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="stSearch" placeholder="Search" data-i18n-ph="common.search" aria-label="Search datasets">
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table data-table--fit" id="stTable">
+          <thead><tr>
+            <th data-i18n="status.h.dataset">Dataset</th>
+            <th data-i18n="status.h.frequency">Frequency</th>
+            <th data-i18n="status.h.due">Due</th>
+            <th data-i18n="status.h.channel">Channel</th>
+            <th data-i18n="status.h.received">Received</th>
+            <th data-i18n="status.h.status">Status</th>
+            <th class="num" data-i18n="status.h.records">Records</th>
+            <th data-i18n="status.h.remediation">Remediation</th>
+            <th class="actions"><span class="sr-only">Action</span></th>
+          </tr></thead>
+          <tbody id="stBody"></tbody>
+        </table>
+        <div class="empty" id="stEmpty" hidden>
+          <div class="empty__title" data-i18n="status.none">No datasets match</div>
+          <div class="empty__text" data-i18n="status.noneText">Try a different filter or search term.</div>
         </div>
       </div>
-      <p class="report-sub" id="repDesc"></p>
     </section>
-
-    <!-- No data state -->
-    <section class="empty" id="repEmpty" hidden>
-      <div class="empty__title" id="repEmptyTitle" data-i18n="rep.empty">No data submitted yet</div>
-      <div class="empty__text" id="repEmptyText">Once records are entered they appear here with statistics, analytics and the full data grid.</div>
-      <a class="btn btn--primary" id="repEmptyCta" href="index.html" data-i18n="cat.start">Start submission</a>
-    </section>
-
-    <div id="repBody" hidden>
-
-      <!-- Stats -->
-      <section class="report-block">
-        <h2 class="report-block__title" data-i18n="rep.statistics">Statistics</h2>
-        <div class="stat-grid" id="repStats"></div>
-      </section>
-
-
-      <!-- Analytics -->
-      <section class="report-block">
-        <h2 class="report-block__title" data-i18n="rep.analytics">Analytics</h2>
-        <div class="chart-grid" id="repCharts"></div>
-      </section>
-
-      <!-- Data grid -->
-      <section class="report-block">
-        <div class="report-block__head">
-          <h2 class="report-block__title"><span data-i18n="rep.data">Data</span> <span class="chip chip--outline" id="repRowCount"></span><span class="chip chip--neutral" id="repColNote" hidden></span></h2>
-          <label class="search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input type="search" id="repSearch" placeholder="Search" data-i18n-ph="common.search" aria-label="Search records" data-i18n-aria="rep.searchAria">
-          </label>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table" id="repGrid">
-            <thead><tr id="repGridHead"></tr></thead>
-            <tbody id="repGridBody"></tbody>
-            <tfoot id="repGridFoot"></tfoot>
-          </table>
-          <div class="empty" id="repGridEmpty" hidden>
-            <div class="empty__title" data-i18n="rep.noMatch">No matching records</div>
-            <div class="empty__text" data-i18n="rep.noMatchText">Try a different search term.</div>
-          </div>
-        </div>
-        <div class="results__foot" id="repGridFooter">
-          <span class="results__info" id="repGridInfo"></span>
-          <div class="pagination__right">
-            <label class="pagination__size"><span data-i18n="common.rows">Rows</span>
-              <select class="control control--select control--sm" id="repGridSize">
-                <option>5</option><option selected>10</option><option>25</option><option>50</option>
-              </select>
-            </label>
-            <div class="pager" id="repGridPager"></div>
-          </div>
-        </div>
-      </section>
-    </div>
   </main>
+
+  <!-- Track one submission -->
+  <div class="modal-backdrop sheet-backdrop" id="trackModal" hidden>
+    <aside class="sheet" role="dialog" aria-modal="true" aria-labelledby="trackTitle">
+      <div class="sheet__body">
+        <div class="sheet__head">
+          <h3 class="sheet__title" id="trackTitle"></h3>
+          <button class="icon-btn sheet__close" type="button" id="trackClose" aria-label="Close" data-i18n-aria="common.close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div id="trackBody"></div>
+      </div>
+      <div class="sheet__actions">
+        <div class="sheet__actions-right" id="trackActions"></div>
+      </div>
+    </aside>
+  </div>
 
   <div class="toast-host" id="toastHost" aria-live="polite"></div>
 
   <script src="js/i18n.js?v=20260925a"></script>
   <script src="js/a11y.js?v=20260925a"></script>
   <script src="js/fit.js?v=20260925a"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="js/lists.js?v=20260925a"></script>
   <script src="js/datasets.js?v=20260925a"></script>
   <script src="js/schema.js?v=20260925a"></script>
+  <script src="js/demo.js?v=20260925a"></script>
   <script src="js/model.js?v=20260925a"></script>
   <script src="js/portal.js?v=20260925a"></script>
-  <script src="js/demo.js?v=20260925a"></script>
-  <script src="js/rowmenu.js?v=20260925a"></script>
-  <script src="js/report.js?v=20260925a"></script>
+  <script src="js/status.js?v=20260925a"></script>
   <script src="js/shell.js?v=20260925a"></script>
 </body>
 </html>

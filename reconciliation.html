@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KHDA</title>
+  <title>Remediation workbench — KHDA</title>
   <meta name="application-name" content="KHDA">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20260925a">
   <meta name="theme-color" content="#A8305C">
@@ -25,10 +25,10 @@
       <div class="portal-header__sub">
         <nav class="portal-nav" aria-label="Portal">
           <a href="dashboard.html" data-i18n="nav.dashboard">Dashboard</a>
-          <a href="submissions.html" aria-current="page" data-i18n="nav.submissions">Submissions</a>
+          <a href="submissions.html" data-i18n="nav.submissions">Submissions</a>
           <a href="status.html" data-i18n="nav.status">Submission status</a>
           <a href="monitor.html" data-i18n="nav.monitor">Data monitor</a>
-          <a href="reconciliation.html" data-i18n="nav.reconciliation">Remediation</a>
+          <a href="reconciliation.html" aria-current="page" data-i18n="nav.reconciliation">Remediation</a>
           <a href="compliance.html" data-i18n="nav.compliance">Compliance history</a>
           <a href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
           <a href="api.html" data-i18n="nav.api">REST API</a>
@@ -67,99 +67,40 @@
 
   <main class="page page--report">
 
-    <!-- Title -->
     <section class="service-header">
-      <a class="back-link" href="submissions.html">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-        <span data-i18n="entry.backToSubmissions">Back to submissions</span>
-      </a>
       <div class="title-bar">
-        <h1 class="title-bar__headline" id="repTitle">Data report</h1>
-        <div class="title-bar__actions">
-          <button class="tool-btn" type="button" id="repExport">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12m0 0-4-4m4 4 4-4M4 16v4h16v-4"/></svg>
-            <span data-i18n="rep.exportData">Export data</span>
-          </button>
-          <a class="link-icon" href="index.html" id="repOpen">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m-7-7h14"/></svg>
-            <span data-i18n="rep.openEntry">Open data entry</span>
-          </a>
-        </div>
+        <h1 class="title-bar__headline" data-i18n="rem.title">Remediation workbench</h1>
+        <div class="title-bar__actions" id="rmActions"></div>
       </div>
-      <p class="report-sub" id="repDesc"></p>
+      <div class="segmented segmented--pill rem-tabs" role="group" id="rmTabs" aria-label="View">
+        <button type="button" data-view="work" aria-pressed="true" data-i18n="rem.tab.work">Workbench</button>
+        <button type="button" data-view="report" aria-pressed="false" data-i18n="rem.tab.report">Remediation report</button>
+        <button type="button" data-view="analytics" aria-pressed="false" data-i18n="rem.tab.analytics">Analytics</button>
+      </div>
     </section>
 
-    <!-- No data state -->
-    <section class="empty" id="repEmpty" hidden>
-      <div class="empty__title" id="repEmptyTitle" data-i18n="rep.empty">No data submitted yet</div>
-      <div class="empty__text" id="repEmptyText">Once records are entered they appear here with statistics, analytics and the full data grid.</div>
-      <a class="btn btn--primary" id="repEmptyCta" href="index.html" data-i18n="cat.start">Start submission</a>
+    <section class="report-block">
+      <div class="stat-grid" id="rmStats"></div>
     </section>
 
-    <div id="repBody" hidden>
-
-      <!-- Stats -->
-      <section class="report-block">
-        <h2 class="report-block__title" data-i18n="rep.statistics">Statistics</h2>
-        <div class="stat-grid" id="repStats"></div>
-      </section>
-
-
-      <!-- Analytics -->
-      <section class="report-block">
-        <h2 class="report-block__title" data-i18n="rep.analytics">Analytics</h2>
-        <div class="chart-grid" id="repCharts"></div>
-      </section>
-
-      <!-- Data grid -->
-      <section class="report-block">
-        <div class="report-block__head">
-          <h2 class="report-block__title"><span data-i18n="rep.data">Data</span> <span class="chip chip--outline" id="repRowCount"></span><span class="chip chip--neutral" id="repColNote" hidden></span></h2>
-          <label class="search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input type="search" id="repSearch" placeholder="Search" data-i18n-ph="common.search" aria-label="Search records" data-i18n-aria="rep.searchAria">
-          </label>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table" id="repGrid">
-            <thead><tr id="repGridHead"></tr></thead>
-            <tbody id="repGridBody"></tbody>
-            <tfoot id="repGridFoot"></tfoot>
-          </table>
-          <div class="empty" id="repGridEmpty" hidden>
-            <div class="empty__title" data-i18n="rep.noMatch">No matching records</div>
-            <div class="empty__text" data-i18n="rep.noMatchText">Try a different search term.</div>
-          </div>
-        </div>
-        <div class="results__foot" id="repGridFooter">
-          <span class="results__info" id="repGridInfo"></span>
-          <div class="pagination__right">
-            <label class="pagination__size"><span data-i18n="common.rows">Rows</span>
-              <select class="control control--select control--sm" id="repGridSize">
-                <option>5</option><option selected>10</option><option>25</option><option>50</option>
-              </select>
-            </label>
-            <div class="pager" id="repGridPager"></div>
-          </div>
-        </div>
-      </section>
-    </div>
+    <div id="rmView"></div>
   </main>
+
+
+  <div class="viz-tip" id="vizTip" role="tooltip" hidden></div>
 
   <div class="toast-host" id="toastHost" aria-live="polite"></div>
 
   <script src="js/i18n.js?v=20260925a"></script>
   <script src="js/a11y.js?v=20260925a"></script>
   <script src="js/fit.js?v=20260925a"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="js/lists.js?v=20260925a"></script>
   <script src="js/datasets.js?v=20260925a"></script>
   <script src="js/schema.js?v=20260925a"></script>
+  <script src="js/demo.js?v=20260925a"></script>
   <script src="js/model.js?v=20260925a"></script>
   <script src="js/portal.js?v=20260925a"></script>
-  <script src="js/demo.js?v=20260925a"></script>
-  <script src="js/rowmenu.js?v=20260925a"></script>
-  <script src="js/report.js?v=20260925a"></script>
+  <script src="js/reconciliation.js?v=20260925a"></script>
   <script src="js/shell.js?v=20260925a"></script>
 </body>
 </html>

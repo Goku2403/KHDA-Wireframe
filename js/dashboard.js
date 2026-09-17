@@ -6,6 +6,9 @@
 
   const S = window.KHDA_SCHEMA;
   const DATA = window.KHDA_DATASETS || [];
+  // the submission model (status, receipts, returns) feeds the KPIs, the gauge, the meters and quick actions
+  const M = window.KHDA_MODEL;
+  const sm = M ? M.summary() : null;
   const $ = s => document.querySelector(s);
   const t = (k, v) => (window.t ? window.t(k, v) : k);
 
@@ -23,11 +26,15 @@
     const draft = draftOf(d.sheet);
     const records = draft.records || [];
     const errors = records.filter(r => Object.keys(S.validate(r, records, schema)).length).length;
-    const status = draft.submittedAt ? 'submitted' : errors ? 'errors' : records.length ? 'progress' : 'new';
+    // with the model, status is where the dataset stands with KHDA; without it, what the draft says
+    const sub = sm ? sm.all[i] : null;
+    const status = sub
+      ? (M.RETURNED(sub) ? 'errors' : M.ACCEPTED(sub) ? 'submitted' : (M.IN_REVIEW(sub) || sub.status === 'draft') ? 'progress' : 'new')
+      : (draft.submittedAt ? 'submitted' : errors ? 'errors' : records.length ? 'progress' : 'new');
     return {
       idx: i, sheet: d.sheet, title: d.title, group: d.group, kind: d.kind,
-      fields: d.fields.length, records: records.length, errors, status,
-      submittedAt: draft.submittedAt || null,
+      fields: d.fields.length, records: sub && sub.rows ? sub.rows : records.length, errors: sub ? sub.returnedCount : errors, status, sub,
+      submittedAt: sub && sub.receivedAt ? sub.receivedAt.toISOString() : (draft.submittedAt || null),
       ref: 'HEDB-2026-' + String(i + 1).padStart(3, '0'),
       realtime: d.kind === 'Real-time',
     };
@@ -36,7 +43,7 @@
   const totals = {
     datasets: rows.length,
     started: rows.filter(r => r.records > 0).length,
-    submitted: rows.filter(r => r.status === 'submitted').length,
+    submitted: sm ? sm.received : rows.filter(r => r.status === 'submitted').length,
     errors: rows.reduce((n, r) => n + r.errors, 0),
     records: rows.reduce((n, r) => n + r.records, 0),
     fields: rows.reduce((n, r) => n + r.fields, 0),
@@ -127,22 +134,28 @@
       $('#taskEmpty').querySelector('.empty__text').textContent = t('dash.empty.' + taskFilter + '.text');
     }
     $('#taskList').innerHTML = list.map(r => {
-      const detail = r.status === 'errors' ? t('dash.task.errors', { n: r.errors })
-        : r.status === 'progress' ? t('dash.task.ready')
-          : t('dash.task.notStarted');
+      const s = r.sub;
+      const detail = s ? (r.status === 'errors' ? t('dash.task.returned', { n: r.errors }) : M.dueText(s))
+        : r.status === 'errors' ? t('dash.task.errors', { n: r.errors })
+          : r.status === 'progress' ? t('dash.task.ready')
+            : t('dash.task.notStarted');
       const count = r.records ? t('dash.task.records', { n: fmt(r.records) }) : t('dash.task.noRecords');
+      const ref = s && s.receipt ? s.receipt.id : r.ref;
+      // compact labels: the queue's chip column is 96px wide
+      const chip = `<span class="chip chip--${CHIP[r.status]}">${esc(t((s ? 'dash.qstatus.' : 'dash.status.') + r.status))}</span>`;
+      const href = s ? (window.KHDA_UI.nextAction(s)[1] || entryHref(r.sheet)) : entryHref(r.sheet);
       return `<li class="task">
-        <span class="task__ref">${esc(r.ref)}</span>
+        <span class="task__ref">${esc(ref)}</span>
         <span class="task__main">
-          <span class="task__name">${esc(r.title)}</span>
+          <span class="task__name">${esc(s ? M.titleOf(s.dataset) : r.title)}</span>
           <span class="task__sub">${esc(t('dash.task.sub', { g: t('group.' + r.group), n: r.fields }))}</span>
         </span>
         <span class="task__count">
           <span class="task__countValue">${esc(count)}</span>
           <span class="task__sub">${esc(detail)}</span>
         </span>
-        <span class="chip chip--${CHIP[r.status]}">${esc(t('dash.status.' + r.status))}</span>
-        <a class="task__go" href="${entryHref(r.sheet)}" aria-label="${esc(t('dash.openDataset', { x: r.title }))}">
+        ${chip}
+        <a class="task__go" href="${href}" aria-label="${esc(t('dash.openDataset', { x: r.title }))}">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
         </a>
       </li>`;
@@ -265,11 +278,11 @@
     // Everything here is something this submission actually knows, rather than placeholder
     // contact details the portal has no source for.
     const facts = [
-      ['id', t('dash.fact.code'), code || t('dash.fact.none')],
-      ['grid', t('dash.fact.datasets'), t('dash.fact.ofTotal', { a: fmt(totals.submitted), b: fmt(totals.datasets) })],
+      ['id', t('dash.fact.code'), code || (sm ? M.INSTITUTION.code : t('dash.fact.none'))],
+      ['grid', t('dash.fact.datasets'), t('dash.fact.ofTotal', { a: fmt(totals.submitted), b: fmt(sm ? sm.required : totals.datasets) })],
       ['rows', t('dash.fact.records'), fmt(totals.records)],
       ['alert', t('dash.meter.attention'), fmt(totals.errors)],
-      ['clock', t('dash.fact.lastSubmission'), lastAt ? whenText(new Date(lastAt).getTime()) : t('dash.fact.never')],
+      ['clock', t('dash.fact.lastSubmission'), lastAt ? (sm ? M.fmtDate(new Date(lastAt)) : whenText(new Date(lastAt).getTime())) : t('dash.fact.never')],
     ];
     const ICONS = {
       id: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 10h4M14 14h4M5 17c1-2 5-2 6 0"/>',
@@ -295,6 +308,9 @@
     const items = [
       { icon: '<path d="M12 5v14m-7-7h14"/>', label: t('dash.quick.start'), href: 'submissions.html' },
       { icon: '<path d="M14 3v5h5M7 3h7l5 5v13H7z"/><path d="M12 11v6m-2.5-2.5L12 17l2.5-2.5"/>', label: t('dash.quick.continue'), href: entryHref(firstOpen.sheet) },
+      { icon: '<path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>', label: sm && sm.returnedRows ? t('dash.quick.reconcileN', { n: fmt(sm.returnedRows) }) : t('dash.quick.reconcile'), href: 'reconciliation.html' },
+      { icon: '<path d="M4 7h16M4 12h16M4 17h10"/>', label: t('dash.quick.status'), href: 'status.html' },
+      { icon: '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/>', label: t('dash.quick.api'), href: 'api.html' },
       { icon: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', label: t('dash.quick.report'), href: 'report.html?sheet=' + encodeURIComponent(firstWithData.sheet) },
     ];
     $('#quickList').innerHTML = items.map(i => `
@@ -306,19 +322,31 @@
   }
 
   // ---------- progress gauge ----------
-  const STATE_COLOUR = { submitted: 'var(--success)', progress: 'var(--warning)', new: 'var(--outline-variant)' };
+  const STATE_COLOUR = { submitted: 'var(--success)', progress: 'var(--warning)', new: 'var(--outline-variant)', accepted: 'var(--success)', review: 'var(--info)', returned: 'var(--error)', notSubmitted: 'var(--outline-variant)' };
   let scope = 'periodic';
 
   function renderProgress() {
-    const set = rows.filter(r => (scope === 'realtime') === r.realtime);
-    const counts = {
-      submitted: set.filter(r => r.status === 'submitted').length,
-      progress: set.filter(r => r.status === 'progress' || r.status === 'errors').length,
-      new: set.filter(r => r.status === 'new').length,
-    };
+    let counts, states, set, received;
+    if (sm) {
+      // where the period's submissions stand with KHDA: accepted, still with KHDA, returned, not yet submitted
+      set = sm.all.filter(M.REQ).filter(x => (scope === 'realtime') === !!x.req.realtime);
+      counts = { accepted: set.filter(M.ACCEPTED).length, review: set.filter(M.IN_REVIEW).length, returned: set.filter(M.RETURNED).length };
+      counts.notSubmitted = set.length - counts.accepted - counts.review - counts.returned;
+      received = set.filter(M.RECEIVED).length;
+      states = ['accepted', 'review', 'returned', 'notSubmitted'];
+    } else {
+      set = rows.filter(r => (scope === 'realtime') === r.realtime);
+      counts = {
+        submitted: set.filter(r => r.status === 'submitted').length,
+        progress: set.filter(r => r.status === 'progress' || r.status === 'errors').length,
+        new: set.filter(r => r.status === 'new').length,
+      };
+      received = counts.submitted;
+      states = ['submitted', 'progress', 'new'];
+    }
     const total = set.length || 1;
 
-    $('#progressLegend').innerHTML = ['submitted', 'progress', 'new'].map(k => `
+    $('#progressLegend').innerHTML = states.map(k => `
       <span class="legend__item">
         <span class="legend__dot" style="background:${STATE_COLOUR[k]}"></span>
         <span class="legend__value">${fmt(counts[k])}</span>
@@ -329,7 +357,7 @@
     const R = 92, CX = 120, CY = 120;
     const pt = a => [CX + R * Math.cos(Math.PI * a), CY + R * Math.sin(Math.PI * a)];
     let at = 1;
-    const arcs = ['submitted', 'progress', 'new'].map(k => {
+    const arcs = states.map(k => {
       const share = counts[k] / total;
       if (share <= 0) return '';
       const to = at + share;
@@ -341,8 +369,9 @@
     $('#gaugeArcs').innerHTML = arcs ||
       `<path d="M 28 120 A ${R} ${R} 0 1 1 212 120" stroke="var(--outline)"/>`;
 
-    $('#gaugeNumber').textContent = fmt(counts.submitted);
+    $('#gaugeNumber').textContent = fmt(received);
     $('#gaugeCaption').textContent = t('dash.gaugeCaption', { n: fmt(set.length) });
+    const pctEl = $('#progressPct'); if (pctEl) pctEl.textContent = t('dash.pctReceived', { n: Math.round(received / total * 100) });
   }
 
   function bindProgress() {
@@ -393,7 +422,13 @@
 
   // ---------- analytics meters ----------
   function renderMeters() {
-    const items = [
+    const items = sm ? [
+      { label: t('dash.meter.received'), value: t('dash.fact.ofTotal', { a: fmt(sm.received), b: fmt(sm.required) }), pct: sm.received / Math.max(1, sm.required), colour: 'var(--info)' },
+      { label: t('dash.meter.accepted'), value: sm.pct + '%', pct: sm.pct / 100, colour: 'var(--success)' },
+      { label: t('dash.meter.api'), value: t('dash.fact.ofTotal', { a: fmt(sm.api), b: fmt(sm.received) }), pct: sm.api / Math.max(1, sm.received), colour: 'var(--primary)' },
+      { label: t('dash.meter.rows'), value: fmt(sm.rows), pct: 1, colour: 'var(--outline-variant)' },
+      { label: t('dash.meter.returnedRows'), value: fmt(sm.returnedRows), pct: sm.rows ? sm.returnedRows / sm.rows : 0, colour: sm.returnedRows ? 'var(--error)' : 'var(--outline-variant)' },
+    ] : [
       { label: t('dash.meter.started'), value: t('dash.fact.ofTotal', { a: fmt(totals.started), b: fmt(totals.datasets) }), pct: totals.started / totals.datasets, colour: 'var(--success)' },
       { label: t('dash.meter.records'), value: fmt(totals.records), pct: Math.min(1, totals.records / 200), colour: 'var(--info)' },
       { label: t('dash.meter.attention'), value: fmt(totals.errors), pct: totals.records ? totals.errors / totals.records : 0, colour: totals.errors ? 'var(--error)' : 'var(--outline-variant)' },
@@ -420,4 +455,7 @@
   renderProgress();
   renderCalendar();
   renderMeters();
+  // a resubmitted dataset moving on (portal.js ticker) refreshes the analytics
+  document.addEventListener('khda:refresh', () => { if (!M) return; Object.assign(sm, M.summary()); renderProgress(); renderMeters(); });
+  if (sm) { const ttl = $('.dash-card--tasks .dash-card__title'); if (ttl) { ttl.removeAttribute('data-i18n'); ttl.textContent = t('dash.agendaTitle'); } }
 })();

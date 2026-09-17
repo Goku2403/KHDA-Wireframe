@@ -47,7 +47,7 @@
         html: `<p><strong>${esc(K.titleOf(x.dataset))}</strong> for ${esc(i.short)} was returned on ${esc(K.fmtDate(x.receivedAt))}: ${x.rowsRejected} of ${x.rowsAccepted + x.rowsRejected} rows failed ${x.issues.length} rule${x.issues.length === 1 ? '' : 's'}.</p>` +
           li(x.issues.map(is => `<span class="mono">${esc(is.id)}</span> ${esc(is.rule)} — ${is.rows} row${is.rows === 1 ? '' : 's'} · <em>${esc(is.fix)}</em>`)) +
           (subs.length > 1 ? `<p>${subs.length - 1} more dataset${subs.length === 2 ? '' : 's'} need correction.</p>` : ''),
-        sources: [src('Remediation report', `remediation.html?inst=${i.id}&sheet=${encodeURIComponent(x.dataset.sheet)}`), src('Rule library', 'rules.html?sheet=' + encodeURIComponent(x.dataset.sheet)), src('Dictionary · ' + x.dataset.sheet, 'submissions.html?details=' + encodeURIComponent(x.dataset.sheet))],
+        sources: [src('Remediation report', `remediation.html?inst=${i.id}&sheet=${encodeURIComponent(x.dataset.sheet)}`), src('Rule configuration', 'configuration.html?sheet=' + encodeURIComponent(x.dataset.sheet)), src('Dictionary · ' + x.dataset.sheet, 'submissions.html?details=' + encodeURIComponent(x.dataset.sheet))],
       };
     }
     if (/overdue|late|deadline|due/.test(s)) {
@@ -73,7 +73,7 @@
       return { html: `<p>Draft for ${esc(inst.short)}:</p><blockquote class="bot__quote">Dear ${esc(inst.short)} team,<br>We are following up on your ${esc(p.label)} submissions: ${sm.notSubmitted} not submitted, ${sm.needsCorrection} need correction, ${sm.processing} processing. ${sm.accepted} of ${sm.required} datasets are accepted. Please review the attached remediation report.<br>KHDA Data</blockquote>`, sources: [src('Open composer', 'khda-monitor.html?inst=' + inst.id + '&email=1'), src('Remediation report', 'remediation.html?inst=' + inst.id)] };
     }
     if (/dictionary|changed|2027|version/.test(s)) {
-      return { html: `<p>The portal runs HEDB Data Dictionary <strong>2026</strong> (46 datasets, ${DATA.reduce((n, d) => n + d.fields.length, 0).toLocaleString()} fields). Dictionary 2027 is a data change, not a code change: forms, templates, validation and this assistant regenerate from the new file, and the rule library keeps both versions with effective periods.</p>`, sources: [src('Rule library · versions', 'rules.html'), src('Submissions catalogue', 'submissions.html')] };
+      return { html: `<p>The portal runs HEDB Data Dictionary <strong>2026</strong> (46 datasets, ${DATA.reduce((n, d) => n + d.fields.length, 0).toLocaleString()} fields). Dictionary 2027 is a data change, not a code change: forms, templates, validation and this assistant regenerate from the new file, and the rule library keeps both versions with effective periods.</p>`, sources: [src('Rule library · versions', 'configuration.html'), src('Submissions catalogue', 'submissions.html')] };
     }
     if (/api|credential|client id|secret|whitelist|allowlist|sandbox/.test(s)) {
       return { html: `<p>Institutions submit through iPaaS → Azure API Hub → adapter → Qlik DQ layer. Each institution holds one client ID per environment (sandbox, production), a secret shown once, a registered public key and an IP allowlist. KHDA IT issues and rotates them; institutions see status and last-used.</p>`, sources: [src('Credentials', 'credentials.html'), src('Onboarding board', 'onboarding.html')] };
@@ -81,7 +81,7 @@
     if (/rule|mandatory|validation/.test(s) && ds) {
       const sc = S.get(ds.sheet);
       const mand = sc.fields.filter(f => f.required).length, coded = sc.fields.filter(f => f.listName || (f.opts && f.opts.length)).length; const pk = sc.pk.map(k => (sc.fields.find(f => f.key === k) || {}).label || k);
-      return { html: `<p><strong>${esc(K.titleOf(ds))}</strong> has ${sc.fields.length} fields: ${mand} mandatory, ${coded} coded (must match a reference list)${pk.length ? `, primary key ${esc(pk.join(' + '))}` : ''}. Rules apply identically in the form, the Excel template, API validation and the remediation report.</p>`, sources: [src('Rule library · ' + ds.sheet, 'rules.html?sheet=' + encodeURIComponent(ds.sheet)), src('Specification', 'submissions.html?details=' + encodeURIComponent(ds.sheet))] };
+      return { html: `<p><strong>${esc(K.titleOf(ds))}</strong> has ${sc.fields.length} fields: ${mand} mandatory, ${coded} coded (must match a reference list)${pk.length ? `, primary key ${esc(pk.join(' + '))}` : ''}. Rules apply identically in the form, the Excel template, API validation and the remediation report.</p>`, sources: [src('Rule library · ' + ds.sheet, 'configuration.html?sheet=' + encodeURIComponent(ds.sheet)), src('Specification', 'submissions.html?details=' + encodeURIComponent(ds.sheet))] };
     }
     if (ds) {
       const i = inst || K.INSTITUTIONS[0];

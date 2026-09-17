@@ -56,8 +56,6 @@
     const pageRows = rows.slice((page - 1) * SIZE, page * SIZE);
     const prev = M.PERIODS[M.PERIODS.indexOf(per) - 1]; const prevRank = prev ? ranking(prev).find(x => x.me).rank : null;
 
-    $('#lbActions').innerHTML = `${U.periodSelect('lbPeriod')}<a class="tool-btn" href="compliance.html">${t('nav.compliance')}</a>`;
-    $('#lbPeriod').addEventListener('change', e => { M.setPeriod(e.target.value); page = 1; render(); });
 
     // next moves: what raises the score most
     const moves = [];

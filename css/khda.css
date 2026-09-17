@@ -1833,27 +1833,27 @@ a.kpi:hover { text-decoration: none; border-color: var(--outline-variant); box-s
 .bot__form { display: flex; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--outline); }
 .bot__form .control { height: 40px; }
 
-/* ---------- sign-in ---------- */
-.login { min-height: calc(100vh - 160px); display: grid; grid-template-columns: 480px minmax(0, 1fr); gap: 32px; align-items: stretch; padding: 8px 0 48px; }
-.login__card { display: flex; flex-direction: column; gap: 24px; padding: 40px; background: var(--surface); border: 1px solid var(--outline); border-radius: 24px; box-shadow: var(--elevation-2); }
-.login__eyebrow { display: flex; align-items: center; gap: 12px; font: 400 14px/20px var(--font); letter-spacing: 1.4px; text-transform: uppercase; color: var(--primary); }
-.login__eyebrow span { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--primary-container); }
-.login__title { font: 300 40px/48px var(--font); letter-spacing: -0.2px; color: var(--on-surface); }
-.login__title b { font-weight: 400; color: var(--primary); }
-.login__text { font: 400 16px/24px var(--font); color: var(--on-surface-variant); }
-.login__divider { display: flex; align-items: center; gap: 12px; font: 400 12px/16px var(--font); letter-spacing: 0.24px; color: var(--on-surface-muted); }
-.login__divider::before, .login__divider::after { content: ""; flex: 1; height: 1px; background: var(--outline); }
-.login__btn { display: flex; align-items: center; gap: 12px; width: 100%; height: 64px; padding: 0 16px; border: 1px solid var(--outline); border-radius: 12px; background: var(--surface); font: 400 20px/28px var(--font); color: var(--on-surface); cursor: pointer; text-align: left; }
-.login__btn:hover:not(:disabled) { border-color: var(--primary); background: var(--primary-container); }
-.login__btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.login__btn small { display: block; font: 400 12px/16px var(--font); letter-spacing: 0.24px; color: var(--on-surface-muted); }
-.login__btn svg:last-child { margin-left: auto; color: var(--primary); }
-.login__side { display: flex; flex-direction: column; gap: 24px; padding: 40px; border-radius: 24px; background: linear-gradient(135deg, #E6F4F1 0%, #FBF8FD 60%, #FFECF0 100%); border: 1px solid var(--outline); }
-.login__side h2 { font: 300 32px/40px var(--font); color: var(--on-surface); }
+/* ---------- KHDA-staff sign-in (v2 page: khda-login.html) ---------- */
+.klogin { min-height: calc(100vh - 160px); display: grid; grid-template-columns: 480px minmax(0, 1fr); gap: 32px; align-items: stretch; padding: 8px 0 48px; }
+.klogin__card { display: flex; flex-direction: column; gap: 24px; padding: 40px; background: var(--surface); border: 1px solid var(--outline); border-radius: 24px; box-shadow: var(--elevation-2); }
+.klogin__eyebrow { display: flex; align-items: center; gap: 12px; font: 400 14px/20px var(--font); letter-spacing: 1.4px; text-transform: uppercase; color: var(--primary); }
+.klogin__eyebrow span { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--primary-container); }
+.klogin__title { font: 300 40px/48px var(--font); letter-spacing: -0.2px; color: var(--on-surface); }
+.klogin__title b { font-weight: 400; color: var(--primary); }
+.klogin__text { font: 400 16px/24px var(--font); color: var(--on-surface-variant); }
+.klogin__divider { display: flex; align-items: center; gap: 12px; font: 400 12px/16px var(--font); letter-spacing: 0.24px; color: var(--on-surface-muted); }
+.klogin__divider::before, .klogin__divider::after { content: ""; flex: 1; height: 1px; background: var(--outline); }
+.klogin__btn { display: flex; align-items: center; gap: 12px; width: 100%; height: 64px; padding: 0 16px; border: 1px solid var(--outline); border-radius: 12px; background: var(--surface); font: 400 20px/28px var(--font); color: var(--on-surface); cursor: pointer; text-align: left; }
+.klogin__btn:hover:not(:disabled) { border-color: var(--primary); background: var(--primary-container); }
+.klogin__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.klogin__btn small { display: block; font: 400 12px/16px var(--font); letter-spacing: 0.24px; color: var(--on-surface-muted); }
+.klogin__btn svg:last-child { margin-left: auto; color: var(--primary); }
+.klogin__side { display: flex; flex-direction: column; gap: 24px; padding: 40px; border-radius: 24px; background: linear-gradient(135deg, #E6F4F1 0%, #FBF8FD 60%, #FFECF0 100%); border: 1px solid var(--outline); }
+.klogin__side h2 { font: 300 32px/40px var(--font); color: var(--on-surface); }
 .readiness-strip { display: flex; flex-direction: column; gap: 8px; }
 .readiness-strip__row { display: grid; grid-template-columns: 200px minmax(0, 1fr) 64px; gap: 12px; align-items: center; font: 400 14px/20px var(--font); letter-spacing: 0.14px; color: var(--on-surface-variant); }
 .readiness-strip__row b { font-weight: 400; color: var(--on-surface); text-align: right; }
-@media (max-width: 1000px) { .login { grid-template-columns: 1fr; } .login__side { display: none; } }
+@media (max-width: 1000px) { .klogin { grid-template-columns: 1fr; } .klogin__side { display: none; } }
 
 /* ---------- dark theme (DS tokens) ---------- */
 :root[data-theme="dark"] {
